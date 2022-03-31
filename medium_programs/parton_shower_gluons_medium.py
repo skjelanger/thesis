@@ -71,6 +71,8 @@ class Parton(object):
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
 def generate_shower(initialtype, tau_max , p_t, Q_0, R, showernumber, n):
+    """Main shower program. Generates one shower, and returns the Shower-class
+    object associated with the shower. """
     print("\rLooping... " + str(round(100*showernumber/(n))) +"%", end="")
 
     tau = 0
@@ -126,6 +128,7 @@ def generate_shower(initialtype, tau_max , p_t, Q_0, R, showernumber, n):
 # of them. The results from the showers then compared to analytical results, 
 # and plotted in the same figure.
 def several_showers_analytical_comparison(n):
+    """Runs n parton showers, and compares the result with the analytical."""
     R = 0.4 # Jet radius.    
     p_0 = 100 # Initial parton momentum.
     Q_0 = 1 # Hadronization scale.
