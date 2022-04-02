@@ -620,9 +620,9 @@ def several_showers_dasgupta(n, optionaltitle):
     # Now starting the plotting.
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
-             "epsilon: " + str(epsilon) + 
-             "gluon contr: " + str(gg_contribution) +
-             "\n" + optionaltitle)
+             ". epsilon: " + str(epsilon) + 
+             ". gluon contr: " + str(round(gg_contribution,3)) + 
+             "\n " + optionaltitle)
     plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
