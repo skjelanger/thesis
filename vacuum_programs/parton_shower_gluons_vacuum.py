@@ -47,7 +47,7 @@ class Shower(object, metaclass= IterShower):
 
 class Parton(object):
     """Class used for storing information about individual partons."""
-    def __init__(self, angle, initialfrac, parent, shower, showernumber):        
+    def __init__(self, angle, initialfrac, parent, shower):        
         self.Type = "gluon"
         self.Angle = angle
         self.InitialFrac = initialfrac
@@ -55,7 +55,6 @@ class Parton(object):
         self.Primary = None
         self.Secondary = None
         self.Shower = shower
-        self.ShowerNumber = showernumber
 
     def split(self):
         """Picks random value from the vacuum gg splitting function."""
@@ -69,7 +68,7 @@ class Parton(object):
 # In the medium programs this value is dependent on what parton is splitting. 
 # This is not the case here, so it is not a Parton-class function.
 def advance_time():
-    """Randomly generates a probably value for tau for this splitting. """
+    """Randomly generates a probably value t for this splitting. """
     rnd1 = np.random.uniform(epsilon, 1-epsilon)
     delta_t = -(np.log(rnd1))/(gg_integral)
     return delta_t
@@ -86,7 +85,7 @@ def generate_shower(t_max , p_t, Q_0, R, showernumber, n):
 
     t = 0
     Shower0 = Shower(showernumber)
-    Parton0 = Parton(t, 1, None, Shower0, showernumber) # Initial parton
+    Parton0 = Parton(t, 1, None, Shower0) # Initial parton
     
     Shower0.PartonList.append(Parton0)
     Shower0.FinalList.append(Parton0)
@@ -106,13 +105,13 @@ def generate_shower(t_max , p_t, Q_0, R, showernumber, n):
                 if j==0: # Parton 1.
                     initialfrac = SplittingParton.InitialFrac * momfrac
                     NewParton = Parton(t, initialfrac, SplittingParton,
-                                       Shower0, showernumber)
+                                       Shower0)
                     SplittingParton.Primary = NewParton
                     
                 elif j==1: # Parton 2.
                     initialfrac = SplittingParton.InitialFrac * (1-momfrac)
                     NewParton = Parton(t, initialfrac, SplittingParton,
-                                       Shower0, showernumber)
+                                       Shower0)
                     SplittingParton.Secondary = NewParton
                 
                 Shower0.FinalList.append(NewParton)

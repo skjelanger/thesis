@@ -111,51 +111,6 @@ def MH_comparison_gg(n):
                  simple_samples, MH_samples, "gg", n)
     
     
-def MH_comparison_qq(n):
-    """This function samples n random samples from the simple qq splitting
-    function, and then performs the MH algorithm to verify the results.
-    Both the original samples, and MH corrected samples are then plotted"""
-    
-    simplefunction_values = []
-    fullfunction_values = []
-    xvalues = np.linspace(epsilon, 1-epsilon ,1000)
-    simple_splitting_integral, __ = quad(sf.qq_simple, epsilon, 1-epsilon)
-    full_splitting_integral, __ = quad(sf.qq_full, epsilon, 1-epsilon)
-    
-    simple_samples = []
-    MH_samples = []
-    MH_rejects = 0
-    
-    for i in range(1000): # Loop for plotting the exact splitting functions.
-        simplevalue = sf.qq_simple(xvalues[i]) / simple_splitting_integral
-        simplefunction_values.append(simplevalue)
-        fullvalue = sf.qq_full(xvalues[i]) / full_splitting_integral
-        fullfunction_values.append(fullvalue)
-    
-    for j in range(n): # Loop for random sampling and MH.
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
-        a = (rnd1* 31.57532 + 0.03164)
-        dummy_y = (a**2)/(a**2 +1)
-        simple_samples.append(dummy_y)
-            
-        acceptance = min(1-epsilon, sf.qq_full(dummy_y)/sf.qq_simple(dummy_y))
-        rnd2 = np.random.uniform(0,1)
-            
-        if acceptance >= rnd2:
-            MH_samples.append(dummy_y)
-                
-        else:
-            MH_rejects += 1
-
-    print("The number of MH_rejects was:", MH_rejects, 
-          ". Successes are:", len(MH_samples), 
-          ". Acceptance percentage: ", round(len(MH_samples)/
-                                             (MH_rejects+len(MH_samples)), 2))
-    
-    plot_results(xvalues, simplefunction_values, fullfunction_values,
-                 simple_samples, MH_samples, "qq", n)
-    
-    
 def MH_comparison_qg(n):
     """This function samples n random samples from the simple gg splitting
     function, and then performs the MH algorithm to verify the results.
@@ -200,6 +155,50 @@ def MH_comparison_qg(n):
     plot_results(xvalues, simplefunction_values, fullfunction_values,
                  simple_samples, MH_samples, "qg", n)
     
+
+def MH_comparison_qq(n):
+    """This function samples n random samples from the simple qq splitting
+    function, and then performs the MH algorithm to verify the results.
+    Both the original samples, and MH corrected samples are then plotted"""
+    
+    simplefunction_values = []
+    fullfunction_values = []
+    xvalues = np.linspace(epsilon, 1-epsilon ,1000)
+    simple_splitting_integral, __ = quad(sf.qq_simple, epsilon, 1-epsilon)
+    full_splitting_integral, __ = quad(sf.qq_full, epsilon, 1-epsilon)
+    
+    simple_samples = []
+    MH_samples = []
+    MH_rejects = 0
+    
+    for i in range(1000): # Loop for plotting the exact splitting functions.
+        simplevalue = sf.qq_simple(xvalues[i]) / simple_splitting_integral
+        simplefunction_values.append(simplevalue)
+        fullvalue = sf.qq_full(xvalues[i]) / full_splitting_integral
+        fullfunction_values.append(fullvalue)
+    
+    for j in range(n): # Loop for random sampling and MH.
+        rnd1 = np.random.uniform(epsilon, 1-epsilon)
+        a = (rnd1* 31.57532 + 0.03164)
+        dummy_y = (a**2)/(a**2 +1)
+        simple_samples.append(dummy_y)
+            
+        acceptance = min(1-epsilon, sf.qq_full(dummy_y)/sf.qq_simple(dummy_y))
+        rnd2 = np.random.uniform(0,1)
+            
+        if acceptance >= rnd2:
+            MH_samples.append(dummy_y)
+                
+        else:
+            MH_rejects += 1
+
+    print("The number of MH_rejects was:", MH_rejects, 
+          ". Successes are:", len(MH_samples), 
+          ". Acceptance percentage: ", round(len(MH_samples)/
+                                             (MH_rejects+len(MH_samples)), 2))
+    
+    plot_results(xvalues, simplefunction_values, fullfunction_values,
+                 simple_samples, MH_samples, "qq", n)
     
     
 def plot_results(xvalues, simple_function, full_function, simple_samples,

@@ -1,29 +1,23 @@
 # -*- coding: utf-8 -*-
 # Kristoffer Skjelanger, Master thesis, UiB.
 # Parton shower program for gluons in medium.
-# Used the simplified ggg splitting kernel.
+# Using the simplified ggg splitting kernel.
 
 import matplotlib.pyplot as plt
+from medium_splittingfunctions import gg_simple
 import numpy as np
 import random
-from scipy.integrate import quad # Integration package.
+from scipy.integrate import quad
 
-# Splitting functions - move to seperate program and import.
-
-def p_ggg_dummy(z):
-    return ((C_A**(3/2))*(1/((z*(1-z))**(3/2))))
 
 # Constants
 epsilon = 10**(-3)
+alpha_S = 0.1184
 
 bins = 50
 min_value = 0.001
 
-alpha_S = 0.1184
-C_A = 3
-C_F = 4/3
-
-p_ggg_integral, __ = quad((p_ggg_dummy), epsilon, 1-epsilon)
+gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
 
 
 # Define classes and class functions.
@@ -62,7 +56,7 @@ class Parton(object):
     def advance_time(self):
         """Randomly generates a probably value for tau for this splitting. """
         rnd1 = np.random.uniform(epsilon,1-epsilon)
-        delta_tau = -2*np.sqrt(self.InitialFrac)*np.log(rnd1)/(p_ggg_integral)
+        delta_tau = -2*np.sqrt(self.InitialFrac)*np.log(rnd1)/(gg_integral)
         return delta_tau
 
 
@@ -70,7 +64,7 @@ class Parton(object):
 # This program generates a single parton shower, given the initial conditions. 
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
-def generate_shower(initialtype, tau_max , p_t, Q_0, R, showernumber, n):
+def generate_shower(tau_max , p_t, Q_0, R, showernumber, n):
     """Main shower program. Generates one shower, and returns the Shower-class
     object associated with the shower. """
     print("\rLooping... " + str(round(100*showernumber/(n))) +"%", end="")
@@ -82,7 +76,7 @@ def generate_shower(initialtype, tau_max , p_t, Q_0, R, showernumber, n):
     Shower0.SplittingGluons.append(Parton0)
     Shower0.FinalList.append(Parton0)
     
-    while True:  
+    while len(Shower0.SplittingGluons) > 0:  
         SplittingParton = random.choice(Shower0.SplittingGluons)
         delta_tau = SplittingParton.advance_time()
         tau = tau + delta_tau
@@ -107,10 +101,10 @@ def generate_shower(initialtype, tau_max , p_t, Q_0, R, showernumber, n):
                 
                 Shower0.FinalList.append(NewParton)
 
-                if initialfrac > 0.0001: # Limit on how soft gluons can split.
+                if initialfrac > 0.001: # Limit on how soft gluons can split.
                     Shower0.SplittingGluons.append(NewParton)
 
-        else: # Breaks if no more partons to split.
+        else: # Breaks when t value is too large for splitting.
             break                          
                 
     for PartonObj in Shower0.FinalList:
@@ -150,27 +144,27 @@ def several_showers_analytical_comparison(n):
     gluons4 = 0    
 
     for i in range (0,n):
-        Shower0 = generate_shower("gluon", tau1, p_0, Q_0, R, i, 4*n)
+        Shower0 = generate_shower(tau1, p_0, Q_0, R, i, 4*n)
         gluonlist1.extend(Shower0.FinalFracList)
         gluons1 += len(Shower0.FinalList)
         del Shower0
 
     for i in range (n,2*n):
-        Shower0 = generate_shower("gluon", tau2, p_0, Q_0, R, i, 4*n)            
+        Shower0 = generate_shower(tau2, p_0, Q_0, R, i, 4*n)            
         gluonlist2.extend(Shower0.FinalFracList)
         gluons2 += len(Shower0.FinalList)
         del Shower0
 
 
     for i in range (2*n,3*n):
-        Shower0 = generate_shower("gluon", tau3, p_0, Q_0, R, i, 4*n)
+        Shower0 = generate_shower(tau3, p_0, Q_0, R, i, 4*n)
         gluonlist3.extend(Shower0.FinalFracList)
         gluons3 += len(Shower0.FinalList)
         del Shower0
 
 
     for i in range (3*n,4*n):
-        Shower0 = generate_shower("gluon", tau4, p_0, Q_0, R, i, 4*n)
+        Shower0 = generate_shower(tau4, p_0, Q_0, R, i, 4*n)
         gluonlist4.extend(Shower0.FinalFracList)
         gluons4 += len(Shower0.FinalList)
         del Shower0
