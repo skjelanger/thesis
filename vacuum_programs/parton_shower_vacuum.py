@@ -13,13 +13,11 @@ from treelib import Tree
 
 #constants
 epsilon = 10**(-3)
-alpha_S = 0.12
+#alpha_S = 0.12
+
 
 bins = 50
 minimum_bin = 0.001
-
-
-### This is the testbranch file
 
 #C_A = 3
 #C_F = 4/3
@@ -34,6 +32,7 @@ gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
                                                  + qq_integral + qg_integral)
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
 
+print("epsilon: ", epsilon)
 print("Gluon contribution:", gluon_contribution)
 print("ggg contribution:",  gg_contribution)
 
@@ -104,10 +103,10 @@ class Parton(object):
     def MH_gg(self): 
         """Performs the MH algorithm for the gg splitting vertex. """
         while True: 
-            rnd1 = np.random.uniform(epsilon, 1-epsilon)
-            xi = ((1-epsilon)/epsilon)**(2*rnd1-1)
+            rnd1 = np.random.uniform(0,1)
+            xi = ((1-epsilon)/epsilon)**((2*rnd1)-1)
             splittingvalue = xi/(1+xi) 
-            acceptance = min(1-epsilon, 
+            acceptance = min(1, 
                        sf.gg_full(splittingvalue)/sf.gg_simple(splittingvalue))
             rnd2 = np.random.uniform(0,1) 
                 
@@ -120,10 +119,10 @@ class Parton(object):
     def MH_qq(self): 
         """Performs the MH algorithm for the qq splitting vertex. """
         while True: 
-            rnd1 = np.random.uniform(epsilon, 1-epsilon)
+            rnd1 = np.random.uniform(0,1)
             xi = ((1-epsilon)/epsilon)**(rnd1)
             splittingvalue = ((epsilon-1)/(xi))+1
-            acceptance = min(1-epsilon, 
+            acceptance = min(1, 
                        sf.qq_full(splittingvalue)/sf.qq_simple(splittingvalue))
             rnd2 = np.random.uniform(0,1)
                 
@@ -135,7 +134,7 @@ class Parton(object):
         
     def qg(self):
         """Calculates splitting value for the qg vertex.. """
-        rnd1 = np.random.uniform(epsilon,1-epsilon)
+        rnd1 = np.random.uniform(0,1)
         d = (rnd1*0.665)+0.001
         a = (36*(d**(2))-(24*d)+5)**(1/2)
         b = (a+(6*d)-2)**(1/3)
@@ -143,12 +142,11 @@ class Parton(object):
         return splittingvalue
 
 
-
 # Othr shower related programs, which are unrelated to the class objets, are 
 # written her. This is the advance_time program, and select_splitting program.
 def advance_time():
     """Randomly generates a probably value t for this splitting. """
-    rnd1 = np.random.uniform(epsilon,1-epsilon) 
+    rnd1 = np.random.uniform(0,1) 
     delta_t_quark = -(np.log(rnd1))/(qq_integral)
     delta_t_gluon = -(np.log(rnd1))/(gg_integral + qg_integral)
     return delta_t_quark, delta_t_gluon
@@ -163,8 +161,8 @@ def select_splitting(Shower0, t, delta_t_quark, delta_t_gluon):
                         len(Shower0.SplittingQuarks)>0)
     gluons_available = (len(Shower0.SplittingGluons)>0 and 
                         len(Shower0.SplittingQuarks)==0)
-    quarks_available = (len(Shower0.SplittingGluons)==0 and 
-                        len(Shower0.SplittingQuarks)>0)
+    quarks_available = (len(Shower0.SplittingQuarks)>0 and 
+                        len(Shower0.SplittingGluons)==0)
     
     if both_available:
         rnd3 = np.random.uniform(0, 1)
@@ -199,7 +197,6 @@ def select_splitting(Shower0, t, delta_t_quark, delta_t_gluon):
 def generate_shower(initialtype, t_max , p_t, Q_0, z_0, R, showernumber, n):
     print("\rLooping... "+ str(round(100*showernumber/(n))) + "%",end="")
 
-    #t_max = (alpha_S / (np.pi)) * np.log((p_t*R)/(p_t*R-Q_0)) 
     t = 0
 
     Shower0 = Shower(initialtype, showernumber) 

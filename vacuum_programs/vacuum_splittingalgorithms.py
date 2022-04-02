@@ -17,10 +17,10 @@ def MH_gg():
     """Metropolis Hastings algorithm for the gg splitting function in 
     Medium. Returns a single splitting value."""
     while True: 
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
-        xi = ((1-epsilon)/epsilon)**(2*rnd1-1)
+        rnd1 = np.random.uniform(0,1)
+        xi = ((1-epsilon)/epsilon)**((2*rnd1)-1)
         splittingvalue = xi/(1+xi)
-        acceptance = min(1-epsilon,
+        acceptance = min(1,
                     sf.gg_full(splittingvalue) / sf.gg_simple(splittingvalue)) 
         rnd2 = np.random.uniform(0,1)
             
@@ -33,10 +33,10 @@ def MH_qq():
     """Metropolis Hastings algorithm for the qq splitting function in 
     Medium. Returns a single splitting value."""
     while True: 
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
+        rnd1 = np.random.uniform(0,1)
         xi = ((1-epsilon)/epsilon)**(rnd1)
         splittingvalue = ((epsilon-1)/(xi))+1 
-        acceptance = min(1-epsilon, 
+        acceptance = min(1, 
                     sf.qg_full(splittingvalue) / sf.qq_simple(splittingvalue))
         rnd2 = np.random.uniform(0,1)
             
@@ -48,7 +48,7 @@ def MH_qq():
     
 def qg():
     """Calculates value for he qg splitting vertex."""
-    rnd1 = np.random.uniform(epsilon,1-epsilon)
+    rnd1 = np.random.uniform(0,1)
     d = rnd1*0.665+0.001
     a = (36*(d**(2))-(24*d)+5)**(1/2)
     b = (a+(6*d)-2)**(1/3)
@@ -81,12 +81,12 @@ def MH_comparison_gg(n):
         fullfunction_values.append(fullvalue)
     
     for j in range(n): # Loop for random sampling and MH.
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
-        xi = ((1-epsilon)/epsilon)**(2*rnd1-1)
+        rnd1 = np.random.uniform(0,1)
+        xi = ((1-epsilon)/epsilon)**((2*rnd1)-1)
         dummy_y = xi/(1+xi) 
         simple_samples.append(dummy_y)
         
-        acceptance = min(1-epsilon, sf.gg_full(dummy_y)/sf.gg_simple(dummy_y))
+        acceptance = min(1, sf.gg_full(dummy_y)/sf.gg_simple(dummy_y))
         rnd2 = np.random.uniform(0,1) 
             
         if acceptance >= rnd2: 
@@ -168,12 +168,12 @@ def MH_comparison_qq(n):
         fullfunction_values.append(fullvalue)
     
     for j in range(n): # Loop for random sampling and MH.
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
+        rnd1 = np.random.uniform(0,1)
         xi = ((1-epsilon)/epsilon)**(rnd1)
         dummy_y = ((epsilon-1)/(xi))+1 
         simple_samples.append(dummy_y)
             
-        acceptance = min(1-epsilon, sf.qq_full(dummy_y)/sf.qq_simple(dummy_y))
+        acceptance = min(1, sf.qq_full(dummy_y)/sf.qq_simple(dummy_y))
         rnd2 = np.random.uniform(0,1) 
             
         if acceptance >= rnd2: 

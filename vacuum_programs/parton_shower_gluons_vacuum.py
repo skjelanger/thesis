@@ -58,8 +58,8 @@ class Parton(object):
 
     def split(self):
         """Picks random value from the vacuum gg splitting function."""
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
-        xi = ((1-epsilon)/epsilon)**(2*rnd1-1)
+        rnd1 = np.random.uniform(0,1)
+        xi = ((1-epsilon)/epsilon)**((2*rnd1)-1)
         splittingvalue = xi/(1+xi) 
         return splittingvalue
     
@@ -69,7 +69,7 @@ class Parton(object):
 # This is not the case here, so it is not a Parton-class function.
 def advance_time():
     """Randomly generates a probably value t for this splitting. """
-    rnd1 = np.random.uniform(epsilon, 1-epsilon)
+    rnd1 = np.random.uniform(0,1)
     delta_t = -(np.log(rnd1))/(gg_integral)
     return delta_t
                 

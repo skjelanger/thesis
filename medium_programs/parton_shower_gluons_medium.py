@@ -48,7 +48,7 @@ class Parton(object):
         
     def split(self):
         """Picks random value from the medium ggg splitting function."""
-        rnd1 = np.random.uniform(epsilon, 1-epsilon)
+        rnd1 = np.random.uniform(0, 1)
         a = ((rnd1*126.30129) - 63.15065)
         splittingvalue = 0.5 + (a/( 2* np.sqrt((16 + a**2)))) 
         return splittingvalue
