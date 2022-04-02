@@ -18,18 +18,17 @@ epsilon = 10**(-3)
 bins = 50
 minimum_bin = 0.001
 
-
 # Pre-calculations
 gg_integral, __ = quad(sf.gg_full, epsilon, 1-epsilon)
 qg_integral, __ = quad(sf.qg_full, 0, 1)
 qq_integral, __ = quad(sf.qq_full, 0, 1-epsilon) 
+
 gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
                                                  + qq_integral + qg_integral)
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
 
 print("Gluon contribution:", round(gluon_contribution,4))
 print("ggg contribution:",  round(gg_contribution,4))
-
 
 # Define classes and class functions.
 # These classes will be used for managing the different partons created in 
@@ -353,7 +352,7 @@ def create_parton_tree(showernumber): # Treelib print parton tree.
 # Four different values of tau are used, and n showers are generated for each
 # of them, for both gluons and quarks.
 # The results from the showers are then plotted in the style of Dasgupta.
-def several_showers_dasgupta(n):
+def several_showers_dasgupta(n, optionaltitle):
     """Runs n parton showers, and compares the result with Dasgupta."""
 
     R = 0.4 # Define jet radius.    
@@ -620,8 +619,10 @@ def several_showers_dasgupta(n):
 
     # Now starting the plotting.
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
-    title = ("Quarks and Gluons in Vaccum. showers: " + str(n) + 
-             "\nepsilon: " + str(epsilon))
+    title = ("Vaccum showers: " + str(n) + 
+             "epsilon: " + str(epsilon) + 
+             "gluon contr: " + str(gg_contribution) +
+             "\n" + optionaltitle)
     plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
