@@ -206,9 +206,7 @@ def select_splitting_parton(Shower0, t, t_max):
     # These are required for matching the various conditions defined above, 
     # and the appropriate splitting vertex is then selected.
     if none_available or t_none:
-        SplittingParton = None
         vertex = None
-        return SplittingParton, vertex, t
     
     elif t_any_splitting: 
         if quarks_gluons_available: 
