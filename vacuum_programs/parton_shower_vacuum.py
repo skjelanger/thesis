@@ -572,8 +572,8 @@ def several_showers_dasgupta(n):
     # Now starting the plotting.
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Quarks and Gluons in Vaccum. showers: " + str(n) + 
-             "\nminimum_bin: " + str(minimum_bin))
-    #plt.suptitle(title)
+             "\nepsilon: " + str(epsilon))
+    plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
