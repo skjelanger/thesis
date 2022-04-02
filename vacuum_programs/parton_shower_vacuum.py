@@ -4,7 +4,7 @@
 # Using the full splitting functions.
 
 import matplotlib.pyplot as plt
-import vacuum_splittingfunctions as sf
+import vacuum_splittingfunctions as sf # Includes color factors.
 
 import numpy as np
 import random
@@ -15,33 +15,20 @@ from treelib import Tree
 epsilon = 10**(-3)
 #alpha_S = 0.12
 
-
 bins = 50
 minimum_bin = 0.001
 
-#C_A = 3
-#C_F = 4/3
-#T_F = 1/2
-#N_F = 5
 
 # Pre-calculations
 gg_integral, __ = quad(sf.gg_full, epsilon, 1-epsilon)
-qg_integral, __ = quad(sf.qg_full, epsilon, 1-epsilon)
-qq_integral, __ = quad(sf.qq_full, epsilon, 1-epsilon) 
+qg_integral, __ = quad(sf.qg_full, 0, 1)
+qq_integral, __ = quad(sf.qq_full, 0, 1-epsilon) 
 gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
                                                  + qq_integral + qg_integral)
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
 
-
-print("gg_int: ", gg_integral)
-print("qg_int: ", qg_integral)
-print("qq_int: ", qq_integral)
-
-
-
-print("epsilon: ", epsilon)
-print("Gluon contribution:", gluon_contribution)
-print("ggg contribution:",  gg_contribution)
+print("Gluon contribution:", round(gluon_contribution,4))
+print("ggg contribution:",  round(gg_contribution,4))
 
 
 # Define classes and class functions.
