@@ -172,7 +172,11 @@ def select_splitting_parton(Shower0, t, t_max):
     splitting, and the evolved interval of t."""
     
     delta_t_gg, delta_t_qg, delta_t_qq  = advance_time()
+    vertex = None
     
+    
+    # Establishing the different splitting criterias, which are depending on
+    # the delta_t values, and SplittingQuarks/SplittingGluons.
     t_any_splitting = (t + delta_t_gg < t_max and 
                        t + delta_t_qg < t_max and
                        t + delta_t_qq < t_max)
@@ -182,6 +186,10 @@ def select_splitting_parton(Shower0, t, t_max):
                        t + delta_t_qg >= t_max)
     
     t_gg_splitting = (t + delta_t_gg < t_max and 
+                       t + delta_t_qq >= t_max and
+                       t + delta_t_qg >= t_max)
+    
+    t_none = (t + delta_t_gg >= t_max and 
                        t + delta_t_qq >= t_max and
                        t + delta_t_qg >= t_max)
             
@@ -194,12 +202,15 @@ def select_splitting_parton(Shower0, t, t_max):
     none_available = (len(Shower0.SplittingQuarks)==0 and 
                         len(Shower0.SplittingGluons)==0)
     
-    if none_available: # No partons can split. 
+    # Now we must trespass a rather tedious range of if,elif, else, statements.
+    # These are required for matching the various conditions defined above, 
+    # and the appropriate splitting vertex is then selected.
+    if none_available or t_none:
         SplittingParton = None
         vertex = None
         return SplittingParton, vertex, t
     
-    if t_any_splitting: 
+    elif t_any_splitting: 
         if quarks_gluons_available: 
             rnd3 = np.random.uniform(0, 1)
             if (gluon_contribution > rnd3):
@@ -230,16 +241,15 @@ def select_splitting_parton(Shower0, t, t_max):
             vertex = "gg"
         elif quarks_available:
             vertex = "qq"
-        
 
-    elif t_gg_splitting and gluons_available:
-        vertex = "gg"
+    elif t_gg_splitting:
+        if quarks_gluons_available:
+            vertex = "gg"
+        elif gluons_available:
+            vertex = "gg"
+        elif quarks_available:
+            vertex = None
         
-    else: # No t interval to split into. 
-        SplittingParton = None
-        vertex = None
-        return SplittingParton, vertex, t
-    
     # We have now selected which vertex to split, given the available 
     # values for delta_t, and the avilable splitting lists.     
     # Now it remains to choose random partons accordingly, and return the 
@@ -259,13 +269,19 @@ def select_splitting_parton(Shower0, t, t_max):
         Shower0.SplittingQuarks.remove(SplittingParton)
         t = t + delta_t_qq
         
+    elif vertex == None:
+        SplittingParton = None
+        
     return SplittingParton, vertex, t
 
+
+# Main shower program. Given the initial conditions, it performs splitting 
+# of the initial parton, until the evolution interval t is too large for more
+# branchings, or there are no more partons to split. 
 def generate_shower(initialtype, t_max , p_t, Q_0, z_0, R, showernumber, n):
     print("\rLooping... "+ str(round(100*showernumber/(n))) + "%",end="")
-
     t = 0
-
+    
     Shower0 = Shower(initialtype, showernumber) 
     Parton0 = Parton(initialtype, t, z_0, None, Shower0) # Initial parton
     Shower0.PartonList.append(Parton0)
