@@ -1,0 +1,82 @@
+\ProvidesPackage{preamble}
+
+% General packages
+\usepackage{import}
+\usepackage{float}
+\usepackage[labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{appendix}
+
+% Physics packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{slashed}
+\usepackage{physics}
+\usepackage{tikz-feynman}
+\tikzfeynmanset{compat=1.1.0}
+
+%Abstract
+\renewenvironment{abstract}
+{\begin{quote}
+\noindent \rule{\linewidth}{.5pt}\par{\bfseries \abstractname.}}
+{\medskip\noindent \par\rule{\linewidth}{.5pt}
+\end{quote}
+}
+
+% Appendix
+\renewcommand{\appendixname}{Appendix} 
+\appendixtitleon    % puts \appendixname before each appendix title
+\appendixtitletocon % puts \appendixname before each TOC entry
+\let\origappendix\appendix % save the existing appendix command
+\renewcommand\appendix{\clearpage\pagenumbering{Roman}\origappendix}
+
+% Bibliography
+%\usepackage[nottoc,numbib]{tocbibind}
+
+% Graphics packages
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{xsim,tcolorbox}
+\usepackage[framemethod=default]{mdframed}
+
+% Other
+\setlength\parindent{0pt}
+\graphicspath{ {./images/} }
+
+% Referencing
+\usepackage{hyperref}
+\def\equationautorefname~#1\null{Eqn.~(#1)\null}
+\def\figureautorefname~#1\null{Figure.~#1\null}
+\def\sectionautorefname~#1\null{Section~#1\null}
+\def\subsectionautorefname~#1\null{Section~#1\null}
+
+% Numbering and enumerate format
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\renewcommand{\thesection}{\arabic{section}}
+\usepackage[shortlabels]{enumitem}
+%\usepackage{enumerate}
+
+
+% Define Note-environment
+\newenvironment{note}[1]{%
+\mdfsetup{%
+    frametitle={\colorbox{white}{\,Note:\,#1}},
+    frametitleaboveskip=-\ht\strutbox,
+    frametitlealignment=\raggedright
+    }%
+\begin{mdframed}[
+    linecolor=lightgray,linewidth=1pt,%
+    leftmargin=1cm,rightmargin=1cm,]
+}{\end{mdframed}}
+
+% Define \ggg, \gqq, and \qqg notation.
+\newcommand{\ggg}[0]{\textit{gg}{ }}
+\newcommand{\gqq}[0]{\textit{qg}{ }}
+\newcommand{\qqg}[0]{\textit{qq}{ }}
+
+% Vector notation
+\let\oldhat\hat
+\renewcommand{\vec}[1]{\mathbf{#1}}

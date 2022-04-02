@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage{preamble}
+\usepackage{subfiles}
+\setcounter{tocdepth}{2}
+
+\title{Masters thesis \endgraf hello there}
+\author{Kristoffer Skjelanger}
+\date{\today}
+
+\begin{document}
+    %%% Start titlepage %%%
+    \begin{titlepage}
+    \maketitle
+    \thispagestyle{empty}
+    
+    \begin{center}
+        \includegraphics[width=8cm]{pictures/UiB-emblem_gray.pdf}
+    \end{center}
+    
+    \begin{abstract}
+        The project deals with calculating the energy loss of leading jets or partons that traverse a hot and dense quark-gluon plasma. While inclusive distributions account for multiple branchings along the path through a medium, for this application we will follow in each step the branch that retains the largest energy fraction.
+        
+        The goal of the project is to calculate the energy lost by a leading particle in a medium-induced cascade. This will be formulated analytically, and attempted to solve it using standard techniques (Laplace transform). In parallel, the candidate will build a Monte Carlo routine to generate branchings and to, ultimately, compute the desired observables.
+    \end{abstract}
+    
+    %%% Start TOC %%%
+    \newpage
+    \tableofcontents    
+    \thispagestyle{empty}
+    \end{titlepage}
+
+    % Start main sections %%%
+    \newpage
+    \part{Prerequisite}
+        \subfile{sections/section0_prerequisite.tex}
+    \part{Analytical}
+        \subfile{sections/section1_analytical.tex}
+    \part{Programming}
+        \subfile{sections/section2_programming.tex}
+    \part{Results}
+    
+    %%% Start appendices %%%
+    \appendix
+    \begin{appendices}
+        \newpage
+        \subfile{appendixes/appendix1.tex}
+        \newpage
+        \subfile{appendixes/appendix2.tex}
+    \end{appendices}
+        
+    %%% Start Bibliography %%%
+    \newpage
+    \phantomsection %for hyperlinking from toc.
+    \addcontentsline{toc}{section}{References} %adds bib to toc
+    \bibliographystyle{unsrt}
+    \bibliography{refs}
+
+\end{document}
