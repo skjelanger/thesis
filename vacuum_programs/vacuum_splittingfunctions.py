@@ -8,12 +8,13 @@ C_F = 4/3
 N_f = 5
 T_f = 1/2
 
+
 # Splitting functions.
 def gg_simple(z):
-    return C_A*(1/(z*(1-z)))
+    return 2*C_A*(1/(z*(1-z)))
 
 def gg_full(z):
-    return C_A*((1-z)/z + z/(1-z) + z*(1-z))
+    return 2*C_A*((1-z)/z + z/(1-z) + z*(1-z))
 
 def qg_full(z):
     return N_f*T_f*(z**2 + (1-z)**2)
