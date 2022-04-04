@@ -42,7 +42,25 @@ class IterShower(type):
         return iter(cls.allShowers)
     
 class Shower(object, metaclass= IterShower):
-    """Class used for storing information about individual parton showers."""
+    """
+    Class used for storing information about individual partons.
+    
+    Attributes:
+        InitialType (str): Flavour of the initial parton "quark"/"gluon".
+        ShowerNumber (int): Numer n of the shower.
+        PartonList (list): All partons that are part of the shower.
+        FinalList (list): All partons with no daughters.
+        FinalFracList (list): All partons with initialfrac above z_min.
+        SplittingQuarks (list): All quarks that can branch.
+        SplittingGluons (list): All gluons that can branch.
+        ShowerGluons (int): Number of final gluons in the shower.
+        ShowrQuarks (int): Number of final quarks in the shower.
+        Hardest (float): Highest InitialFrac value in FinalList.
+        
+    Other:
+        allShowers (list): Contains all shower objects.
+    """
+
     allShowers = []
 
     def __init__(self, initialtype, showernumber):
@@ -60,7 +78,19 @@ class Shower(object, metaclass= IterShower):
         self.Hardest = None
 
 class Parton(object):
-    """Class used for storing information about individual partons."""
+    """
+    Class used for storing information about individual partons.
+    
+    Attributes:
+        Type (str): Flavour of the given parton "quark"/"gluon".
+        Angle (float): Value of evolution variable at time of creation.
+        InitialFrac (float): Momentum fraction of the initial parton momenta.
+        Parent (object): Parent parton. 
+        Primary (object): Daughter parton with momentum fraction (z).
+        Secondary (object): Daughter parton with momentum fraction (1-z).
+        Shower (object): Which shower the parton is a part of.
+    """
+    
     def __init__(self, typ, angle, initialfrac, parent, shower):        
         self.Type = typ
         self.Angle = angle
@@ -152,9 +182,19 @@ def advance_time():
 
 # Program for selecting which splitting to perform. 
 def select_splitting_parton(Shower0, t, t_max):
-    """Determines which parton can split, based on the available interval t, 
-    splittinggluons, and splittingquarks. Returns the selected parton for 
-    splitting, and the evolved interval of t."""
+    """
+    Determines which parton to split, and which splittingfunction to use.
+    
+    Parameters: 
+        Shower0 (object): Current parton shower.
+        t (float): Current vale of the evolution variable.
+        t_max (float): Maximum value of the evolution variable.
+    
+    Returns:
+        SplittingParton (object): Which parton is selected for splitting.
+        vertex (str): Which splitting vertex to use.
+        t (float): Evolution variable after splitting.
+    """
     
     delta_t_gg, delta_t_qg, delta_t_qq  = advance_time()
     vertex = None
@@ -273,7 +313,8 @@ def generate_shower(initialtype, t_max , p_t, Q_0, R, showernumber):
             showernumber (int) - Showernumber.
             
         Returns:
-            Shower (object) - Object of the class Shower."""
+            Shower (object) - Object of the class Shower.
+    """
     t = 0
     
     Shower0 = Shower(initialtype, showernumber) 
@@ -341,8 +382,7 @@ def generate_shower(initialtype, t_max , p_t, Q_0, R, showernumber):
 # Parton tree program.
 def create_parton_tree(showernumber): # Treelib print parton tree.
     """This program can draw a tree of the partons. It is really only practical
-    for vacuum showers. Creates the tree fora given showernumber.
-    - showernumber """
+    for vacuum showers. """
     tree = Tree()
     
     for ShowerObj in Shower: 
@@ -364,8 +404,17 @@ def create_parton_tree(showernumber): # Treelib print parton tree.
 # Four different values of tau are used, and n showers are generated for each
 # of them, for both gluons and quarks.
 # The results from the showers are then plotted in the style of Dasgupta.
-def several_showers_dasgupta(n, optionaltitle):
-    """Runs n parton showers, and compares the result with Dasgupta."""
+def several_showers_dasgupta(n, opt_title):
+    """
+    Runs n parton showers, and compares the result with Dasgupta.
+    
+    Parameters: 
+        n (int): Number of showers to simulate.
+        opt_title (str): Additional title to add to final plot.
+        
+    Returns:
+        A very nice plot. 
+    """
 
     R = 0.4 # Define jet radius.    
     p_0 = 100
@@ -637,7 +686,7 @@ def several_showers_dasgupta(n, optionaltitle):
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
              ". gluon contr: " + str(round(gluon_contribution,3)) + 
-             "\n " + optionaltitle)
+             "\n " + opt_title)
 
     plt.suptitle(title)
 
