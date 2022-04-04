@@ -12,8 +12,6 @@ from scipy.integrate import quad
 from treelib import Tree
 
 
-# main branch
-
 #constants
 epsilon = 10**(-3)
 
