@@ -13,7 +13,6 @@ from treelib import Tree
 
 #constants
 epsilon = 10**(-3)
-#alpha_S = 0.12
 
 bins = 50
 minimum_bin = 0.001
@@ -101,7 +100,7 @@ class Parton(object):
                        sf.gg_full(splittingvalue)/sf.gg_simple(splittingvalue))
             rnd2 = np.random.uniform(0,1) 
                 
-            if acceptance >= rnd2: #Condition for accepting state.
+            if acceptance >= rnd2: # Condition for accepting MH value.
                 break
 
         return splittingvalue
@@ -117,7 +116,7 @@ class Parton(object):
                        sf.qq_full(splittingvalue)/sf.qq_simple(splittingvalue))
             rnd2 = np.random.uniform(0,1)
                 
-            if acceptance >= rnd2: 
+            if acceptance >= rnd2: # Condition for accepting MH value.
                 break
                     
         return splittingvalue
@@ -262,12 +261,23 @@ def select_splitting_parton(Shower0, t, t_max):
 # Main shower program. Given the initial conditions, it performs splitting 
 # of the initial parton, until the evolution interval t is too large for more
 # branchings, or there are no more partons to split. 
-def generate_shower(initialtype, t_max , p_t, Q_0, z_0, R, showernumber, n):
-    print("\rLooping... "+ str(round(100*showernumber/(n))) + "%",end="")
+def generate_shower(initialtype, t_max , p_t, Q_0, R, showernumber):
+    """Main parton shower program for quarks and gluons in vacuum.
+    
+        Parameters: 
+            initialtype (str): Flavor of initial parton.
+            t_max (int): Maximum value of evolution variable.
+            p_t (int) - Initital parton momentum.
+            Q_0 (int) - Hadronization scale.
+            R (int) - Jet radius.
+            showernumber (int) - Showernumber.
+            
+        Returns:
+            Shower (object) - Object of the class Shower."""
     t = 0
     
     Shower0 = Shower(initialtype, showernumber) 
-    Parton0 = Parton(initialtype, t, z_0, None, Shower0) # Initial parton
+    Parton0 = Parton(initialtype, t, 1, None, Shower0) # Initial parton
     Shower0.PartonList.append(Parton0)
     Shower0.FinalList.append(Parton0)
 
@@ -279,7 +289,8 @@ def generate_shower(initialtype, t_max , p_t, Q_0, z_0, R, showernumber, n):
     while True:
         SplittingParton, vertex, t = select_splitting_parton(Shower0, t, t_max)
         
-        if t >= t_max or SplittingParton == None:
+        no_branching = (t >= t_max or SplittingParton == None)
+        if no_branching:
             break
             
         Shower0.FinalList.remove(SplittingParton)
@@ -302,7 +313,7 @@ def generate_shower(initialtype, t_max , p_t, Q_0, z_0, R, showernumber, n):
             Shower0.PartonList.append(NewParton)
             Shower0.FinalList.append(NewParton)    
             
-            if initialfrac > 0.0001:
+            if initialfrac > 0: # Limit on how soft gluons can split.
                 if NewParton.Type =="gluon":
                     Shower0.SplittingGluons.append(NewParton)
                 elif NewParton.Type =="quark":
@@ -330,7 +341,8 @@ def generate_shower(initialtype, t_max , p_t, Q_0, z_0, R, showernumber, n):
 # Parton tree program.
 def create_parton_tree(showernumber): # Treelib print parton tree.
     """This program can draw a tree of the partons. It is really only practical
-    for vacuum showers. Creates the tree fora given showernumber."""
+    for vacuum showers. Creates the tree fora given showernumber.
+    - showernumber """
     tree = Tree()
     
     for ShowerObj in Shower: 
@@ -382,48 +394,50 @@ def several_showers_dasgupta(n, optionaltitle):
     quarkhard4 = []
         
     
-    # Gluon showers
-    for i in range (0,n):
-        Shower0 = generate_shower("gluon", t1, p_0, Q_0, 1, R, i, 4*n)
-        gluonhard1.append(Shower0.Hardest)
-        gluonlist1.extend(Shower0.FinalFracList)
+    for i in range(0,8*n):
+        print("\rLooping... "+ str(round(100*i/(8*n))) + "%",end="")
 
-    for i in range (n,2*n):
-        Shower0 = generate_shower("gluon", t2, p_0, Q_0, 1, R, i, 4*n)            
-        gluonhard2.append(Shower0.Hardest)
-        gluonlist2.extend(Shower0.FinalFracList)
+        # Gluon showers
+        if (0 <= i and i < n):
+            Shower0 = generate_shower("gluon", t1, p_0, Q_0, R, i)
+            gluonhard1.append(Shower0.Hardest)
+            gluonlist1.extend(Shower0.FinalFracList)
 
-    for i in range (2*n,3*n):
-        Shower0 = generate_shower("gluon", t3, p_0, Q_0, 1, R, i, 4*n)
-        gluonhard3.append(Shower0.Hardest)
-        gluonlist3.extend(Shower0.FinalFracList)
+        if (n <= i and i < 2*n):
+            Shower0 = generate_shower("gluon", t2, p_0, Q_0, R, i)            
+            gluonhard2.append(Shower0.Hardest)
+            gluonlist2.extend(Shower0.FinalFracList)
 
-    for i in range (3*n,4*n):
-        Shower0 = generate_shower("gluon", t4, p_0, Q_0, 1, R, i, 4*n)
-        gluonhard4.append(Shower0.Hardest)
-        gluonlist4.extend(Shower0.FinalFracList)
+        if (2*n <= i and i < 3*n):
+            Shower0 = generate_shower("gluon", t3, p_0, Q_0, R, i)
+            gluonhard3.append(Shower0.Hardest)
+            gluonlist3.extend(Shower0.FinalFracList)
+
+        if (3*n <= i and i < 4*n):
+            Shower0 = generate_shower("gluon", t4, p_0, Q_0, R, i)
+            gluonhard4.append(Shower0.Hardest)
+            gluonlist4.extend(Shower0.FinalFracList)
         
-        
-    # Quark showers.
-    for i in range (4*n,5*n):
-        Shower0 = generate_shower("quark", t1, p_0, Q_0, 1, R, i, 4*n)
-        quarkhard1.append(Shower0.Hardest)
-        quarklist1.extend(Shower0.FinalFracList)
+        # Quark showers.
+        if (4*n <= i and i < 5*n):
+            Shower0 = generate_shower("quark", t1, p_0, Q_0, R, i)
+            quarkhard1.append(Shower0.Hardest)
+            quarklist1.extend(Shower0.FinalFracList)
 
-    for i in range (5*n,6*n):
-        Shower0 = generate_shower("quark", t2, p_0, Q_0, 1, R, i, 4*n)            
-        quarkhard2.append(Shower0.Hardest)
-        quarklist2.extend(Shower0.FinalFracList)
+        if (5*n <= i and i < 6*n):
+            Shower0 = generate_shower("quark", t2, p_0, Q_0, R, i)            
+            quarkhard2.append(Shower0.Hardest)
+            quarklist2.extend(Shower0.FinalFracList)
 
-    for i in range (6*n,7*n):
-        Shower0 = generate_shower("quark", t3, p_0, Q_0, 1, R, i, 4*n)
-        quarkhard3.append(Shower0.Hardest)
-        quarklist3.extend(Shower0.FinalFracList)
+        if (6*n <= i and i < 7*n):
+            Shower0 = generate_shower("quark", t3, p_0, Q_0, R, i)
+            quarkhard3.append(Shower0.Hardest)
+            quarklist3.extend(Shower0.FinalFracList)
         
-    for i in range (7*n,8*n):
-        Shower0 = generate_shower("quark", t4, p_0, Q_0, 1, R, i, 4*n)
-        quarkhard4.append(Shower0.Hardest)
-        quarklist4.extend(Shower0.FinalFracList)
+        if (7*n <= i and i < 8*n):
+            Shower0 = generate_shower("quark", t4, p_0, Q_0, R, i)
+            quarkhard4.append(Shower0.Hardest)
+            quarklist4.extend(Shower0.FinalFracList)
 
         
     # Now calculating normalizations for Gluons.
@@ -443,13 +457,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in gluonlist1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(len(gluonhard1)*(binwidth))
+        density = len(frequencylist1)/(n*(binwidth))
         gluonbinlist1.append(density)
         
         for initialfrac in gluonhard1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(gluonhard1)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         gluonbinhardest1.append(density)
     
     
@@ -466,13 +480,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in gluonlist2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(len(gluonhard2)*(binwidth))
+        density = len(frequencylist1)/(n*(binwidth))
         gluonbinlist2.append(density)
         
         for initialfrac in gluonhard2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(gluonhard2)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         gluonbinhardest2.append(density)
         
         
@@ -490,13 +504,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in gluonlist3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(len(gluonhard3)*(binwidth))
+        density = len(frequencylist1)/(n*(binwidth))
         gluonbinlist3.append(density)
         
         for initialfrac in gluonhard3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(gluonhard3)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         gluonbinhardest3.append(density)
         
 
@@ -513,13 +527,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in gluonlist4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(len(gluonhard4)*(binwidth))
+        density = len(frequencylist1)/(n*(binwidth))
         gluonbinlist4.append(density)
         
         for initialfrac in gluonhard4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(gluonhard4)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         gluonbinhardest4.append(density)
     
     
@@ -537,13 +551,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in quarklist1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(len(quarkhard1)*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*(binwidth))
         quarkbinlist1.append(quarkdensity)
         
         for initialfrac in quarkhard1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(quarkhard1)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         quarkbinhardest1.append(density)
     
     
@@ -560,13 +574,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in quarklist2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(len(quarkhard2)*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*(binwidth))
         quarkbinlist2.append(quarkdensity)
         
         for initialfrac in quarkhard2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(quarkhard2)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         quarkbinhardest2.append(density)
         
         
@@ -584,13 +598,13 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in quarklist3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(len(quarkhard3)*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*(binwidth))
         quarkbinlist3.append(quarkdensity)
         
         for initialfrac in quarkhard3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(quarkhard3)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         quarkbinhardest3.append(density)
         
         
@@ -607,22 +621,22 @@ def several_showers_dasgupta(n, optionaltitle):
         for initialfrac in quarklist4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(len(quarkhard4)*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*(binwidth))
         quarkbinlist4.append(quarkdensity)
         
         for initialfrac in quarkhard4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(len(quarkhard4)*(binwidth))
+        density = len(frequencylist2)/(n*(binwidth))
         quarkbinhardest4.append(density)
     
 
     # Now starting the plotting.
-    plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
+    plt.figure(dpi=1000, figsize= (6,5)) #(w,h)
 
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
-             ". gluon contr: " + str(round(gg_contribution,3)) + 
+             ". gluon contr: " + str(round(gluon_contribution,3)) + 
              "\n " + optionaltitle)
 
     plt.suptitle(title)

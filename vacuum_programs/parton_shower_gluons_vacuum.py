@@ -4,7 +4,8 @@
 # Using the simplified ggg splitting kernel.
 
 import matplotlib.pyplot as plt
-from vacuum_splittingfunctions import gg_simple
+import vacuum_splittingfunctions as sf # Includes color factors.
+
 import numpy as np
 import random
 from scipy.integrate import quad 
@@ -12,12 +13,11 @@ from treelib import Tree
 
 #constants
 epsilon = 10**(-3)
-alpha_S = 0.12
 
 bins = 150
 minimum_bin = 0.001
 
-gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
+gg_integral, __ = quad((sf.gg_simple), epsilon, 1-epsilon)
 
 
 # Define classes and class functions.
@@ -78,11 +78,19 @@ def advance_time():
 # This program generates a single parton shower, given the initial conditions. 
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
-def generate_shower(t_max , p_t, Q_0, R, showernumber, n):
-    """Main shower program. Generates one shower, and returns the Shower-class
-    object associated with the shower. """
-    print("\rLooping... " + str(round(100*showernumber/(n))) +"%", end="")
-
+def generate_shower(t_max , p_t, Q_0, R, showernumber):
+    """Main parton shower program for quarks and gluons in vacuum.
+    
+        Parameters: 
+            t_max (int): Maximum value of evolution variable.
+            p_t (int) - Initital parton momentum.
+            Q_0 (int) - Hadronization scale.
+            R (int) - Jet radius.
+            showernumber (int) - Showernumber.
+            
+        Returns:
+            Shower (object) - Object of the class Shower."""
+        
     t = 0
     Shower0 = Shower(showernumber)
     Parton0 = Parton(t, 1, None, Shower0) # Initial parton
@@ -91,36 +99,39 @@ def generate_shower(t_max , p_t, Q_0, R, showernumber, n):
     Shower0.FinalList.append(Parton0)
     Shower0.SplittingGluons.append(Parton0)
         
-    while len(Shower0.SplittingGluons) > 0:
+    while True:
         delta_t = advance_time() 
         t = t + delta_t
-            
-        if (t < t_max): # When condition is True, we can split.
-            SplittingParton = random.choice(Shower0.SplittingGluons)
-            Shower0.SplittingGluons.remove(SplittingParton)
-            Shower0.FinalList.remove(SplittingParton)
-            momfrac = Parton.split(SplittingParton)
-
-            for j in range(0,2): # Loop for generating the new partons.
-                if j==0: # Parton 1.
-                    initialfrac = SplittingParton.InitialFrac * momfrac
-                    NewParton = Parton(t, initialfrac, SplittingParton,
-                                       Shower0)
-                    SplittingParton.Primary = NewParton
-                    
-                elif j==1: # Parton 2.
-                    initialfrac = SplittingParton.InitialFrac * (1-momfrac)
-                    NewParton = Parton(t, initialfrac, SplittingParton,
-                                       Shower0)
-                    SplittingParton.Secondary = NewParton
-                
-                Shower0.FinalList.append(NewParton)
-
-                if initialfrac > 0.001: # Limit on how soft gluons can split.
-                    Shower0.SplittingGluons.append(NewParton)
-
-        else: # Breaks when t value is too large for splitting.
+        
+        no_branching = (t >= t_max or len(Shower0.SplittingGluons) == 0)
+        if no_branching:
             break
+            
+        SplittingParton = random.choice(Shower0.SplittingGluons)
+        
+        
+        Shower0.SplittingGluons.remove(SplittingParton)
+        Shower0.FinalList.remove(SplittingParton)
+        momfrac = Parton.split(SplittingParton)
+
+        for j in range(0,2): # Loop for generating the new partons.
+            if j==0: # Parton 1.
+                initialfrac = SplittingParton.InitialFrac * momfrac
+                NewParton = Parton(t, initialfrac, SplittingParton,
+                                       Shower0)
+                SplittingParton.Primary = NewParton
+                    
+            elif j==1: # Parton 2.
+                initialfrac = SplittingParton.InitialFrac * (1-momfrac)
+                NewParton = Parton(t, initialfrac, SplittingParton,
+                                       Shower0)
+                SplittingParton.Secondary = NewParton
+                
+            Shower0.FinalList.append(NewParton)
+
+            if initialfrac > 0: # Limit on how soft gluons can split.
+                Shower0.SplittingGluons.append(NewParton)
+
     
     for PartonObj in Shower0.FinalList:
         if PartonObj.InitialFrac > minimum_bin:
@@ -157,7 +168,7 @@ def create_parton_tree(showernumber):
 # Four different values of tau are used, and n showers are generated for each
 # of them. The results from the showers then compared to analytical results, 
 # and plotted in the same figure.
-def several_showers_analytical_comparison(n):
+def several_showers_analytical_comparison(n, optionaltitle):
     """Runs n parton showers, and compares the result with the analytical."""
     R = 0.4 # Jet radius.    
     p_0 = 100 # Initial parton momentum.
@@ -179,29 +190,33 @@ def several_showers_analytical_comparison(n):
     gluonhard4 = []
         
     
-    for i in range (0,n):
-        Shower0 = generate_shower(t1, p_0, Q_0, R, i, 4*n)
-        gluonhard1.append(Shower0.Hardest)
-        gluonlist1.extend(Shower0.FinalFracList)
-        del Shower0
+    for i in range(0,4*n):
+        print("\rLooping... "+ str(round(100*i/(4*n))) + "%",end="")
+
+        if (0 <= i and i < n):
+            Shower0 = generate_shower(t1, p_0, Q_0, R, i)
+            gluonhard1.append(Shower0.Hardest)
+            gluonlist1.extend(Shower0.FinalFracList)
+            del Shower0
+
         
-    for i in range (n,2*n):
-        Shower0 = generate_shower(t2, p_0, Q_0, R, i, 4*n)            
-        gluonhard2.append(Shower0.Hardest)
-        gluonlist2.extend(Shower0.FinalFracList)
-        del Shower0
+        if (n <= i and i < 2*n):
+            Shower0 = generate_shower(t2, p_0, Q_0, R, i)            
+            gluonhard2.append(Shower0.Hardest)
+            gluonlist2.extend(Shower0.FinalFracList)
+            del Shower0
   
-    for i in range (2*n,3*n):
-        Shower0 = generate_shower(t3, p_0, Q_0, R, i, 4*n)
-        gluonhard3.append(Shower0.Hardest)
-        gluonlist3.extend(Shower0.FinalFracList)
-        del Shower0
+        if (2*n <= i and i < 3*n):
+            Shower0 = generate_shower(t3, p_0, Q_0, R, i)
+            gluonhard3.append(Shower0.Hardest)
+            gluonlist3.extend(Shower0.FinalFracList)
+            del Shower0
         
-    for i in range (3*n,4*n):
-        Shower0 = generate_shower(t4, p_0, Q_0, R, i, 4*n)
-        gluonhard4.append(Shower0.Hardest)
-        gluonlist4.extend(Shower0.FinalFracList)
-        del Shower0
+        if (3*n <= i and i < 4*n):
+            Shower0 = generate_shower(t4, p_0, Q_0, R, i)
+            gluonhard4.append(Shower0.Hardest)
+            gluonlist4.extend(Shower0.FinalFracList)
+            del Shower0
 
     # Normalizing showers
     logbins = np.logspace(-3, 0, num=bins)
@@ -210,14 +225,23 @@ def several_showers_analytical_comparison(n):
 
     print("\rCalculating bins...", end="")
     
-    gluonbinlistdensity1 = []
     gluonbinhardest1 = []
-    gluonbinlistdensity2 = []
     gluonbinhardest2 = []
-    gluonbinlistdensity3 = []
     gluonbinhardest3 = []
-    gluonbinlistdensity4 = []
     gluonbinhardest4 = []
+    
+    gluonbinlistdensity1a = []
+    gluonbinlistdensity1b = []
+    
+    gluonbinlistdensity2a = []
+    gluonbinlistdensity2b = []
+    
+    gluonbinlistdensity3a = []
+    gluonbinlistdensity3b = []
+
+    gluonbinlistdensity4a = []
+    gluonbinlistdensity4b = []
+
     
     for i in range(len(logbins)-1):
         binwidth = logbins[i+1]-logbins[i]
@@ -231,8 +255,9 @@ def several_showers_analytical_comparison(n):
         for initialfrac in gluonlist1:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*binwidth) # (len(gluonlist1)*(binwidth))
-        gluonbinlistdensity1.append(density*bincenter)
+        gluonbinlistdensity1a.append(len(frequencylist1)*bincenter/(len(gluonlist1)*binwidth))
+        gluonbinlistdensity1b.append(len(frequencylist1)*bincenter/(n*binwidth))
+
         
         for initialfrac in gluonhard1:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
@@ -246,8 +271,9 @@ def several_showers_analytical_comparison(n):
         for initialfrac in gluonlist2:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*binwidth) # (len(gluonlist2)*(binwidth))
-        gluonbinlistdensity2.append(density*bincenter)
+        gluonbinlistdensity2a.append(len(frequencylist1)*bincenter/(len(gluonlist2)*binwidth))
+        gluonbinlistdensity2b.append(len(frequencylist1)*bincenter/(n*binwidth))
+
         
         for initialfrac in gluonhard2:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
@@ -261,9 +287,9 @@ def several_showers_analytical_comparison(n):
         for initialfrac in gluonlist3:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*binwidth) # (len(gluonlist3)*(binwidth))
-        gluonbinlistdensity3.append(density*bincenter)
-        
+        gluonbinlistdensity3a.append(len(frequencylist1)*bincenter/(len(gluonlist3)*binwidth))
+        gluonbinlistdensity3b.append(len(frequencylist1)*bincenter/(n*binwidth))
+
         for initialfrac in gluonhard3:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist2.append(initialfrac)
@@ -276,9 +302,9 @@ def several_showers_analytical_comparison(n):
         for initialfrac in gluonlist4:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*binwidth) # (len(gluonlist4)*(binwidth))
-        gluonbinlistdensity4.append(density*bincenter)
-        
+        gluonbinlistdensity4a.append(len(frequencylist1)*bincenter/(len(gluonlist4)*binwidth))
+        gluonbinlistdensity4b.append(len(frequencylist1)*bincenter/(n*binwidth))
+
         for initialfrac in gluonhard4:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist2.append(initialfrac)
@@ -306,7 +332,9 @@ def several_showers_analytical_comparison(n):
 
     # Plot    
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
-    title = "Gluons in Vaccum. showers: " + str(n)
+    title = ("Vaccum showers: " + str(n) + 
+             ". epsilon: " + str(epsilon) + 
+             "\n " + optionaltitle)    
     plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
@@ -322,8 +350,10 @@ def several_showers_analytical_comparison(n):
     
     print("\rPlotting 1...", end="")
 
-    ax1.plot(binlist, gluonbinlistdensity1, 'g-', label ="MonteCarlo")
-    ax1.plot(binlist, gluonbinhardest1, 'g--')
+    ax1.plot(binlist, gluonbinlistdensity1a, '--', label ="/showers ")
+    ax1.plot(binlist, gluonbinlistdensity1b, '--', label ="/gluons")
+    
+    #ax1.plot(binlist, gluonbinhardest1, 'g--')
     ax1.plot(xrange, solution1, 'r', label="solution")
     
     ax1.set_xscale("log")
@@ -340,8 +370,10 @@ def several_showers_analytical_comparison(n):
     
     print("\rPlotting 2...", end="")
 
-    ax2.plot(binlist, gluonbinlistdensity2, 'g-', label ="MonteCarlo")
-    ax2.plot(binlist, gluonbinhardest2, 'g--')
+    ax2.plot(binlist, gluonbinlistdensity2a, '--', label ="/showers ")
+    ax2.plot(binlist, gluonbinlistdensity2b, '--', label ="/gluons")
+
+    #ax2.plot(binlist, gluonbinhardest2, 'g--')
     ax2.plot(xrange, solution2, 'r', label="solution")
     
     ax2.set_xscale("log")
@@ -358,8 +390,10 @@ def several_showers_analytical_comparison(n):
     
     print("\rPlotting 3...", end="")
 
-    ax3.plot(binlist, gluonbinlistdensity3, 'g-', label ="MonteCarlo")
-    ax3.plot(binlist, gluonbinhardest3, 'g--')
+    ax3.plot(binlist, gluonbinlistdensity3a, '--', label ="/showers ")
+    ax3.plot(binlist, gluonbinlistdensity3b, '--', label ="/gluons")
+    
+    #ax3.plot(binlist, gluonbinhardest3, 'g--')
     ax3.plot(xrange, solution3, 'r', label="solution")
     
     ax3.set_xscale("log")
@@ -376,8 +410,10 @@ def several_showers_analytical_comparison(n):
 
     print("\rPlotting 4...", end="")
 
-    ax4.plot(binlist, gluonbinlistdensity4, 'g-', label ="MonteCarlo")
-    ax4.plot(binlist, gluonbinhardest4, 'g--')
+    ax4.plot(binlist, gluonbinlistdensity4a, '--', label ="/showers ")
+    ax4.plot(binlist, gluonbinlistdensity4b, '--', label ="/gluons")
+
+    #ax4.plot(binlist, gluonbinhardest4, 'g--')
     ax4.plot(xrange, solution4, 'r', label="solution")
     
     ax4.set_xscale("log")
@@ -390,7 +426,6 @@ def several_showers_analytical_comparison(n):
     ax4.set_ylabel('D(x,t)')
     ax4.grid(linestyle='dashed', linewidth=0.2)
     ax4.legend()
-
 
     print("\rShowing", end="")
 
