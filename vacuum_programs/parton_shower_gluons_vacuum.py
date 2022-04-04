@@ -33,7 +33,21 @@ class IterShower(type):
         return iter(cls.allShowers)
     
 class Shower(object, metaclass= IterShower):
-    """Class used for storing information about individual parton showers."""
+    """
+    Class used for storing information about individual partons.
+    
+    Attributes:
+        ShowerNumber (int): Numer n of the shower.
+        PartonList (list): All partons that are part of the shower.
+        FinalList (list): All partons with no daughters.
+        FinalFracList (list): All partons with initialfrac above z_min.
+        SplittingGluons (list): All gluons that can branch.
+        Hardest (float): Highest InitialFrac value in FinalList.
+        
+    Other:
+        allShowers (list): Contains all shower objects.
+    """
+
     allShowers = []
     def __init__(self, showernumber):
         self.allShowers.append(self)
@@ -46,8 +60,22 @@ class Shower(object, metaclass= IterShower):
         self.Hardest = None
 
 class Parton(object):
-    """Class used for storing information about individual partons."""
+    """
+    Class used for storing information about individual partons.
+    
+    Attributes:
+        Type (str): Flavour of the given parton "quark"/"gluon".
+        Angle (float): Value of evolution variable at time of creation.
+        InitialFrac (float): Momentum fraction of the initial parton momenta.
+        Parent (object): Parent parton. 
+        Primary (object): Daughter parton with momentum fraction (z).
+        Secondary (object): Daughter parton with momentum fraction (1-z).
+        Shower (object): Which shower the parton is a part of.
+    """
+    
     def __init__(self, angle, initialfrac, parent, shower):        
+        """Constructs all the necessary attributes for the Parton object."""
+        
         self.Type = "gluon"
         self.Angle = angle
         self.InitialFrac = initialfrac
@@ -79,7 +107,8 @@ def advance_time():
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
 def generate_shower(t_max, p_t, Q_0, R, showernumber):
-    """Main parton shower program for gluons in vacuum.
+    """
+    Main parton shower program for gluons in vacuum.
     
         Parameters: 
             t_max (int): Maximum value of evolution variable.
@@ -89,7 +118,8 @@ def generate_shower(t_max, p_t, Q_0, R, showernumber):
             showernumber (int) - Showernumber.
             
         Returns:
-            Shower (object) - Object of the class Shower."""
+            Shower (object) - Object of the class Shower.
+    """
         
     t = 0
     Shower0 = Shower(showernumber)
@@ -168,8 +198,18 @@ def create_parton_tree(showernumber):
 # Four different values of tau are used, and n showers are generated for each
 # of them. The results from the showers then compared to analytical results, 
 # and plotted in the same figure.
-def several_showers_analytical_comparison(n, optionaltitle):
-    """Runs n parton showers, and compares the result with the analytical."""
+def several_showers_analytical_comparison(n, opt_title):
+    """
+    Runs n parton showers, and compares the result with the analytical results.
+    
+    Parameters: 
+        n (int): Number of showers to simulate.
+        opt_title (str): Additional title to add to final plot.
+        
+    Returns:
+        A very nice plot. 
+    """
+    
     R = 0.4 # Jet radius.    
     p_0 = 100 # Initial parton momentum.
     Q_0 = 1 # Hadronization scale.
@@ -334,7 +374,7 @@ def several_showers_analytical_comparison(n, optionaltitle):
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
-             "\n " + optionaltitle)    
+             "\n " + opt_title)    
     plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
