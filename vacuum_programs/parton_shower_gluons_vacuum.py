@@ -78,8 +78,8 @@ def advance_time():
 # This program generates a single parton shower, given the initial conditions. 
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
-def generate_shower(t_max , p_t, Q_0, R, showernumber):
-    """Main parton shower program for quarks and gluons in vacuum.
+def generate_shower(t_max, p_t, Q_0, R, showernumber):
+    """Main parton shower program for gluons in vacuum.
     
         Parameters: 
             t_max (int): Maximum value of evolution variable.
