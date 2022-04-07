@@ -5,21 +5,17 @@
 
 import matplotlib.pyplot as plt
 import vacuum_splittingfunctions as sf # Includes color factors.
-
 import numpy as np
 import random
 from scipy.integrate import quad 
 from treelib import Tree
 
-
 #constants
-epsilon = 10**(-3)
-
+epsilon = 10**(-4)
 bins = 150
-minimum_bin = 0.001
 
 gg_integral, __ = quad((sf.gg_simple), epsilon, 1-epsilon)
-
+print("gg_integral: ", gg_integral)
 
 # Define classes and class functions.
 # These classes will be used for managing the different partons created in 
@@ -140,7 +136,6 @@ def generate_shower(t_max, p_t, Q_0, R, showernumber):
             
         SplittingParton = random.choice(Shower0.SplittingGluons)
         
-        
         Shower0.SplittingGluons.remove(SplittingParton)
         Shower0.FinalList.remove(SplittingParton)
         momfrac = Parton.split(SplittingParton)
@@ -159,13 +154,11 @@ def generate_shower(t_max, p_t, Q_0, R, showernumber):
                 SplittingParton.Secondary = NewParton
                 
             Shower0.FinalList.append(NewParton)
-
-            if initialfrac > 0: # Limit on how soft gluons can split.
-                Shower0.SplittingGluons.append(NewParton)
+            Shower0.SplittingGluons.append(NewParton)
 
     
     for PartonObj in Shower0.FinalList:
-        if PartonObj.InitialFrac > minimum_bin:
+        if PartonObj.InitialFrac > 0.001:
             Shower0.FinalFracList.append(PartonObj.InitialFrac)
         del PartonObj
 
@@ -193,7 +186,6 @@ def create_parton_tree(showernumber):
     tree.remove_node(tree.root)
     return
     
-
 
 # Program for comparing the shower program with analytical calculations.
 # Four different values of tau are used, and n showers are generated for each
@@ -230,7 +222,6 @@ def several_showers_analytical_comparison(n, opt_title):
     gluonlist4 = []
     gluonhard4 = []
         
-    
     for i in range(0,4*n):
         print("\rLooping... "+ str(round(100*i/(4*n))) + "%",end="")
 
@@ -239,7 +230,6 @@ def several_showers_analytical_comparison(n, opt_title):
             gluonhard1.append(Shower0.Hardest)
             gluonlist1.extend(Shower0.FinalFracList)
             del Shower0
-
         
         if (n <= i and i < 2*n):
             Shower0 = generate_shower(t2, p_0, Q_0, R, i)            
@@ -261,34 +251,23 @@ def several_showers_analytical_comparison(n, opt_title):
 
     # Normalizing showers
     logbins = np.logspace(-3, 0, num=bins)
-    #logbins.extend(np.logspace(-3, 0, num=bins))
     binlist = []
 
     print("\rCalculating bins...", end="")
     
+    gluonbinlist1 = []
+    gluonbinlist2 = []
+    gluonbinlist3 = []
+    gluonbinlist4 = []
     gluonbinhardest1 = []
     gluonbinhardest2 = []
     gluonbinhardest3 = []
     gluonbinhardest4 = []
     
-    gluonbinlistdensity1a = []
-    gluonbinlistdensity1b = []
-    
-    gluonbinlistdensity2a = []
-    gluonbinlistdensity2b = []
-    
-    gluonbinlistdensity3a = []
-    gluonbinlistdensity3b = []
-
-    gluonbinlistdensity4a = []
-    gluonbinlistdensity4b = []
-
-    
     for i in range(len(logbins)-1):
         binwidth = logbins[i+1]-logbins[i]
         bincenter = logbins[i+1] - (binwidth/2)
         binlist.append(bincenter)
-        
         
         # Calculating bins 1
         frequencylist1 = []
@@ -296,15 +275,14 @@ def several_showers_analytical_comparison(n, opt_title):
         for initialfrac in gluonlist1:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        gluonbinlistdensity1a.append(len(frequencylist1)*bincenter/(len(gluonlist1)*binwidth))
-        gluonbinlistdensity1b.append(len(frequencylist1)*bincenter/(n*binwidth))
-
+        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
+        gluonbinlist1.append(gluondensity)
         
         for initialfrac in gluonhard1:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)/(n*binwidth) # (len(gluonlist1)*(binwidth))
-        gluonbinhardest1.append(binharddensity*bincenter)
+        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
+        gluonbinhardest1.append(binharddensity)
     
         # Calculating bins 2
         frequencylist1 = []
@@ -312,15 +290,15 @@ def several_showers_analytical_comparison(n, opt_title):
         for initialfrac in gluonlist2:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        gluonbinlistdensity2a.append(len(frequencylist1)*bincenter/(len(gluonlist2)*binwidth))
-        gluonbinlistdensity2b.append(len(frequencylist1)*bincenter/(n*binwidth))
+        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
+        gluonbinlist2.append(gluondensity)
 
         
         for initialfrac in gluonhard2:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)/(n*binwidth) # (len(gluonlist2)*(binwidth))
-        gluonbinhardest2.append(binharddensity*bincenter)
+        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
+        gluonbinhardest2.append(binharddensity)
         
         # Calculating bins 3
         frequencylist1 = []
@@ -328,14 +306,14 @@ def several_showers_analytical_comparison(n, opt_title):
         for initialfrac in gluonlist3:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        gluonbinlistdensity3a.append(len(frequencylist1)*bincenter/(len(gluonlist3)*binwidth))
-        gluonbinlistdensity3b.append(len(frequencylist1)*bincenter/(n*binwidth))
+        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
+        gluonbinlist3.append(gluondensity)
 
         for initialfrac in gluonhard3:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)/(n*binwidth) # (len(gluonlist3)*(binwidth))
-        gluonbinhardest3.append(binharddensity*bincenter)
+        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
+        gluonbinhardest3.append(binharddensity)
         
         # Calculating bins 4
         frequencylist1 = []
@@ -343,14 +321,14 @@ def several_showers_analytical_comparison(n, opt_title):
         for initialfrac in gluonlist4:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist1.append(initialfrac)
-        gluonbinlistdensity4a.append(len(frequencylist1)*bincenter/(len(gluonlist4)*binwidth))
-        gluonbinlistdensity4b.append(len(frequencylist1)*bincenter/(n*binwidth))
+        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
+        gluonbinlist4.append(gluondensity)
 
         for initialfrac in gluonhard4:
             if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
                 frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)/(n*binwidth) # (len(gluonlist4)*(binwidth))
-        gluonbinhardest4.append(binharddensity*bincenter)
+        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
+        gluonbinhardest4.append(binharddensity)
     
     
     # Calculating solutions
@@ -378,10 +356,10 @@ def several_showers_analytical_comparison(n, opt_title):
              "\n " + opt_title)    
     plt.suptitle(title)
 
-    plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
-    plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('axes', titlesize="small" , labelsize="x-small")
+    plt.rc('xtick', labelsize="x-small")
+    plt.rc('ytick', labelsize="x-small")
+    plt.rc('legend',fontsize='xx-small')
     plt.rc('lines', linewidth=0.8)
 
     ax1 = plt.subplot(221) #H B NR
@@ -391,15 +369,12 @@ def several_showers_analytical_comparison(n, opt_title):
     
     print("\rPlotting 1...", end="")
 
-    ax1.plot(binlist, gluonbinlistdensity1a, '--', label ="/showers ")
-    ax1.plot(binlist, gluonbinlistdensity1b, '--', label ="/gluons")
-    
-    #ax1.plot(binlist, gluonbinhardest1, 'g--')
+    ax1.plot(binlist, gluonbinlist1, '--', label ="MC")
+    ax1.plot(binlist, gluonbinhardest1, ':')
     ax1.plot(xrange, solution1, 'r', label="solution")
     
     ax1.set_xscale("log")
     ax1.set_yscale("log")
-
     ax1.set_title('t_0 = ' + str(t1))
     ax1.set_xlim(0.001,1)
     ax1.set_ylim(0.01,10)
@@ -411,15 +386,13 @@ def several_showers_analytical_comparison(n, opt_title):
     
     print("\rPlotting 2...", end="")
 
-    ax2.plot(binlist, gluonbinlistdensity2a, '--', label ="/showers ")
-    ax2.plot(binlist, gluonbinlistdensity2b, '--', label ="/gluons")
+    ax2.plot(binlist, gluonbinlist2, '--', label ="MC")
+    ax2.plot(binlist, gluonbinhardest2, ':')
 
-    #ax2.plot(binlist, gluonbinhardest2, 'g--')
     ax2.plot(xrange, solution2, 'r', label="solution")
     
     ax2.set_xscale("log")
     ax2.set_yscale("log")
-
     ax2.set_title('t_0 = ' + str(t2))
     ax2.set_xlim(0.001,1)
     ax2.set_ylim(0.01,10)
@@ -431,15 +404,12 @@ def several_showers_analytical_comparison(n, opt_title):
     
     print("\rPlotting 3...", end="")
 
-    ax3.plot(binlist, gluonbinlistdensity3a, '--', label ="/showers ")
-    ax3.plot(binlist, gluonbinlistdensity3b, '--', label ="/gluons")
-    
-    #ax3.plot(binlist, gluonbinhardest3, 'g--')
+    ax3.plot(binlist, gluonbinlist3, '--', label ="MC")
+    ax3.plot(binlist, gluonbinhardest3, ':')
     ax3.plot(xrange, solution3, 'r', label="solution")
     
     ax3.set_xscale("log")
     ax3.set_yscale("log")
-
     ax3.set_title('t_0 = ' + str(t3))
     ax3.set_xlim(0.001,1)
     ax3.set_ylim(0.01,10)
@@ -451,15 +421,12 @@ def several_showers_analytical_comparison(n, opt_title):
 
     print("\rPlotting 4...", end="")
 
-    ax4.plot(binlist, gluonbinlistdensity4a, '--', label ="/showers ")
-    ax4.plot(binlist, gluonbinlistdensity4b, '--', label ="/gluons")
-
-    #ax4.plot(binlist, gluonbinhardest4, 'g--')
+    ax4.plot(binlist, gluonbinlist4, '--', label ="MC")
+    ax4.plot(binlist, gluonbinhardest4, ':')
     ax4.plot(xrange, solution4, 'r', label="solution")
     
     ax4.set_xscale("log")
     ax4.set_yscale("log")
-
     ax4.set_title('t_0 = ' + str(t4))
     ax4.set_xlim(0.001,1)
     ax4.set_ylim(0.01,10)

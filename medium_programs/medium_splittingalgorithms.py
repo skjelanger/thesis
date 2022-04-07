@@ -201,6 +201,44 @@ def MH_comparison_qq(n):
                  simple_samples, MH_samples, "qq", n)
     
     
+def comparison_gg_simple(n):
+    """This function samples n random samples from the simple gg splitting
+    function, and then compares with the actual function."""
+    
+    fullfunction_values = []
+    xvalues = np.linspace(epsilon, 1-epsilon ,1000)
+    simple_splitting_integral, __ = quad(sf.gg_simple, epsilon, 1-epsilon)
+    
+    samples = []
+
+    
+    for i in range(1000): # Loop for plotting the exact splitting functions.
+        fullvalue = sf.gg_simple(xvalues[i]) / simple_splitting_integral
+        fullfunction_values.append(fullvalue)
+    
+    for j in range(n): # Loop for random sampling.
+        rnd1 = np.random.uniform(0, 1)
+        a = (rnd1-0.5)*simple_splitting_integral
+        samplevalue = 0.5 + (a/( 2* np.sqrt((16 + a**2)))) 
+        samples.append(samplevalue)
+     
+    plt.figure(figsize= (5,3), dpi=1000)
+
+    plt.rc('axes', titlesize="small" , labelsize="small")
+    plt.rc('xtick', labelsize="small")
+    plt.rc('ytick', labelsize="small")
+    
+    plt.plot(xvalues, fullfunction_values, 'r-', label='K(z)')
+    plt.hist(samples, 200, density='true', label="samples")
+    plt.title("Original histogram")
+
+    plt.ylim(0,1)
+    plt.xlabel('z')
+    plt.legend(fontsize="x-small")
+    plt.show()
+    print("Done!")
+    
+    
 def plot_results(xvalues, simple_function, full_function, simple_samples,
                  MH_samples, splitting, n):
     """This program plots the results from the MH_comparison programs"""

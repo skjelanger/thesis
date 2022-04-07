@@ -9,10 +9,10 @@ N_f = 5
 T_f = 1/2
 
 def gg_simple(z):
-    return (1/((z*(1-z))**(3/2)))  #removed 2 c-a
+    return (1/((z*(1-z))**(3/2)))
 
 def gg_full(z):
-    A = 2*C_A
+    A = C_A
     B = (1-z)/z + z/(1-z) + z*(1-z)
     C = ((C_A*(1-z)+C_A*(z**2))/(z*(1-z)))**(1/2)
     return A*B*C

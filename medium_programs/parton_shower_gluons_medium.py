@@ -4,7 +4,7 @@
 # Using the simplified ggg splitting kernel.
 
 import matplotlib.pyplot as plt
-from medium_splittingfunctions import gg_simple
+from medium_splittingfunctions import gg_simple # Includes color factors.
 import numpy as np
 import random
 from scipy.integrate import quad
@@ -15,8 +15,6 @@ z_min = 10**(-3)
 bins = 100
 
 gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
-
-print("gg_integral: ", gg_integral)
 
 
 # Define classes and class functions.
@@ -71,7 +69,7 @@ class Parton(object):
     def split(self):
         """Picks random value from the medium ggg splitting function."""
         rnd1 = np.random.uniform(0, 1)
-        a = (rnd1-0.5)*gg_integral #((rnd1*126.30129) - 63.15065)
+        a = (rnd1-0.5)*gg_integral
         splittingvalue = 0.5 + (a/( 2* np.sqrt((16 + a**2)))) 
         return splittingvalue
     
