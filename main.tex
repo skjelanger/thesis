@@ -3,7 +3,9 @@
 \usepackage{subfiles}
 \setcounter{tocdepth}{2}
 
-\title{Masters thesis \endgraf hello there}
+\title{\Huge{Some dive into some QCD parton showers} 
+        \endgraf 
+        \Large{hello there}}
 \author{Kristoffer Skjelanger}
 \date{\today}
 
@@ -12,16 +14,16 @@
     \begin{titlepage}
     \maketitle
     \thispagestyle{empty}
-    
+    \vspace*{\fill}
     \begin{center}
         \includegraphics[width=8cm]{pictures/UiB-emblem_gray.pdf}
-    \end{center}
-    
-    \begin{abstract}
-        The project deals with calculating the energy loss of leading jets or partons that traverse a hot and dense quark-gluon plasma. While inclusive distributions account for multiple branchings along the path through a medium, for this application we will follow in each step the branch that retains the largest energy fraction.
+        \vspace*{\fill}
         
-        The goal of the project is to calculate the energy lost by a leading particle in a medium-induced cascade. This will be formulated analytically, and attempted to solve it using standard techniques (Laplace transform). In parallel, the candidate will build a Monte Carlo routine to generate branchings and to, ultimately, compute the desired observables.
-    \end{abstract}
+        \Large{Department of Physics and Technology
+
+        University of Bergen}
+    \end{center}
+    \vfill
     
     %%% Start TOC %%%
     \newpage
@@ -31,14 +33,21 @@
 
     % Start main sections %%%
     \newpage
-    \part{Prerequisite}
-        \subfile{sections/section0_prerequisite.tex}
-    \part{Analytical}
-        \subfile{sections/section1_analytical.tex}
-    \part{Programming}
-        \subfile{sections/section2_programming.tex}
-    \part{Results}
-    
+    \chapter*{Introduction}\label{cpt:intro}
+        \addcontentsline{toc}{part}{\nameref{cpt:intro}}
+        \subfile{sections/section1_introduction.tex}
+    \newpage    
+    \chapter{Fundamentals}
+        \subfile{sections/section2_fundamentals.tex}
+    \newpage
+    \chapter{Analytical}
+        \subfile{sections/section3_analytical.tex}
+    \newpage
+    \chapter{Numerical}
+        \subfile{sections/section4_numerical.tex}
+    \newpage
+    \chapter{Results}
+
     %%% Start appendices %%%
     \appendix
     \begin{appendices}

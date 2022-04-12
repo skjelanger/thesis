@@ -7,6 +7,9 @@
 \usepackage{booktabs}
 \usepackage{url}
 \usepackage{appendix}
+\usepackage{parskip}
+\usepackage{setspace}
+\setlength\parindent{0pt}
 
 % Physics packages
 \usepackage{amsmath}
@@ -34,6 +37,10 @@
 % Bibliography
 %\usepackage[nottoc,numbib]{tocbibind}
 
+% Chapers - rename "part" to "chapter"
+\renewcommand{\partname}{Chapter}
+\newcommand{\chapter}{\part}
+
 % Graphics packages
 \usepackage{graphicx}
 \usepackage[margin=1in]{geometry}
@@ -41,8 +48,8 @@
 \usepackage[framemethod=default]{mdframed}
 
 % Other
-\setlength\parindent{0pt}
 \graphicspath{ {./images/} }
+\setstretch{1.1} %changes line spacing
 
 % Referencing
 \usepackage{hyperref}
@@ -73,9 +80,8 @@
 }{\end{mdframed}}
 
 % Define \ggg, \gqq, and \qqg notation.
-\newcommand{\ggg}[0]{\textit{gg}{ }}
-\newcommand{\gqq}[0]{\textit{qg}{ }}
-\newcommand{\qqg}[0]{\textit{qq}{ }}
+\newcommand{\jet}{\text{jet}}
+\newcommand{\nn}{\nonumber\\}
 
 % Vector notation
 \let\oldhat\hat
