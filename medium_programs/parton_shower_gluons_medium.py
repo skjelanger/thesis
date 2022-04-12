@@ -12,7 +12,7 @@ from scipy.integrate import quad
 # Constants
 epsilon = 10**(-4)
 z_min = 10**(-3)
-bins = 100
+bins = 50
 
 gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
 
@@ -40,7 +40,19 @@ class Shower(object):
         self.FinalList = [] # Contains all Final Partons 
         self.FinalFracList = [] # Contains all partons above z_min.
         self.SplittingGluons = []
+        self.SplittingGluonsFrac = []
+
         self.Hardest = None
+        
+        
+    def select_sudakov(self):
+        gluons_deltatau = []
+        for gluon in self.SplittingGluons:
+            delta_tau_sample = gluon.advance_time(self)
+            gluons_deltatau.append((gluon, delta_tau_sample))
+        (min_gluon, min_tau) =  min(gluons_deltatau, key = lambda t: t[1])
+        return min_gluon, min_tau
+            
 
 class Parton(object):
     """
@@ -73,12 +85,13 @@ class Parton(object):
         splittingvalue = 0.5 + (a/( 2* np.sqrt((16 + a**2)))) 
         return splittingvalue
     
-    def advance_time(self):
+    def advance_time(self, Shower0):
         """Randomly generates a probably value for tau for this splitting. """
         rnd1 = np.random.uniform(0,1)
         delta_tau = -2*np.sqrt(self.InitialFrac)*np.log(rnd1)/(gg_integral)
         return delta_tau
-
+    
+        
 
 # Main shower program. 
 # This program generates a single parton shower, given the initial conditions. 
@@ -104,17 +117,19 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
     Parton0 = Parton(tau, 1, None, Shower0) # Initial parton
 
     Shower0.SplittingGluons.append(Parton0)
+    Shower0.SplittingGluonsFrac.append(Parton0.InitialFrac)
     Shower0.FinalList.append(Parton0)
     
-    while len(Shower0.SplittingGluons) > 0:  
-        SplittingParton = random.choice(Shower0.SplittingGluons)
-        delta_tau = SplittingParton.advance_time()
+    while len(Shower0.SplittingGluons) > 0:
+        SplittingParton, delta_tau = Shower0.select_sudakov()
         tau = tau + delta_tau
         
         if tau >= tau_max:
             break
         
         Shower0.SplittingGluons.remove(SplittingParton)
+        Shower0.SplittingGluonsFrac.remove(SplittingParton.InitialFrac)
+
         Shower0.FinalList.remove(SplittingParton)
         momfrac = Parton.split(SplittingParton)            
 
@@ -132,7 +147,9 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
             Shower0.FinalList.append(NewParton)
 
             if initialfrac > z_min: # Limit on how soft gluons can split.
-                Shower0.SplittingGluons.append(NewParton)                     
+                Shower0.SplittingGluons.append(NewParton)  
+                Shower0.SplittingGluonsFrac.append(NewParton.InitialFrac)
+                   
                 
     for PartonObj in Shower0.FinalList:
         if PartonObj.InitialFrac > 0.001:
@@ -215,7 +232,7 @@ def several_showers_analytical_comparison(n, opt_title):
     logbins = (np.linspace(0.001, 1, num=bins))
     binlist = []
 
-    print("\rCalculating bins 1...", end="")
+    print("\rCalculating bins...", end="")
     
     gluonbinlist1 = []
     gluonbinlist2 = []
@@ -284,7 +301,7 @@ def several_showers_analytical_comparison(n, opt_title):
              ". epsilon: " + str(epsilon) + 
              ". z_min: " + str(z_min) +
              "\n " + opt_title)    
-    plt.suptitle(title)
+    #plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
@@ -297,7 +314,7 @@ def several_showers_analytical_comparison(n, opt_title):
     ax3 = plt.subplot(223)
     ax4 = plt.subplot(224)
     
-    print("\rPlotting 1...", end="")
+    print("\rPlotting...", end="")
 
     ax1.plot(binlist, gluonbinlist1, "--", label="MC")
     ax1.plot(xrange, solution1, 'r', label="solution")
@@ -313,8 +330,6 @@ def several_showers_analytical_comparison(n, opt_title):
     ax1.legend()
     
     
-    print("\rPlotting 2...", end="")
-
     ax2.plot(binlist, gluonbinlist2, "--", label="MC")
     ax2.plot(xrange, solution2, 'r', label="solution")
     
@@ -329,8 +344,6 @@ def several_showers_analytical_comparison(n, opt_title):
     ax2.legend()
 
     
-    print("\rPlotting 3...", end="")
-
     ax3.plot(binlist, gluonbinlist3, "--", label="MC")
     ax3.plot(xrange, solution3, 'r', label="solution")
     
@@ -344,8 +357,6 @@ def several_showers_analytical_comparison(n, opt_title):
     ax3.grid(linestyle='dashed', linewidth=0.2)
     ax3.legend()
     
-
-    print("\rPlotting 4...", end="")
 
     ax4.plot(binlist, gluonbinlist4, "--", label="MC")
     ax4.plot(xrange, solution4, 'r', label="solution")
@@ -361,7 +372,7 @@ def several_showers_analytical_comparison(n, opt_title):
     ax4.legend()
 
 
-    print("\rShowing", end="")
+    print("\rShowing")
 
     plt.tight_layout()
     plt.show()
