@@ -2,13 +2,12 @@
 
 cff-version: 1.2.0
 
-type: generic
+type: misc
 title: Parton shower programs for my thesis.
 authors:
   - family-names: Skjelanger
     given-names: Kristoffer
 year: '2022'
 doi: "DOI: 10.5281/zenodo.6467177"
-repository-code: "https://github.com/skjelanger/thesis"
 medium: "GitHub \url{https://github.com/skjelanger/thesis}"
 version: 0.5
