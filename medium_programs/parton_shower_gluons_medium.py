@@ -6,13 +6,13 @@
 import matplotlib.pyplot as plt
 from medium_splittingfunctions import gg_simple # Includes color factors.
 import numpy as np
-import random
 from scipy.integrate import quad
 
 # Constants
-epsilon = 10**(-4)
+epsilon = 10**(-3)
 z_min = 10**(-3)
-bins = 50
+plot_lim = 10**(-3) # Minimum value for plot
+binnumber = 100
 
 gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
 
@@ -33,6 +33,9 @@ class Shower(object):
         SplittingGluons (list): All gluons that can branch.
         Hardest (float): Highest InitialFrac value in FinalList.
         
+    Functions: 
+        select_sudakov: Selects the most probable parton to split.
+        
     """
 
     def __init__(self, showernumber):
@@ -40,12 +43,17 @@ class Shower(object):
         self.FinalList = [] # Contains all Final Partons 
         self.FinalFracList = [] # Contains all partons above z_min.
         self.SplittingGluons = []
-        self.SplittingGluonsFrac = []
 
         self.Hardest = None
         
         
     def select_sudakov(self):
+        """
+        Generates a random evolution interval from the sudakov form factor
+        for each of the available gluons, and returns the gluon with the lowest
+        expected interval for splitting, and its interval. 
+        """
+        
         gluons_deltatau = []
         for gluon in self.SplittingGluons:
             delta_tau_sample = gluon.advance_time(self)
@@ -66,10 +74,15 @@ class Parton(object):
         Primary (object): Daughter parton with momentum fraction (z).
         Secondary (object): Daughter parton with momentum fraction (1-z).
         Shower (object): Which shower the parton is a part of.
+        
+    Functions:
+        split(self): Samples random value from the medium ggg splitting 
+                    function. 
+        advance_time(self): Generates random interval where one can expect
+            a splitting for the parton. Depends on momentumfraction.
     """
 
     def __init__(self, angle, initialfrac, parent, shower):   
-        """Constructs all the necessary attributes for the Parton object."""
         self.Type = "gluon"
         self.Angle = angle
         self.InitialFrac = initialfrac
@@ -111,13 +124,12 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
         Returns:
             Shower (object) - Object of the class Shower.
     """
-
+    
     tau = 0
     Shower0 = Shower(showernumber)
     Parton0 = Parton(tau, 1, None, Shower0) # Initial parton
 
     Shower0.SplittingGluons.append(Parton0)
-    Shower0.SplittingGluonsFrac.append(Parton0.InitialFrac)
     Shower0.FinalList.append(Parton0)
     
     while len(Shower0.SplittingGluons) > 0:
@@ -128,8 +140,6 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
             break
         
         Shower0.SplittingGluons.remove(SplittingParton)
-        Shower0.SplittingGluonsFrac.remove(SplittingParton.InitialFrac)
-
         Shower0.FinalList.remove(SplittingParton)
         momfrac = Parton.split(SplittingParton)            
 
@@ -148,11 +158,10 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
 
             if initialfrac > z_min: # Limit on how soft gluons can split.
                 Shower0.SplittingGluons.append(NewParton)  
-                Shower0.SplittingGluonsFrac.append(NewParton.InitialFrac)
                    
                 
     for PartonObj in Shower0.FinalList:
-        if PartonObj.InitialFrac > 0.001:
+        if PartonObj.InitialFrac > plot_lim:
             Shower0.FinalFracList.append(PartonObj.InitialFrac)
         del PartonObj
     
@@ -168,17 +177,23 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
 # Four different values of tau are used, and n showers are generated for each
 # of them. The results from the showers then compared to analytical results, 
 # and plotted in the same figure.
-def several_showers_analytical_comparison(n, opt_title):
+def several_showers_analytical_comparison(n, opt_title, scale):
     """
     Runs n parton showers, and compares the analytical results.
     
     Parameters: 
         n (int): Number of showers to simulate.
         opt_title (str): Additional title to add to final plot.
+        scale (str): Set lin or log scale for the plot.
         
     Returns:
         A very nice plot. 
     """
+    
+    error, error_msg = error_message_several_showers(n, opt_title, scale)
+    if error:
+        print(error_msg)
+        return
     
     R = 0.4 # Jet radius.    
     p_0 = 100 # Initial parton momentum.
@@ -228,10 +243,24 @@ def several_showers_analytical_comparison(n, opt_title):
             del Shower0
 
 
-    # Normalizing showers
-    logbins = (np.linspace(0.001, 1, num=bins))
+    # Sets the different ranges required for the plots.
+    
+    if scale == "lin":
+        linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
+        linbins2 = (np.linspace(0.991, 1, 10))
+        bins = np.hstack((linbins1, linbins2))
+        xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
+
+    
+    elif scale == "log":
+        logbins1 = np.logspace(-3, -0.1, num=binnumber)
+        logbins2 = np.logspace(-0.09, 0, num = 10)
+        bins = np.hstack((logbins1, logbins2))
+        xrange = np.logspace(-3, -0.0001, num=(4*binnumber))
+
     binlist = []
 
+    # Normalizing the showers.
     print("\rCalculating bins...", end="")
     
     gluonbinlist1 = []
@@ -239,15 +268,15 @@ def several_showers_analytical_comparison(n, opt_title):
     gluonbinlist3 = []
     gluonbinlist4 = []
 
-    for i in range(len(logbins)-1):
-        binwidth = logbins[i+1]-logbins[i]
-        bincenter = logbins[i+1] - (binwidth/2)
+    for i in range(len(bins)-1):
+        binwidth = bins[i+1]-bins[i]
+        bincenter = bins[i+1] - (binwidth/2)
         binlist.append(bincenter)
                 
         # Calculating bins 1
         frequencylist = []
         for initialfrac in gluonlist1:
-            if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
                 frequencylist.append(initialfrac)                
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist1.append(binvalue)
@@ -255,7 +284,7 @@ def several_showers_analytical_comparison(n, opt_title):
         # Calculating bins 2
         frequencylist = []
         for initialfrac in gluonlist2:
-            if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
                 frequencylist.append(initialfrac)                
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist2.append(binvalue)
@@ -263,7 +292,7 @@ def several_showers_analytical_comparison(n, opt_title):
         # Calculating bins 3
         frequencylist = []
         for initialfrac in gluonlist3:
-            if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
                 frequencylist.append(initialfrac)
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist3.append(binvalue)
@@ -271,14 +300,13 @@ def several_showers_analytical_comparison(n, opt_title):
         # Calculating bins 4
         frequencylist = []
         for initialfrac in gluonlist4:
-            if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
                 frequencylist.append(initialfrac)
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist4.append(binvalue)
         
     
     # Calculating solutions
-    xrange = np.logspace(-3, -0.0001, num=(4*bins)) #range for plotting solution
     solution1 = []
     solution2 = []
     solution3 = []
@@ -293,7 +321,6 @@ def several_showers_analytical_comparison(n, opt_title):
         solution2.append(D2)
         solution3.append(D3)
         solution4.append(D4)
-    
     
     # Do the actual plotting. 
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
@@ -318,11 +345,8 @@ def several_showers_analytical_comparison(n, opt_title):
 
     ax1.plot(binlist, gluonbinlist1, "--", label="MC")
     ax1.plot(xrange, solution1, 'r', label="solution")
-    
-    ax1.set_xscale("linear")
-    ax1.set_yscale("log")
     ax1.set_title('tau = ' +str(tau1))
-    ax1.set_xlim(0.001,1)
+    ax1.set_xlim(plot_lim,1)
     ax1.set_ylim(0.01,10)
     ax1.set_xlabel('z ')
     ax1.set_ylabel('D(x,t)')
@@ -332,11 +356,8 @@ def several_showers_analytical_comparison(n, opt_title):
     
     ax2.plot(binlist, gluonbinlist2, "--", label="MC")
     ax2.plot(xrange, solution2, 'r', label="solution")
-    
-    ax2.set_xscale("linear")
-    ax2.set_yscale("log")
     ax2.set_title('tau = ' +str(tau2))
-    ax2.set_xlim(0.001,1)
+    ax2.set_xlim(plot_lim,1)
     ax2.set_ylim(0.01,10)
     ax2.set_xlabel('z')
     ax2.set_ylabel('D(x,t)')
@@ -346,11 +367,8 @@ def several_showers_analytical_comparison(n, opt_title):
     
     ax3.plot(binlist, gluonbinlist3, "--", label="MC")
     ax3.plot(xrange, solution3, 'r', label="solution")
-    
-    ax3.set_xscale("linear")
-    ax3.set_yscale("log")
     ax3.set_title('tau = ' +str(tau3))
-    ax3.set_xlim(0.001,1)
+    ax3.set_xlim(plot_lim,1)
     ax3.set_ylim(0.01,10)
     ax3.set_xlabel('z ')
     ax3.set_ylabel('D(x,t)')
@@ -360,20 +378,55 @@ def several_showers_analytical_comparison(n, opt_title):
 
     ax4.plot(binlist, gluonbinlist4, "--", label="MC")
     ax4.plot(xrange, solution4, 'r', label="solution")
-    
-    ax4.set_xscale("linear")
-    ax4.set_yscale("log")
     ax4.set_title('tau = ' +str(tau4))
-    ax4.set_xlim(0.001,1)
+    ax4.set_xlim(plot_lim,1)
     ax4.set_ylim(0.01,10)
     ax4.set_xlabel('z ')
     ax4.set_ylabel('D(x,t)')
     ax4.grid(linestyle='dashed', linewidth=0.2)
     ax4.legend()
+    
+    if scale == "lin":
+        ax1.set_xscale("linear")
+        ax1.set_yscale("log")
+        ax2.set_xscale("linear")
+        ax2.set_yscale("log")
+        ax3.set_xscale("linear")
+        ax3.set_yscale("log")
+        ax4.set_xscale("linear")
+        ax4.set_yscale("log")
 
+    elif scale == "log":
+        ax1.set_xscale("log")
+        ax1.set_yscale("log")
+        ax2.set_xscale("log")
+        ax2.set_yscale("log")
+        ax3.set_xscale("log")
+        ax3.set_yscale("log")
+        ax4.set_xscale("log")
+        ax4.set_yscale("log")
 
     print("\rShowing")
 
     plt.tight_layout()
     plt.show()
     print("\rDone!")    
+
+
+def error_message_several_showers(n, opt_title, scale):
+    """"Checks the input parameters for erros and generates merror_msg."""
+    error = False
+    msg = ""
+    n_error = not isinstance(n, int)
+    title_error = not  isinstance(opt_title, str)
+    scale_error = not ((scale == "lin") or (scale == "log"))
+
+    if n_error or title_error or scale_error :
+        error = True
+        if n_error:
+            msg = msg + "\nERROR! - 'n' must be an integer."
+        if title_error:
+            msg = msg + "\nERROR! - 'opt_title' must be a str."
+        if scale_error:
+            msg = msg+ "\nERROR! - 'scale' must be 'lin' or 'log'."
+    return error, msg
