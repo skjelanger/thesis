@@ -12,6 +12,6 @@ identifiers:
     type: doi
     value: 10.5281/zenodo.6467177
 message: "If you use this software, please cite it using the metadata from this file."
-repository-code: "https://github.com/skjelanger/thesis"
+url: "https://github.com/skjelanger/thesis"
 title: "My Research Software"
 version: 0.5
