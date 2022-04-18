@@ -2,14 +2,14 @@
 
 cff-version: 1.2.0
 
-type: manual
+type: misc
 title: "My Research Software"
 version: 0.5
 
 authors:
   - family-names: Skjelanger
     given-names: Kristoffer
-date-released: "2022"
+year: "2022"
 identifiers:
   - description: "This is the collection of archived snapshots of all versions of My Research Software"
     type: doi
