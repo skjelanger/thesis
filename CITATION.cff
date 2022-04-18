@@ -3,11 +3,15 @@
 cff-version: 1.2.0
 
 type: misc
-title: Parton shower programs for my thesis.
 authors:
   - family-names: Skjelanger
     given-names: Kristoffer
-year: '2022'
-doi: "DOI: 10.5281/zenodo.6467177"
-medium: "GitHub \url{https://github.com/skjelanger/thesis}"
+date-released: "2022"
+identifiers:
+  - description: "This is the collection of archived snapshots of all versions of My Research Software"
+    type: doi
+    value: 10.5281/zenodo.6467177
+message: "If you use this software, please cite it using the metadata from this file."
+repository-code: "https://github.com/skjelanger/thesis"
+title: "My Research Software"
 version: 0.5
