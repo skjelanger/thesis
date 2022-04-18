@@ -10,8 +10,4 @@ authors:
 version: 0.5
 date-released: "2022"
 doi: "DOI: 10.5281/zenodo.6467177"
-identifiers:
-  - description: This is the collection of archived snapshots of all versions of the software.
-    type: doi
-    value: "DOI: 10.5281/zenodo.6467177"
 repository-code: "https://github.com/skjelanger/thesis"
