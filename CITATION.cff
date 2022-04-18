@@ -1,14 +1,19 @@
 # This is a CITATION.cff file.
 
 cff-version: 1.2.0
-message: If you use this software, please cite it using these metadata.
+
+
+version: 0.5
+date-released: "2022"
+
+
+
+type: generic
 title: Parton shower programs for my thesis.
-type: misc
-abstract: This is my awesome research software. It does many things.
 authors:
   - family-names: Skjelanger
     given-names: Kristoffer
-version: 0.5
-date-released: "2022"
+year: '2022'
 doi: "DOI: 10.5281/zenodo.6467177"
 repository-code: "https://github.com/skjelanger/thesis"
+medium: "GitHub \url{https://github.com/skjelanger/thesis}"
