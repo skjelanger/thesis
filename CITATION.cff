@@ -1,11 +1,17 @@
-# This CITATION.cff file was generated with cffinit.
+# This is a CITATION.cff file.
 
 cff-version: 1.2.0
-title: Kristoffer master thesis
-message: Please cite this software using these metadata.
-type: software
+message: If you use this software, please cite it using these metadata.
+title: Parton shower programs for my thesis.
+abstract: This is my awesome research software. It does many things.
 authors:
-  - given-names: Kristoffer
-    family-names: Skjelanger
-    email: k.skjelanger@gmail.com
-    affiliation: University of Bergen
+  - family-names: Skjelanger
+    given-names: Kristoffer
+  - name: "The Research Software project"
+version: 0.5
+date-released: "2022"
+identifiers:
+  - description: This is the collection of archived snapshots of all versions of the software.
+    type: doi
+    value: "DOI: 10.5281/zenodo.6467177"
+repository-code: "https://github.com/skjelanger/thesis"
