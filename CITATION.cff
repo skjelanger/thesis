@@ -3,6 +3,7 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
 title: Parton shower programs for my thesis.
+type: misc
 abstract: This is my awesome research software. It does many things.
 authors:
   - family-names: Skjelanger
