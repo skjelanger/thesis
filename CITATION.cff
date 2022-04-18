@@ -13,5 +13,6 @@ identifiers:
     value: 10.5281/zenodo.6467177
 message: "If you use this software, please cite it using the metadata from this file."
 url: "https://github.com/skjelanger/thesis"
+medium: "Github "
 title: "My Research Software"
 version: 0.5
