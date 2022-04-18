@@ -9,7 +9,7 @@ version: 0.5
 authors:
   - family-names: Skjelanger
     given-names: Kristoffer
-year: "2022"
+date-released: "2022"
 identifiers:
   - description: "This is the collection of archived snapshots of all versions of My Research Software"
     type: doi
