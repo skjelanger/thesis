@@ -49,7 +49,7 @@ def MH_qq():
 def qg():
     """Calculates value for he qg splitting vertex."""
     rnd1 = np.random.uniform(0,1)
-    d = rnd1*0.665+0.001
+    d = (rnd1*(2/3))
     a = (36*(d**(2))-(24*d)+5)**(1/2)
     b = (a+(6*d)-2)**(1/3)
     splittingvalue = (0.5+0.5*b-(0.5/b))
@@ -109,11 +109,10 @@ def comparison_qg(n):
     This program gives acomparison between the randomly samples value, and the 
     exact function. """
     
-    full_splitting_integral, __ = quad(sf.qg_full, epsilon, 1-epsilon)
+    full_splitting_integral, __ = quad(sf.qg_full, 0, 1)
 
     xvalues = np.linspace(epsilon,1-epsilon, 1000)
     fullfunction_values = []
-    value, error = quad(sf.qg_full, epsilon, 1-epsilon)
     
     random_samples = []
 
@@ -122,8 +121,8 @@ def comparison_qg(n):
         fullfunction_values.append(fullvalue)
     
     for i in range (n): #Loop for generating random momentum fractions
-        rnd = np.random.uniform(epsilon,1-epsilon)
-        d = rnd*0.665+0.001
+        rnd = np.random.uniform(0,1)
+        d = (rnd*(2/3))
         a = (36*(d**(2))-(24*d)+5)**(1/2)
         b = (a+(6*d)-2)**(1/3)
         randomsample = (0.5+0.5*b-(0.5/b))
