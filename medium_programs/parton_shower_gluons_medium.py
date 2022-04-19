@@ -11,7 +11,7 @@ from scipy.integrate import quad
 # Constants
 epsilon = 10**(-3)
 z_min = 10**(-3)
-plot_lim = 10**(-3) # Minimum value for plot
+plot_lim = 10**(-3)
 binnumber = 100
 
 gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
