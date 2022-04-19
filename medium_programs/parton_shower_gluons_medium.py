@@ -4,7 +4,7 @@
 # Using the simplified ggg splitting kernel.
 
 import matplotlib.pyplot as plt
-from medium_splittingfunctions import gg_simple # Includes color factors.
+from medium_splittingfunctions import gg_simple
 import numpy as np
 from scipy.integrate import quad
 
@@ -136,7 +136,7 @@ def generate_shower(tau_max, p_t, Q_0, R, showernumber):
         SplittingParton, delta_tau = Shower0.select_sudakov()
         tau = tau + delta_tau
         
-        if tau >= tau_max:
+        if tau > tau_max:
             break
         
         Shower0.SplittingGluons.remove(SplittingParton)
@@ -247,7 +247,7 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     
     if scale == "lin":
         linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-        linbins2 = (np.linspace(0.991, 1, 10))
+        linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
         bins = np.hstack((linbins1, linbins2))
         xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
 
