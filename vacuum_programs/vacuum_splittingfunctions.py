@@ -9,7 +9,12 @@ N_f = 5
 T_f = 1/2
 
 
-# Splitting functions.
+# Splitting functions gluons only program.
+def gg_simple_analytical(z):
+    return C_A*(1/(z*(1-z)))
+
+
+# Splitting functions quarks/gluon programs.
 def gg_simple(z):
     return 2*C_A*(1/(z*(1-z)))
 

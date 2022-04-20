@@ -11,7 +11,7 @@ from scipy.integrate import quad
 from treelib import Tree
 
 #constants
-epsilon = 10**(-8)
+epsilon = 10**(-3)
 z_min = 10**(-3)
 plot_lim = 10**(-3)
 binnumber = 100
@@ -58,6 +58,20 @@ class Shower(object, metaclass= IterShower):
         self.FinalFracList = [] # Contains all partons above min_value.
         self.SplittingGluons = []
         self.Hardest = None
+        
+    def select_sudakov(self):
+        """
+        Generates a random evolution interval from the sudakov form factor
+        for each of the available gluons, and returns the gluon with the lowest
+        expected interval for splitting, and its interval. 
+        """
+        
+        gluons_deltat = []
+        for gluon in self.SplittingGluons:
+            delta_t_sample = gluon.advance_time()
+            gluons_deltat.append((gluon, delta_t_sample))
+        (min_gluon, min_t) =  min(gluons_deltat, key = lambda t: t[1])
+        return min_gluon, min_t
         
 
 class Parton(object):
@@ -134,8 +148,9 @@ def generate_shower(t_max, p_t, Q_0, R, showernumber):
     Shower0.SplittingGluons.append(Parton0)
         
     while len(Shower0.SplittingGluons) > 0:
-        SplittingParton = random.choice(Shower0.SplittingGluons)
-        delta_t = SplittingParton.advance_time()
+        #SplittingParton = random.choice(Shower0.SplittingGluons)
+        #delta_t = SplittingParton.advance_time()
+        SplittingParton, delta_t = Shower0.select_sudakov()
         t = t + delta_t
         
         if t > t_max:

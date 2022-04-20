@@ -12,7 +12,7 @@ from scipy.integrate import quad
 from treelib import Tree 
 
 #constants
-epsilon = 10**(-3)
+epsilon = 10**(-5)
 
 bins = 50
 minimum_bin = 0.001
@@ -25,6 +25,8 @@ qq_integral, __ = quad(sf.qq_full, 0, 1-epsilon)
 gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
                                                  + qq_integral + qg_integral)
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
+
+print("qg_int: ", qg_integral)
 
 print("Gluon contribution:", round(gluon_contribution,4))
 print("ggg contribution:",  round(gg_contribution,4))
@@ -155,7 +157,7 @@ class Parton(object):
     def qg(self):
         """Calculates splitting value for the qg vertex.. """
         rnd1 = np.random.uniform(0,1)
-        d = (rnd1*0.665)+0.001
+        d = (rnd1*(2/3))
         a = (36*(d**(2))-(24*d)+5)**(1/2)
         b = (a+(6*d)-2)**(1/3)
         splittingvalue = (0.5+0.5*b-(0.5/b))
@@ -415,6 +417,11 @@ def several_showers_dasgupta(n, opt_title):
     Returns:
         A very nice plot. 
     """
+    
+    error, error_msg = error_message_several_showers(n, opt_title)
+    if error:
+        print(error_msg)
+        return
 
     R = 0.4 # Define jet radius.    
     p_0 = 100
@@ -713,7 +720,7 @@ def several_showers_dasgupta(n, opt_title):
     ax1.set_xlim(0,1)
     ax1.set_ylim(0.01,10)
     ax1.set_xlabel('z ')
-    ax1.set_ylabel('inclusive distribution')
+    ax1.set_ylabel('f_incl(x,t)')
     ax1.grid(linestyle='dashed', linewidth=0.2)
     ax1.legend()
     
@@ -730,7 +737,7 @@ def several_showers_dasgupta(n, opt_title):
     ax2.set_xlim(0,1)
     ax2.set_ylim(0.01,10)
     ax2.set_xlabel('z')
-    ax2.set_ylabel('inclusive distribution')
+    ax2.set_ylabel('f_incl(x,t)')
     ax2.grid(linestyle='dashed', linewidth=0.2)
     ax2.legend()
 
@@ -747,7 +754,7 @@ def several_showers_dasgupta(n, opt_title):
     ax3.set_xlim(0,1)
     ax3.set_ylim(0.01,10)
     ax3.set_xlabel('z ')
-    ax3.set_ylabel('inclusive distribution')
+    ax3.set_ylabel('f_incl(x,t)')
     ax3.grid(linestyle='dashed', linewidth=0.2)
     ax3.legend()
     
@@ -764,7 +771,7 @@ def several_showers_dasgupta(n, opt_title):
     ax4.set_xlim(0,1)
     ax4.set_ylim(0.01,10)
     ax4.set_xlabel('z ')
-    ax4.set_ylabel('inclusive distribution')
+    ax4.set_ylabel('f_incl(x,t)')
     ax4.grid(linestyle='dashed', linewidth=0.2)
     ax4.legend()
 
@@ -774,3 +781,18 @@ def several_showers_dasgupta(n, opt_title):
     plt.tight_layout()
     plt.show()
     print("\rDone!")    
+
+def error_message_several_showers(n, opt_title):
+    """"Checks the input parameters for erros and generates merror_msg."""
+    error = False
+    msg = ""
+    n_error = not isinstance(n, int)
+    title_error = not  isinstance(opt_title, str)
+
+    if n_error or title_error:
+        error = True
+        if n_error:
+            msg = msg + "\nERROR! - 'n' must be an integer."
+        if title_error:
+            msg = msg + "\nERROR! - 'opt_title' must be a str."
+    return error, msg
