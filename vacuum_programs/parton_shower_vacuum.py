@@ -5,16 +5,16 @@
 
 import matplotlib.pyplot as plt
 import vacuum_splittingfunctions as sf # Includes color factors.
-
 import numpy as np
-import random
 from scipy.integrate import quad 
 from treelib import Tree 
 
 #constants
-epsilon = 10**(-5)
+epsilon = 10**(-3)
+z_min = 10**(-3)
+plot_lim = 10**(-3)
 
-bins = 50
+bins = 100
 minimum_bin = 0.001
 
 # Pre-calculations
@@ -26,10 +26,9 @@ gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
                                                  + qq_integral + qg_integral)
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
 
-print("qg_int: ", qg_integral)
-
 print("Gluon contribution:", round(gluon_contribution,4))
 print("ggg contribution:",  round(gg_contribution,4))
+
 
 # Define classes and class functions.
 # These classes will be used for managing the different partons created in 
@@ -53,11 +52,14 @@ class Shower(object, metaclass= IterShower):
         PartonList (list): All partons that are part of the shower.
         FinalList (list): All partons with no daughters.
         FinalFracList (list): All partons with initialfrac above z_min.
-        SplittingQuarks (list): All quarks that can branch.
-        SplittingGluons (list): All gluons that can branch.
+        SplittingPartons (list): All partons available for branching
         ShowerGluons (int): Number of final gluons in the shower.
         ShowrQuarks (int): Number of final quarks in the shower.
         Hardest (float): Highest InitialFrac value in FinalList.
+        
+    Functions: 
+        select_splitting_parton: Selects the most probable parton to split.
+        loop_status: Checks when to end the different tau showers.
         
     Other:
         allShowers (list): Contains all shower objects.
@@ -71,14 +73,80 @@ class Shower(object, metaclass= IterShower):
         self.InitialType = initialtype
         self.ShowerNumber = showernumber
         self.PartonList = [] # List for all Shower Partons. Used for treelib.
-        self.FinalList = [] # Contains all Final Partons
-        self.FinalFracList = [] # Contains all partons above min_value.
-        self.SplittingQuarks = []
-        self.SplittingGluons = []
+        self.FinalList = [] # Contains all Final Partons 
+        self.FinalFracList1 = [] # Contains all partons above z_min.
+        self.FinalFracList2 = [] # Contains all partons above z_min.
+        self.FinalFracList3 = [] # Contains all partons above z_min.
+        self.FinalFracList4 = [] # Contains all partons above z_min.
+        self.Hardest1 = None
+        self.Hardest2 = None
+        self.Hardest3 = None
+        self.Hardest4 = None
+        self.SplittingPartons = []
         self.ShowerGluons = None
         self.ShowerQuarks = None
-        self.Hardest = None
+        self.Loops = (True, True, True, True)
+        
+    def select_splitting_parton(self):
+        """
+        Determines which parton to split, and which splittingfunction to use.
+        
+        Parameters: 
+            Shower0 (object): Current parton shower.
+            t (float): Current vale of the evolution variable.
+            t_max (float): Maximum value of the evolution variable.
+        
+        Returns:
+            SplittingParton (object): Which parton is selected for splitting.
+            vertex (str): Which splitting vertex to use.
+            t (float): Evolution variable after splitting.
+        """
+        quarkgluon_deltat = []
+        for parton in self.SplittingPartons:
+            delta_t_sample, vertex = parton.advance_time()
+            quarkgluon_deltat.append((parton, delta_t_sample, vertex))
 
+        (SplittingParton, delta_t, vertex) =  min(quarkgluon_deltat, key = lambda t: t[1])
+        return SplittingParton, delta_t, vertex
+        
+    def loop_status(self, t, tvalues):
+        """
+        Loop conditions for generating showers for the four values of tau,
+        without having to restart the shower every time.  
+        """
+        end_shower = False
+        if t > tvalues[0] and self.Loops[0]: 
+            self.Loops = (False, True, True, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList1.append(PartonObj.InitialFrac)  
+            self.Hardest1 = max(self.FinalFracList1)
+
+        if t > tvalues[1] and self.Loops[1]:
+            self.Loops = (False, False, True, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList2.append(PartonObj.InitialFrac) 
+            self.Hardest2 = max(self.FinalFracList2)
+                    
+        if t > tvalues[2] and self.Loops[2]:
+            self.Loops = (False, False, False, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList3.append(PartonObj.InitialFrac) 
+            self.Hardest3 = max(self.FinalFracList3)
+
+        if t > tvalues[3] and self.Loops[3]:
+            self.Loops = (False, False, False, False)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList4.append(PartonObj.InitialFrac)  
+                del PartonObj
+            self.Hardest4 = max(self.FinalFracList4)
+            end_shower = True
+
+        return end_shower
+        
 class Parton(object):
     """
     Class used for storing information about individual partons.
@@ -92,7 +160,6 @@ class Parton(object):
         Secondary (object): Daughter parton with momentum fraction (1-z).
         Shower (object): Which shower the parton is a part of.
     """
-    
     def __init__(self, typ, angle, initialfrac, parent, shower):        
         self.Type = typ
         self.Angle = angle
@@ -121,7 +188,6 @@ class Parton(object):
             
         return splittingvalue, parton1_type, parton2_type
     
-        
     def MH_gg(self): 
         """Performs the MH algorithm for the gg splitting vertex. """
         while True: 
@@ -131,13 +197,10 @@ class Parton(object):
             acceptance = min(1, 
                        sf.gg_full(splittingvalue)/sf.gg_simple(splittingvalue))
             rnd2 = np.random.uniform(0,1) 
-                
             if acceptance >= rnd2: # Condition for accepting MH value.
                 break
-
         return splittingvalue
                 
-        
     def MH_qq(self): 
         """Performs the MH algorithm for the qq splitting vertex. """
         while True: 
@@ -147,12 +210,9 @@ class Parton(object):
             acceptance = min(1, 
                        sf.qq_full(splittingvalue)/sf.qq_simple(splittingvalue))
             rnd2 = np.random.uniform(0,1)
-                
             if acceptance >= rnd2: # Condition for accepting MH value.
                 break
-                    
         return splittingvalue
-        
         
     def qg(self):
         """Calculates splitting value for the qg vertex.. """
@@ -162,148 +222,31 @@ class Parton(object):
         b = (a+(6*d)-2)**(1/3)
         splittingvalue = (0.5+0.5*b-(0.5/b))
         return splittingvalue
-
-
-# Othr shower related programs, which are unrelated to the class objets, are 
-# written her. This is the advance_time program, and select_splitting program.
-def advance_time():
-    """Randomly generates a probably value t for this splitting. """
-    rnd1 = np.random.uniform(0,1) 
-    delta_t_gg = -(np.log(rnd1))/(gg_integral)
-    delta_t_qg = -(np.log(rnd1))/(qg_integral)
-    delta_t_qq = -(np.log(rnd1))/(qq_integral)
     
-    t_check = (delta_t_gg < delta_t_qq and
-               delta_t_gg < delta_t_qg and
-               delta_t_qq < delta_t_qg)
-    
-    if not t_check:
-        print("ERROR in t intervals.")
+    def advance_time(self):
+        """Randomly generates a probably value t for this splitting. """
+        rnd1 = np.random.uniform(0,1) 
         
-    return delta_t_gg, delta_t_qg, delta_t_qq 
-
-# Program for selecting which splitting to perform. 
-def select_splitting_parton(Shower0, t, t_max):
-    """
-    Determines which parton to split, and which splittingfunction to use.
-    
-    Parameters: 
-        Shower0 (object): Current parton shower.
-        t (float): Current vale of the evolution variable.
-        t_max (float): Maximum value of the evolution variable.
-    
-    Returns:
-        SplittingParton (object): Which parton is selected for splitting.
-        vertex (str): Which splitting vertex to use.
-        t (float): Evolution variable after splitting.
-    """
-    
-    delta_t_gg, delta_t_qg, delta_t_qq  = advance_time()
-    vertex = None
-    
-    
-    # Establishing the different splitting criterias, which are depending on
-    # the delta_t values, and SplittingQuarks/SplittingGluons.
-    t_any_splitting = (t + delta_t_gg < t_max and 
-                       t + delta_t_qg < t_max and
-                       t + delta_t_qq < t_max)
-    
-    t_gg_qq_splitting = (t + delta_t_gg < t_max and 
-                       t + delta_t_qq < t_max and
-                       t + delta_t_qg >= t_max)
-    
-    t_gg_splitting = (t + delta_t_gg < t_max and 
-                       t + delta_t_qq >= t_max and
-                       t + delta_t_qg >= t_max)
-    
-    t_none = (t + delta_t_gg >= t_max and 
-                       t + delta_t_qq >= t_max and
-                       t + delta_t_qg >= t_max)
-            
-    quarks_gluons_available = (len(Shower0.SplittingGluons)>0 and 
-                        len(Shower0.SplittingQuarks)>0)
-    gluons_available = (len(Shower0.SplittingGluons)>0 and 
-                        len(Shower0.SplittingQuarks)==0)
-    quarks_available = (len(Shower0.SplittingQuarks)>0 and 
-                        len(Shower0.SplittingGluons)==0)
-    none_available = (len(Shower0.SplittingQuarks)==0 and 
-                        len(Shower0.SplittingGluons)==0)
-    
-    # Now we must trespass a rather tedious range of if,elif, else, statements.
-    # These are required for matching the various conditions defined above, 
-    # and the appropriate splitting vertex is then selected.
-    if none_available or t_none:
-        vertex = None
-    
-    elif t_any_splitting: 
-        if quarks_gluons_available: 
-            rnd3 = np.random.uniform(0, 1)
-            if (gluon_contribution > rnd3):
-                rnd4 = np.random.uniform(0, 1)
-                if rnd4 < gg_contribution:
-                    vertex = "gg"
-                elif rnd4 >= gg_contribution:
-                    vertex = "qg"
-            elif (gluon_contribution <= rnd3):
-                vertex = "qq"
-        elif gluons_available:
-            rnd4 = np.random.uniform(0, 1)
-            if rnd4 < gg_contribution:
+        if self.Type == "gluon":
+            rnd2 = np.random.uniform(0,1)
+            if rnd2 < gg_contribution:
+                delta_t = -(np.log(rnd1))/(gg_integral)
                 vertex = "gg"
-            elif rnd4 >= gg_contribution:
+            elif rnd2 >= gg_contribution:
+                delta_t = -(np.log(rnd1))/(qg_integral)
                 vertex = "qg"
-        elif quarks_available:
+        
+        elif self.Type == "quark":
+            delta_t = -(np.log(rnd1))/(qq_integral)
             vertex = "qq"
-    
-    elif t_gg_qq_splitting:
-        if quarks_gluons_available:
-            rnd3 = np.random.uniform(0, 1)
-            if (gluon_contribution > rnd3 ): 
-                vertex = "gg"
-            elif (gluon_contribution <= rnd3 ):
-                vertex = "qq"
-        elif gluons_available:
-            vertex = "gg"
-        elif quarks_available:
-            vertex = "qq"
-
-    elif t_gg_splitting:
-        if quarks_gluons_available:
-            vertex = "gg"
-        elif gluons_available:
-            vertex = "gg"
-        elif quarks_available:
-            vertex = None
-        
-    # We have now selected which vertex to split, given the available 
-    # values for delta_t, and the avilable splitting lists.     
-    # Now it remains to choose random partons accordingly, and return the 
-    # selected parton, splitting vertex, and evolved interval t.     
-    if vertex == "gg":
-        SplittingParton = random.choice(Shower0.SplittingGluons)
-        Shower0.SplittingGluons.remove(SplittingParton)
-        t = t + delta_t_gg
-        
-    elif vertex == "qg":
-        SplittingParton = random.choice(Shower0.SplittingGluons)
-        Shower0.SplittingGluons.remove(SplittingParton)
-        t = t + delta_t_qg
-        
-    elif vertex == "qq":
-        SplittingParton = random.choice(Shower0.SplittingQuarks)
-        Shower0.SplittingQuarks.remove(SplittingParton)
-        t = t + delta_t_qq
-        
-    elif vertex == None:
-        SplittingParton = None
-        
-    return SplittingParton, vertex, t
+            
+        return delta_t, vertex
 
 
 # Main shower program. Given the initial conditions, it performs splitting 
 # of the initial parton, until the evolution interval t is too large for more
 # branchings, or there are no more partons to split. 
-def generate_shower(initialtype, t_max , p_t, Q_0, R, showernumber):
+def generate_shower(initialtype, tvalues , p_t, Q_0, R, showernumber):
     """Main parton shower program for quarks and gluons in vacuum.
     
         Parameters: 
@@ -323,61 +266,39 @@ def generate_shower(initialtype, t_max , p_t, Q_0, R, showernumber):
     Parton0 = Parton(initialtype, t, 1, None, Shower0) # Initial parton
     Shower0.PartonList.append(Parton0)
     Shower0.FinalList.append(Parton0)
-
-    if initialtype == "quark":
-        Shower0.SplittingQuarks.append(Parton0)
-    elif initialtype == "gluon":
-        Shower0.SplittingGluons.append(Parton0)
+    Shower0.SplittingPartons.append(Parton0)
         
-    while True:
-        SplittingParton, vertex, t = select_splitting_parton(Shower0, t, t_max)
+    while len(Shower0.SplittingPartons) > 0:
+        SplittingParton, delta_t, vertex = Shower0.select_splitting_parton()
+        t = t+delta_t
         
-        no_branching = (t >= t_max or SplittingParton == None)
-        if no_branching:
+        end_shower = Shower0.loop_status(t, tvalues)
+        if end_shower:
             break
             
+        Shower0.SplittingPartons.remove(SplittingParton)    
         Shower0.FinalList.remove(SplittingParton)
-        momfrac, parton1_type, parton2_type = Parton.split(SplittingParton, 
-                                                           vertex)
+        momfrac, type1, type2 = Parton.split(SplittingParton, vertex)
 
         for j in range(0,2): #Loop for  generating the branched partons
             if j==0: # Parton 1.
                 initialfrac = SplittingParton.InitialFrac * momfrac
-                NewParton = Parton(parton1_type, t, initialfrac, 
+                NewParton = Parton(type1, t, initialfrac, 
                                    SplittingParton, Shower0)
                 SplittingParton.Primary = NewParton
                 
             elif j==1: # Parton 2.
                 initialfrac = SplittingParton.InitialFrac * (1-momfrac)
-                NewParton = Parton(parton2_type, t, initialfrac, 
+                NewParton = Parton(type2, t, initialfrac, 
                                    SplittingParton, Shower0)
                 SplittingParton.Secondary = NewParton
                 
             Shower0.PartonList.append(NewParton)
             Shower0.FinalList.append(NewParton)    
             
-            if initialfrac > 0: # Limit on how soft gluons can split.
-                if NewParton.Type =="gluon":
-                    Shower0.SplittingGluons.append(NewParton)
-                elif NewParton.Type =="quark":
-                    Shower0.SplittingQuarks.append(NewParton)
-
-    
-    showergluons = 0
-    showerquarks = 0
-
-    for PartonObj in Shower0.FinalList:
-        if PartonObj.InitialFrac > minimum_bin:
-            Shower0.FinalFracList.append(PartonObj.InitialFrac)
-        if PartonObj.Type =="gluon": 
-            showergluons += 1
-        elif PartonObj.Type == "quark":
-            showerquarks += 1
+            if initialfrac > z_min: # Limit on how soft gluons can split.
+                Shower0.SplittingPartons.append(NewParton)
             
-    Shower0.ShowerGluons = showergluons
-    Shower0.ShowerQuarks = showerquarks
-    Shower0.Hardest = max(Shower0.FinalFracList)
-
     return Shower0
 
 
@@ -423,14 +344,15 @@ def several_showers_dasgupta(n, opt_title):
         print(error_msg)
         return
 
-    R = 0.4 # Define jet radius.    
+    R = 0.4   
     p_0 = 100
-    Q_0 = 1 # Hadronization scale.
+    Q_0 = 1 
 
     t1 = 0.04
     t2 = 0.1
     t3 = 0.2
     t4 = 0.3
+    tvalues = (t1, t2, t3, t4)
     
     gluonlist1 = []
     gluonhard1 = []
@@ -450,55 +372,37 @@ def several_showers_dasgupta(n, opt_title):
     quarkhard4 = []
         
     
-    for i in range(0,8*n):
-        print("\rLooping... "+ str(round(100*i/(8*n))) + "%",end="")
+    for i in range(1,n):
+        print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
 
         # Gluon showers
-        if (0 <= i and i < n):
-            Shower0 = generate_shower("gluon", t1, p_0, Q_0, R, i)
-            gluonhard1.append(Shower0.Hardest)
-            gluonlist1.extend(Shower0.FinalFracList)
-
-        if (n <= i and i < 2*n):
-            Shower0 = generate_shower("gluon", t2, p_0, Q_0, R, i)            
-            gluonhard2.append(Shower0.Hardest)
-            gluonlist2.extend(Shower0.FinalFracList)
-
-        if (2*n <= i and i < 3*n):
-            Shower0 = generate_shower("gluon", t3, p_0, Q_0, R, i)
-            gluonhard3.append(Shower0.Hardest)
-            gluonlist3.extend(Shower0.FinalFracList)
-
-        if (3*n <= i and i < 4*n):
-            Shower0 = generate_shower("gluon", t4, p_0, Q_0, R, i)
-            gluonhard4.append(Shower0.Hardest)
-            gluonlist4.extend(Shower0.FinalFracList)
+        Shower0 = generate_shower("gluon", tvalues, p_0, Q_0, R, i)
+        gluonhard1.append(Shower0.Hardest1)
+        gluonhard2.append(Shower0.Hardest2)
+        gluonhard3.append(Shower0.Hardest3)
+        gluonhard4.append(Shower0.Hardest4)
+        gluonlist1.extend(Shower0.FinalFracList1)
+        gluonlist2.extend(Shower0.FinalFracList2)
+        gluonlist3.extend(Shower0.FinalFracList3)
+        gluonlist4.extend(Shower0.FinalFracList4)  
+        del Shower0
         
         # Quark showers.
-        if (4*n <= i and i < 5*n):
-            Shower0 = generate_shower("quark", t1, p_0, Q_0, R, i)
-            quarkhard1.append(Shower0.Hardest)
-            quarklist1.extend(Shower0.FinalFracList)
-
-        if (5*n <= i and i < 6*n):
-            Shower0 = generate_shower("quark", t2, p_0, Q_0, R, i)            
-            quarkhard2.append(Shower0.Hardest)
-            quarklist2.extend(Shower0.FinalFracList)
-
-        if (6*n <= i and i < 7*n):
-            Shower0 = generate_shower("quark", t3, p_0, Q_0, R, i)
-            quarkhard3.append(Shower0.Hardest)
-            quarklist3.extend(Shower0.FinalFracList)
-        
-        if (7*n <= i and i < 8*n):
-            Shower0 = generate_shower("quark", t4, p_0, Q_0, R, i)
-            quarkhard4.append(Shower0.Hardest)
-            quarklist4.extend(Shower0.FinalFracList)
+        Shower0 = generate_shower("quark", tvalues, p_0, Q_0, R, i)
+        quarkhard1.append(Shower0.Hardest1)
+        quarkhard2.append(Shower0.Hardest2)
+        quarkhard3.append(Shower0.Hardest3)
+        quarkhard4.append(Shower0.Hardest4)
+        quarklist1.extend(Shower0.FinalFracList1)
+        quarklist2.extend(Shower0.FinalFracList2)
+        quarklist3.extend(Shower0.FinalFracList3)
+        quarklist4.extend(Shower0.FinalFracList4)  
+        del Shower0
 
         
     # Now calculating normalizations for Gluons.
     print("\rCalculating bins 1...", end="")
-    linbins = np.linspace(0, 1, num=bins)
+    linbins = np.linspace(0, 0.9999, num=bins)
     binlist = []
     
     gluonbinlist1 = []
@@ -513,13 +417,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*(binwidth))
+        density = len(frequencylist1)/(n*binwidth)
         gluonbinlist1.append(density)
         
         for initialfrac in gluonhard1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest1.append(density)
     
     
@@ -536,13 +440,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*(binwidth))
+        density = len(frequencylist1)/(n*binwidth)
         gluonbinlist2.append(density)
         
         for initialfrac in gluonhard2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest2.append(density)
         
         
@@ -560,13 +464,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*(binwidth))
+        density = len(frequencylist1)/(n*binwidth)
         gluonbinlist3.append(density)
         
         for initialfrac in gluonhard3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest3.append(density)
         
 
@@ -583,13 +487,14 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        density = len(frequencylist1)/(n*(binwidth))
+        density = len(frequencylist1)/(n*binwidth)
         gluonbinlist4.append(density)
-        
+        #print("binrange: ", linbins[i],"-",linbins[i+1])
+       # print("freqlist1 (n gluons): ", len(frequencylist1)," density: ", density)
         for initialfrac in gluonhard4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest4.append(density)
     
     
@@ -607,13 +512,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in quarklist1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*binwidth)
         quarkbinlist1.append(quarkdensity)
         
         for initialfrac in quarkhard1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         quarkbinhardest1.append(density)
     
     
@@ -630,13 +535,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in quarklist2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*binwidth)
         quarkbinlist2.append(quarkdensity)
         
         for initialfrac in quarkhard2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         quarkbinhardest2.append(density)
         
         
@@ -654,13 +559,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in quarklist3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*binwidth)
         quarkbinlist3.append(quarkdensity)
         
         for initialfrac in quarkhard3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         quarkbinhardest3.append(density)
         
         
@@ -677,13 +582,13 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in quarklist4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*(binwidth))
+        quarkdensity = len(frequencylist1)/(n*binwidth)
         quarkbinlist4.append(quarkdensity)
         
         for initialfrac in quarkhard4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*(binwidth))
+        density = len(frequencylist2)/(n*binwidth)
         quarkbinhardest4.append(density)
     
 
@@ -695,7 +600,7 @@ def several_showers_dasgupta(n, opt_title):
              ". gluon contr: " + str(round(gluon_contribution,3)) + 
              "\n " + opt_title)
 
-    plt.suptitle(title)
+    #plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
