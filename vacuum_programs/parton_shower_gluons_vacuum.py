@@ -6,7 +6,6 @@
 import matplotlib.pyplot as plt
 import vacuum_splittingfunctions as sf # Includes color factors.
 import numpy as np
-import random
 from scipy.integrate import quad 
 from treelib import Tree
 
@@ -41,9 +40,13 @@ class Shower(object, metaclass= IterShower):
         PartonList (list): All partons that are part of the shower.
         FinalList (list): All partons with no daughters.
         FinalFracList (list): All partons with initialfrac above z_min.
-        SplittingGluons (list): All gluons that can branch.
+        SplittingPartons (list): All gluons that can branch.
         Hardest (float): Highest InitialFrac value in FinalList.
         
+    Functions: 
+        select_splitting_parton: Selects the most probable parton to split.
+        loop_status: Checks when to end the different tau showers.
+
     Other:
         allShowers (list): Contains all shower objects.
     """
@@ -55,24 +58,67 @@ class Shower(object, metaclass= IterShower):
         self.ShowerNumber = showernumber
         self.PartonList = [] # List for all Shower Partons. Used for treelib.
         self.FinalList = [] # Contains all Final Partons
-        self.FinalFracList = [] # Contains all partons above min_value.
-        self.SplittingGluons = []
-        self.Hardest = None
+        self.FinalFracList1 = [] # Contains all partons above z_min.
+        self.FinalFracList2 = [] # Contains all partons above z_min.
+        self.FinalFracList3 = [] # Contains all partons above z_min.
+        self.FinalFracList4 = [] # Contains all partons above z_min.
+        self.Hardest1 = None
+        self.Hardest2 = None
+        self.Hardest3 = None
+        self.Hardest4 = None
+        self.SplittingPartons = []
+        self.Loops = (True, True, True, True)
         
-    def select_sudakov(self):
+    def select_splitting_parton(self):
         """
         Generates a random evolution interval from the sudakov form factor
         for each of the available gluons, and returns the gluon with the lowest
         expected interval for splitting, and its interval. 
         """
-        
         gluons_deltat = []
-        for gluon in self.SplittingGluons:
+        for gluon in self.SplittingPartons:
             delta_t_sample = gluon.advance_time()
             gluons_deltat.append((gluon, delta_t_sample))
-        (min_gluon, min_t) =  min(gluons_deltat, key = lambda t: t[1])
-        return min_gluon, min_t
-        
+        (SplittingParton, delta_t) =  min(gluons_deltat, key = lambda t: t[1])
+        return SplittingParton, delta_t
+
+    def loop_status(self, t, tvalues):
+        """
+        Loop conditions for generating showers for the four values of tau,
+        without having to restart the shower every time.  
+        """
+        end_shower = False
+        if t > tvalues[0] and self.Loops[0]: 
+            self.Loops = (False, True, True, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList1.append(PartonObj.InitialFrac)  
+            self.Hardest1 = max(self.FinalFracList1)
+
+        if t > tvalues[1] and self.Loops[1]:
+            self.Loops = (False, False, True, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList2.append(PartonObj.InitialFrac) 
+            self.Hardest2 = max(self.FinalFracList2)
+                    
+        if t > tvalues[2] and self.Loops[2]:
+            self.Loops = (False, False, False, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList3.append(PartonObj.InitialFrac) 
+            self.Hardest3 = max(self.FinalFracList3)
+
+        if t > tvalues[3] and self.Loops[3]:
+            self.Loops = (False, False, False, False)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList4.append(PartonObj.InitialFrac)  
+                del PartonObj
+            self.Hardest4 = max(self.FinalFracList4)
+            end_shower = True
+            
+        return end_shower
 
 class Parton(object):
     """
@@ -108,9 +154,6 @@ class Parton(object):
         rnd1 = np.random.uniform(0,1)
         xi = ((1-epsilon)/epsilon)**((2*rnd1)-1)
         splittingvalue = xi/(1+xi) 
-        
-        #xi = (np.exp(rnd1*gg_integral))*(epsilon/(1-epsilon))
-        #splittingvalue = xi/(1+xi)
         return splittingvalue
 
     def advance_time(self):
@@ -124,7 +167,7 @@ class Parton(object):
 # This program generates a single parton shower, given the initial conditions. 
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
-def generate_shower(t_max, p_t, Q_0, R, showernumber):
+def generate_shower(tvalues, p_t, Q_0, R, showernumber):
     """
     Main parton shower program for gluons in vacuum.
     
@@ -145,18 +188,17 @@ def generate_shower(t_max, p_t, Q_0, R, showernumber):
     
     Shower0.PartonList.append(Parton0)
     Shower0.FinalList.append(Parton0)
-    Shower0.SplittingGluons.append(Parton0)
+    Shower0.SplittingPartons.append(Parton0)
         
-    while len(Shower0.SplittingGluons) > 0:
-        #SplittingParton = random.choice(Shower0.SplittingGluons)
-        #delta_t = SplittingParton.advance_time()
-        SplittingParton, delta_t = Shower0.select_sudakov()
+    while len(Shower0.SplittingPartons) > 0:
+        SplittingParton, delta_t = Shower0.select_splitting_parton()
         t = t + delta_t
         
-        if t > t_max:
+        end_shower = Shower0.loop_status(t, tvalues)
+        if end_shower:
             break
             
-        Shower0.SplittingGluons.remove(SplittingParton)
+        Shower0.SplittingPartons.remove(SplittingParton)
         Shower0.FinalList.remove(SplittingParton)
         momfrac = SplittingParton.split()
 
@@ -172,15 +214,8 @@ def generate_shower(t_max, p_t, Q_0, R, showernumber):
                 SplittingParton.Secondary = NewParton
             
             Shower0.FinalList.append(NewParton)
-            Shower0.SplittingGluons.append(NewParton)
-
-    
-    for PartonObj in Shower0.FinalList:
-        if PartonObj.InitialFrac > plot_lim:
-            Shower0.FinalFracList.append(PartonObj.InitialFrac)
-        del PartonObj
-
-    Shower0.Hardest = max(Shower0.FinalFracList)
+            if NewParton.InitialFrac > z_min:
+                Shower0.SplittingPartons.append(NewParton)
     
     return Shower0
 
@@ -235,6 +270,8 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     t2 = 0.1
     t3 = 0.2
     t4 = 0.3
+    tvalues = (t1, t2, t3, t4)
+
     
     #Generating showers
     gluonlist1 = []
@@ -246,43 +283,27 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     gluonlist4 = []
     gluonhard4 = []
         
-    for i in range(0,4*n):
-        print("\rLooping... "+ str(round(100*i/(4*n))) + "%",end="")
-
-        if (0 <= i and i < n):
-            Shower0 = generate_shower(t1, p_0, Q_0, R, i)
-            gluonhard1.append(Shower0.Hardest)
-            gluonlist1.extend(Shower0.FinalFracList)
-            del Shower0
-        
-        if (n <= i and i < 2*n):
-            Shower0 = generate_shower(t2, p_0, Q_0, R, i)            
-            gluonhard2.append(Shower0.Hardest)
-            gluonlist2.extend(Shower0.FinalFracList)
-            del Shower0
-  
-        if (2*n <= i and i < 3*n):
-            Shower0 = generate_shower(t3, p_0, Q_0, R, i)
-            gluonhard3.append(Shower0.Hardest)
-            gluonlist3.extend(Shower0.FinalFracList)
-            del Shower0
-        
-        if (3*n <= i and i < 4*n):
-            Shower0 = generate_shower(t4, p_0, Q_0, R, i)
-            gluonhard4.append(Shower0.Hardest)
-            gluonlist4.extend(Shower0.FinalFracList)
-            del Shower0
-            
+    for i in range(1,n):
+        print("\rLooping... "+ str(round(100*i/(4*n),1)) + "%",end="")
+        Shower0 = generate_shower(tvalues, p_0, Q_0, R, i)
+        gluonhard1.append(Shower0.Hardest1)
+        gluonhard2.append(Shower0.Hardest2)
+        gluonhard3.append(Shower0.Hardest3)
+        gluonhard4.append(Shower0.Hardest4)
+        gluonlist1.extend(Shower0.FinalFracList1)
+        gluonlist2.extend(Shower0.FinalFracList2)
+        gluonlist3.extend(Shower0.FinalFracList3)
+        gluonlist4.extend(Shower0.FinalFracList4)  
+        del Shower0
     
     # Sets the different ranges required for the plots.
-    
     if scale == "lin":
-        linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-        linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
-        bins = np.hstack((linbins1, linbins2))
+        #linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
+        #linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
+        #bins = np.hstack((linbins1, linbins2))
+        bins = np.linspace(plot_lim, 1, num=binnumber)
         xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
 
-    
     elif scale == "log":
         logbins1 = np.logspace(-3, -0.1, num=binnumber)
         logbins2 = np.logspace(-0.09, 0, num = 10)
