@@ -11,15 +11,14 @@ T_f = 1/2
 
 # Splitting functions gluons only program.
 def gg_simple_analytical(z):
-    return C_A*(1/(z*(1-z)))
-
+    return (1/(z*(1-z)))
 
 # Splitting functions quarks/gluon programs.
 def gg_simple(z):
-    return 2*C_A*(1/(z*(1-z)))
+    return C_A*(1/(z*(1-z)))
 
 def gg_full(z):
-    return 2*C_A*((1-z)/z + z/(1-z) + z*(1-z))
+    return C_A*((1-z)/z + z/(1-z) + z*(1-z))
 
 def qg_full(z):
     return N_f*T_f*(z**2 + (1-z)**2)
