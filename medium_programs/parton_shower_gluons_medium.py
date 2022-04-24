@@ -30,11 +30,12 @@ class Shower(object):
         ShowerNumber (int): Numer n of the shower.
         FinalList (list): All partons with no daughters.
         FinalFracList (list): All partons with initialfrac above z_min.
-        SplittingGluons (list): All gluons that can branch.
+        SplittingPartons (list): All gluons that can branch.
         Hardest (float): Highest InitialFrac value in FinalList.
         
     Functions: 
-        select_sudakov: Selects the most probable parton to split.
+        select_splitting_parton: Selects the most probable parton to split.
+        loop_status: Checks when to end the different tau showers.
         
     """
 
@@ -45,12 +46,12 @@ class Shower(object):
         self.FinalFracList2 = [] # Contains all partons above z_min.
         self.FinalFracList3 = [] # Contains all partons above z_min.
         self.FinalFracList4 = [] # Contains all partons above z_min.
-        self.SplittingGluons = []
+        self.SplittingPartons = []
 
+        self.Loops = (True, True, True, True)
         self.Hardest = None
         
-        
-    def select_sudakov(self):
+    def select_splitting_parton(self):
         """
         Generates a random evolution interval from the sudakov form factor
         for each of the available gluons, and returns the gluon with the lowest
@@ -58,11 +59,46 @@ class Shower(object):
         """
         
         gluons_deltatau = []
-        for gluon in self.SplittingGluons:
+        for gluon in self.SplittingPartons:
             delta_tau_sample = gluon.advance_time(self)
             gluons_deltatau.append((gluon, delta_tau_sample))
         (min_gluon, min_tau) =  min(gluons_deltatau, key = lambda t: t[1])
         return min_gluon, min_tau
+    
+ 
+    def loop_status(self, tau, tauvalues):
+        """
+        Loop conditions for generating showers for the four values of tau,
+        without having to restart the shower every time.  
+        """
+        end_shower = False
+        if tau > tauvalues[0] and self.Loops[0]: 
+            self.Loops = (False, True, True, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList1.append(PartonObj.InitialFrac) 
+                    
+        if tau > tauvalues[1] and self.Loops[1]:
+            self.Loops = (False, False, True, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList2.append(PartonObj.InitialFrac) 
+                    
+        if tau > tauvalues[2] and self.Loops[2]:
+            self.Loops = (False, False, False, True)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList3.append(PartonObj.InitialFrac) 
+                    
+        if tau > tauvalues[3] and self.Loops[3]:
+            self.Loops = (False, False, False, False)
+            for PartonObj in self.FinalList:
+                if PartonObj.InitialFrac > plot_lim:
+                    self.FinalFracList4.append(PartonObj.InitialFrac)   
+                del PartonObj
+            end_shower = True
+            
+        return end_shower
             
 
 class Parton(object):
@@ -107,13 +143,12 @@ class Parton(object):
         delta_tau = -2*np.sqrt(self.InitialFrac)*np.log(rnd1)/(gg_integral)
         return delta_tau
     
-        
 
 # Main shower program. 
 # This program generates a single parton shower, given the initial conditions. 
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
-def generate_shower(tau1, tau2, tau3, tau4, p_t, Q_0, R, showernumber):
+def generate_shower(tauvalues, p_t, Q_0, R, showernumber):
     """
     Main parton shower program for gluons in medium.
     
@@ -130,47 +165,20 @@ def generate_shower(tau1, tau2, tau3, tau4, p_t, Q_0, R, showernumber):
     
     tau = 0
     
-    loop1 = True
-    loop2 = True
-    loop3 = True
-    loop4 = True
     Shower0 = Shower(showernumber)
     Parton0 = Parton(tau, 1, None, Shower0) # Initial parton
-
-    Shower0.SplittingGluons.append(Parton0)
+    Shower0.SplittingPartons.append(Parton0)
     Shower0.FinalList.append(Parton0)
     
-    while len(Shower0.SplittingGluons) > 0:
-        SplittingParton, delta_tau = Shower0.select_sudakov()
+    while len(Shower0.SplittingPartons) > 0:
+        SplittingParton, delta_tau = Shower0.select_splitting_parton()
         tau = tau + delta_tau
         
-        if tau > tau1 and loop1:
-            loop1 = False
-            for PartonObj in Shower0.FinalList:
-                if PartonObj.InitialFrac > plot_lim:
-                    Shower0.FinalFracList1.append(PartonObj.InitialFrac)            
-        
-        if tau > tau2 and loop2:
-            loop2 = False
-            for PartonObj in Shower0.FinalList:
-                if PartonObj.InitialFrac > plot_lim:
-                    Shower0.FinalFracList2.append(PartonObj.InitialFrac) 
-                    
-        if tau > tau3 and loop3:
-            loop3 = False
-            for PartonObj in Shower0.FinalList:
-                if PartonObj.InitialFrac > plot_lim:
-                    Shower0.FinalFracList3.append(PartonObj.InitialFrac) 
-        
-        if tau > tau4 and loop4:
-            loop4 = False
-            for PartonObj in Shower0.FinalList:
-                if PartonObj.InitialFrac > plot_lim:
-                    Shower0.FinalFracList4.append(PartonObj.InitialFrac)   
-                del PartonObj
+        end_shower = Shower0.loop_status(tau, tauvalues)
+        if end_shower:
             break
         
-        Shower0.SplittingGluons.remove(SplittingParton)
+        Shower0.SplittingPartons.remove(SplittingParton)
         Shower0.FinalList.remove(SplittingParton)
         momfrac = Parton.split(SplittingParton)            
 
@@ -188,7 +196,7 @@ def generate_shower(tau1, tau2, tau3, tau4, p_t, Q_0, R, showernumber):
             Shower0.FinalList.append(NewParton)
 
             if initialfrac > z_min: # Limit on how soft gluons can split.
-                Shower0.SplittingGluons.append(NewParton)  
+                Shower0.SplittingPartons.append(NewParton)  
 
     try:
         Shower0.Hardest = max(Shower0.FinalFracList4)
@@ -228,46 +236,41 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     tau2 = 0.2
     tau3 = 0.3
     tau4 = 0.4
+    tauvalues = (tau1, tau2, tau3, tau4)
     
     #Generating showers
     gluonlist1 = []
     gluonlist2 = []
     gluonlist3 = []
     gluonlist4 = []
-    
 
-
-    for i in range (0,n):
+    for i in range (1,n):
         print("\rLooping... " + str(round(100*i/(4*n),2)) +"%", end="")
 
-        Shower0 = generate_shower(tau1, tau2, tau3, tau4, p_0, Q_0, R, i)
+        Shower0 = generate_shower(tauvalues, p_0, Q_0, R, i)
         gluonlist1.extend(Shower0.FinalFracList1)
         gluonlist2.extend(Shower0.FinalFracList2)
         gluonlist3.extend(Shower0.FinalFracList3)
         gluonlist4.extend(Shower0.FinalFracList4)        
         del Shower0
 
-
     # Sets the different ranges required for the plots.
-    
     if scale == "lin":
         linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
         linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
         bins = np.hstack((linbins1, linbins2))
         xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
-
-    
+        
     elif scale == "log":
         logbins1 = np.logspace(-3, -0.1, num=binnumber)
         logbins2 = np.logspace(-0.09, 0, num = 10)
         bins = np.hstack((logbins1, logbins2))
         xrange = np.logspace(-3, -0.0001, num=(4*binnumber))
 
-    binlist = []
 
     # Normalizing the showers.
     print("\rCalculating bins...", end="")
-    
+    binlist = []
     gluonbinlist1 = []
     gluonbinlist2 = []
     gluonbinlist3 = []
@@ -333,7 +336,7 @@ def several_showers_analytical_comparison(n, opt_title, scale):
              ". epsilon: " + str(epsilon) + 
              ". z_min: " + str(z_min) +
              "\n" + opt_title)    
-    plt.suptitle(title)
+    #plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
@@ -358,7 +361,6 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     ax1.grid(linestyle='dashed', linewidth=0.2)
     ax1.legend()
     
-    
     ax2.plot(binlist, gluonbinlist2, "--", label="MC")
     ax2.plot(xrange, solution2, 'r', label="solution")
     ax2.set_title('tau = ' +str(tau2))
@@ -369,7 +371,6 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     ax2.grid(linestyle='dashed', linewidth=0.2)
     ax2.legend()
 
-    
     ax3.plot(binlist, gluonbinlist3, "--", label="MC")
     ax3.plot(xrange, solution3, 'r', label="solution")
     ax3.set_title('tau = ' +str(tau3))
@@ -380,7 +381,6 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     ax3.grid(linestyle='dashed', linewidth=0.2)
     ax3.legend()
     
-
     ax4.plot(binlist, gluonbinlist4, "--", label="MC")
     ax4.plot(xrange, solution4, 'r', label="solution")
     ax4.set_title('tau = ' +str(tau4))
