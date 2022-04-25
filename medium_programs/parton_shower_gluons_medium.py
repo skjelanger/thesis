@@ -4,7 +4,7 @@
 # Using the simplified ggg splitting kernel.
 
 import matplotlib.pyplot as plt
-from medium_splittingfunctions import gg_simple
+from medium_splittingfunctions import gg_simple_analytical
 import numpy as np
 from scipy.integrate import quad
 
@@ -14,7 +14,7 @@ z_min = 10**(-3)
 plot_lim = 10**(-3)
 binnumber = 100
 
-gg_integral, __ = quad((gg_simple), epsilon, 1-epsilon)
+gg_integral, __ = quad((gg_simple_analytical), epsilon, 1-epsilon)
 
 
 # Define classes and class functions.

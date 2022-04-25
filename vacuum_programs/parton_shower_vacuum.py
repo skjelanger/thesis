@@ -402,7 +402,7 @@ def several_showers_dasgupta(n, opt_title):
         
     # Now calculating normalizations for Gluons.
     print("\rCalculating bins 1...", end="")
-    linbins = np.linspace(0, 0.9999, num=bins)
+    linbins = np.linspace(0, 0.999, num=bins)
     binlist = []
     
     gluonbinlist1 = []

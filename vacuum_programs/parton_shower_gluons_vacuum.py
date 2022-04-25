@@ -403,6 +403,11 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
         D2 = (1/2)*(t2/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t2*np.exp(1) + 2*np.sqrt(t2*(np.log(1/x))))
         D3 = (1/2)*(t3/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t3*np.exp(1) + 2*np.sqrt(t3*(np.log(1/x))))
         D4 = (1/2)*(t4/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t4*np.exp(1) + 2*np.sqrt(t4*(np.log(1/x))))
+        #D1L = (1/x)**(2*np.sqrt(t1/(np.log(1/x))))
+        #D2L = (1/x)**(2*np.sqrt(t2/(np.log(1/x))))
+        #D3L = (1/x)**(2*np.sqrt(t3/(np.log(1/x))))
+        #D4L = (1/x)**(2*np.sqrt(t4/(np.log(1/x))))
+        
         solution1.append(D1)
         solution2.append(D2)
         solution3.append(D3)

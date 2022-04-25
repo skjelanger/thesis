@@ -15,10 +15,11 @@ epsilon = 10**(-3)
 def MH_gg():
     """Metropolis Hastings algorithm for the gg splitting function in 
     Medium. Returns a single splitting value."""
+    simple_splitting_integral, __ = quad(sf.gg_simple, epsilon, 1-epsilon)
     while True:
         rnd1 = np.random.uniform(0,1)
-        a = (rnd1*126.30129 - 63.15065)
-        splittingvalue = 0.5 + (a/(2*(16+a**2)**(1/2)))
+        a = ((rnd1-0.5)*simple_splitting_integral)/6
+        splittingvalue = 0.5 - (a/(2*(16+a**2)**(1/2)))
         acceptance = min(1, 
                     sf.gg_full(splittingvalue)/sf.gg_simple(splittingvalue))
         rnd2 = np.random.uniform(0,1) 
@@ -32,9 +33,11 @@ def MH_gg():
 def MH_qq(): 
     """Metropolis Hastings algorithm for the qq splitting function in 
     Medium. Returns a single splitting value."""
+    simple_splitting_integral, __ = quad(sf.qg_simple, epsilon, 1-epsilon)
     while True:
         rnd1 = np.random.uniform(0,1)
-        a = (rnd1* 31.57532 + 0.03164)
+        a = ((rnd1/8)*simple_splitting_integral +
+             np.sqrt(epsilon)/np.sqrt(1-epsilon))
         splittingvalue = (a**2)/(a**2 +1)
         acceptance = min(1, 
                     sf.qq_full(splittingvalue)/sf.qq_simple(splittingvalue))
@@ -49,10 +52,11 @@ def MH_qq():
 def MH_qg():
     """Metropolis Hastings algorithm for the qg splitting function in 
     Medium. Returns a single splitting value."""
+    simple_splitting_integral, __ = quad(sf.qg_simple, epsilon, 1-epsilon)
     while True:
-        rnd1 = np.random.uniform(epsilon,1-epsilon)
-        a = (-3.015080456 * rnd1 + 3.078336555)
-        splittingvalue = 1 - (np.sin(a/2))**(2)
+        rnd1 = np.random.uniform(0,1)
+        a = 2*np.arcsin(np.sqrt(1-epsilon))- rnd1*simple_splitting_integral
+        splittingvalue = 1-(np.sin(a/2))**(2)
         acceptance = min(1, 
                     sf.qg_full(splittingvalue) / sf.qq_simple(splittingvalue))
         rnd2 = np.random.uniform(0,1) 
@@ -89,8 +93,8 @@ def MH_comparison_gg(n):
     
     for j in range(n): # Loop for random sampling and MH.
         rnd1 = np.random.uniform(0,1)
-        a = (rnd1*126.30129 - 63.15065)
-        dummy_y = 0.5 + (a/(2*(16+a**2)**(1/2)))
+        a = ((rnd1-0.5)*simple_splitting_integral)/6
+        dummy_y = 0.5 - (a/(2*(16+a**2)**(1/2)))
         simple_samples.append(dummy_y)
         
         acceptance = min(1, sf.gg_full(dummy_y)/sf.gg_simple(dummy_y))
@@ -101,6 +105,7 @@ def MH_comparison_gg(n):
             
         else:
             MH_rejects += 1
+            
 
     print("The number of MH_rejects was:", MH_rejects, 
           ". Successes are:", len(MH_samples), 
@@ -133,9 +138,9 @@ def MH_comparison_qg(n):
         fullfunction_values.append(fullvalue)
     
     for j in range(n): # Loop for random sampling and MH.
-        rnd1 = np.random.uniform(epsilon,1-epsilon)
-        a = (-3.015080456 * rnd1 + 3.078336555)
-        dummy_y = 1 - (np.sin(a/2))**(2)
+        rnd1 = np.random.uniform(0,1)
+        a = (2*np.arcsin(np.sqrt(1-epsilon))- rnd1*simple_splitting_integral)
+        dummy_y = 1-(np.sin(a/2))**(2)
         simple_samples.append(dummy_y)
         
         acceptance = min(1, sf.qg_full(dummy_y)/sf.qg_simple(dummy_y))
@@ -170,7 +175,7 @@ def MH_comparison_qq(n):
     simple_samples = []
     MH_samples = []
     MH_rejects = 0
-    
+        
     for i in range(1000): # Loop for plotting the exact splitting functions.
         simplevalue = sf.qq_simple(xvalues[i]) / simple_splitting_integral
         simplefunction_values.append(simplevalue)
@@ -179,8 +184,9 @@ def MH_comparison_qq(n):
     
     for j in range(n): # Loop for random sampling and MH.
         rnd1 = np.random.uniform(0,1)
-        a = (rnd1* 31.57532 + 0.03164)
-        dummy_y = (a**2)/(a**2 +1)
+        a = ((rnd1/8)*simple_splitting_integral +
+             np.sqrt(epsilon)/np.sqrt(1-epsilon))
+        dummy_y = (a**2)/(a**2 + 1)
         simple_samples.append(dummy_y)
             
         acceptance = min(1, sf.qq_full(dummy_y)/sf.qq_simple(dummy_y))
