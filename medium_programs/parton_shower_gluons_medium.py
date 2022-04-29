@@ -275,6 +275,11 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     gluonbinlist2 = []
     gluonbinlist3 = []
     gluonbinlist4 = []
+    
+    gluon1tz = 0
+    gluon2tz = 0
+    gluon3tz = 0
+    gluon4tz = 0
 
     for i in range(len(bins)-1):
         binwidth = bins[i+1]-bins[i]
@@ -285,7 +290,9 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         frequencylist = []
         for initialfrac in gluonlist1:
             if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist.append(initialfrac)                
+                frequencylist.append(initialfrac)       
+                if initialfrac ==1:
+                    gluon1tz +=1
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist1.append(binvalue)
 
@@ -293,7 +300,9 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         frequencylist = []
         for initialfrac in gluonlist2:
             if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist.append(initialfrac)                
+                frequencylist.append(initialfrac)   
+                if initialfrac ==1:
+                    gluon2tz +=1
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist2.append(binvalue)
 
@@ -302,6 +311,8 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         for initialfrac in gluonlist3:
             if initialfrac > bins[i] and initialfrac <= bins[i+1]:
                 frequencylist.append(initialfrac)
+                if initialfrac ==1:
+                    gluon3tz +=1
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist3.append(binvalue)
 
@@ -310,9 +321,16 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         for initialfrac in gluonlist4:
             if initialfrac > bins[i] and initialfrac <= bins[i+1]:
                 frequencylist.append(initialfrac)
+                if initialfrac ==1:
+                    gluon4tz +=1
         binvalue = len(frequencylist)*bincenter/(n*binwidth)
         gluonbinlist4.append(binvalue)
         
+    
+    print("gluont1z = ", gluon1tz)
+    print("gluont2z = ", gluon2tz)
+    print("gluont3z = ", gluon3tz)
+    print("gluont4z = ", gluon4tz)
     
     # Calculating solutions
     solution1 = []

@@ -93,7 +93,7 @@ def MH_comparison_gg(n):
     
     for j in range(n): # Loop for random sampling and MH.
         rnd1 = np.random.uniform(0,1)
-        a = ((rnd1-0.5)*simple_splitting_integral)/6
+        a = ((rnd1-0.5)*simple_splitting_integral)/2
         dummy_y = 0.5 - (a/(2*(16+a**2)**(1/2)))
         simple_samples.append(dummy_y)
         

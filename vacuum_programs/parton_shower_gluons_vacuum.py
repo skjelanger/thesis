@@ -11,7 +11,7 @@ from treelib import Tree
 
 #constants
 epsilon = 10**(-3)
-z_min = 10**(-3)
+z_min = 10**(-5)
 plot_lim = 10**(-3)
 binnumber = 100
 
@@ -284,7 +284,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     gluonhard4 = []
         
     for i in range(1,n):
-        print("\rLooping... "+ str(round(100*i/(4*n),1)) + "%",end="")
+        print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
         Shower0 = generate_shower(tvalues, p_0, Q_0, R, i)
         gluonhard1.append(Shower0.Hardest1)
         gluonhard2.append(Shower0.Hardest2)
@@ -397,16 +397,13 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     solution2 = []
     solution3 = []
     solution4 = []
+    gamma = 0.57721566490153286
     
     for x in xrange:
-        D1 = (1/2)*(t1/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t1*np.exp(1) + 2*np.sqrt(t1*(np.log(1/x))))
-        D2 = (1/2)*(t2/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t2*np.exp(1) + 2*np.sqrt(t2*(np.log(1/x))))
-        D3 = (1/2)*(t3/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t3*np.exp(1) + 2*np.sqrt(t3*(np.log(1/x))))
-        D4 = (1/2)*(t4/((np.pi**2) * (np.log(1/x))**3))**(1/4) * np.exp(-t4*np.exp(1) + 2*np.sqrt(t4*(np.log(1/x))))
-        #D1L = (1/x)**(2*np.sqrt(t1/(np.log(1/x))))
-        #D2L = (1/x)**(2*np.sqrt(t2/(np.log(1/x))))
-        #D3L = (1/x)**(2*np.sqrt(t3/(np.log(1/x))))
-        #D4L = (1/x)**(2*np.sqrt(t4/(np.log(1/x))))
+        D1 = (1/2)*(t1/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t1+ 2*np.sqrt(t1*np.log(1/x)))
+        D2 = (1/2)*(t2/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t2+ 2*np.sqrt(t2*np.log(1/x)))
+        D3 = (1/2)*(t3/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t3+ 2*np.sqrt(t3*np.log(1/x)))
+        D4 = (1/2)*(t4/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t4+ 2*np.sqrt(t4*np.log(1/x)))
         
         solution1.append(D1)
         solution2.append(D2)
@@ -437,7 +434,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     ax1.plot(binlist, gluonbinlist1, 'b--', label ="MC")
     ax1.plot(binlist, gluonbinhardest1, 'b:')
     ax1.plot(xrange, solution1, 'r', label="solution")
-    ax1.set_title('t_0 = ' + str(t1))
+    ax1.set_title('t = ' + str(t1))
     ax1.set_xlim(plot_lim,1)
     ax1.set_ylim(0.01,10)
     ax1.set_xlabel('z ')
@@ -452,7 +449,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     ax2.plot(binlist, gluonbinhardest2, 'b:')
 
     ax2.plot(xrange, solution2, 'r', label="solution")
-    ax2.set_title('t_0 = ' + str(t2))
+    ax2.set_title('t = ' + str(t2))
     ax2.set_xlim(plot_lim,1)
     ax2.set_ylim(0.01,10)
     ax2.set_xlabel('z')
@@ -466,7 +463,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     ax3.plot(binlist, gluonbinlist3, 'b--', label ="MC")
     ax3.plot(binlist, gluonbinhardest3, 'b:')
     ax3.plot(xrange, solution3, 'r', label="solution")
-    ax3.set_title('t_0 = ' + str(t3))
+    ax3.set_title('t = ' + str(t3))
     ax3.set_xlim(plot_lim,1)
     ax3.set_ylim(0.01,10)
     ax3.set_xlabel('z ')
@@ -480,7 +477,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     ax4.plot(binlist, gluonbinlist4, 'b--', label ="MC")
     ax4.plot(binlist, gluonbinhardest4, 'b:')
     ax4.plot(xrange, solution4, 'r', label="solution")
-    ax4.set_title('t_0 = ' + str(t4))
+    ax4.set_title('t = ' + str(t4))
     ax4.set_xlim(plot_lim,1)
     ax4.set_ylim(0.01,10)
     ax4.set_xlabel('z ')
