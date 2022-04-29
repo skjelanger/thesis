@@ -229,11 +229,10 @@ class Parton(object):
         
         if self.Type == "gluon":
             rnd2 = np.random.uniform(0,1)
+            delta_t = -(np.log(rnd1))/(gg_integral+qg_integral)
             if rnd2 < gg_contribution:
-                delta_t = -(np.log(rnd1))/(gg_integral)
                 vertex = "gg"
             elif rnd2 >= gg_contribution:
-                delta_t = -(np.log(rnd1))/(qg_integral)
                 vertex = "qg"
         
         elif self.Type == "quark":
@@ -402,8 +401,17 @@ def several_showers_dasgupta(n, opt_title):
         
     # Now calculating normalizations for Gluons.
     print("\rCalculating bins 1...", end="")
-    linbins = np.linspace(0, 0.999, num=bins)
+    linbins1 = np.linspace(0, 0.99, num=bins)
+    linbins2 = np.linspace(0.992, 0.999, num=10)
+    linbins3 = np.linspace(0.9992, 1, num=10)
+
+    linbins = np.hstack((linbins1, linbins2, linbins3))
     binlist = []
+    
+    gluon1tz = 0
+    gluon2tz = 0
+    gluon3tz = 0
+    gluon4tz = 0
     
     gluonbinlist1 = []
     gluonbinhardest1 = []
@@ -417,6 +425,8 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist1:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
+                if initialfrac ==1:
+                    gluon1tz +=1
         density = len(frequencylist1)/(n*binwidth)
         gluonbinlist1.append(density)
         
@@ -425,6 +435,9 @@ def several_showers_dasgupta(n, opt_title):
                 frequencylist2.append(initialfrac)
         density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest1.append(density)
+        if i >= len(linbins)-3:
+            print("Plot nr 1. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
+            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
     
     
     print("\rCalculating bins 2...", end="")
@@ -440,6 +453,8 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist2:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
+                if initialfrac ==1:
+                    gluon2tz +=1
         density = len(frequencylist1)/(n*binwidth)
         gluonbinlist2.append(density)
         
@@ -449,6 +464,9 @@ def several_showers_dasgupta(n, opt_title):
         density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest2.append(density)
         
+        if i >=(len(linbins)-3):
+            print("Plot nr 2. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
+            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
         
     print("\rCalculating bins 3...", end="")
         
@@ -464,6 +482,8 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist3:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
+                if initialfrac ==1:
+                    gluon3tz +=1
         density = len(frequencylist1)/(n*binwidth)
         gluonbinlist3.append(density)
         
@@ -472,6 +492,10 @@ def several_showers_dasgupta(n, opt_title):
                 frequencylist2.append(initialfrac)
         density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest3.append(density)
+        
+        if i >=(len(linbins)-3):
+            print("Plot nr 3. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
+            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
         
 
     print("\rCalculating bins 4...", end="")
@@ -487,6 +511,8 @@ def several_showers_dasgupta(n, opt_title):
         for initialfrac in gluonlist4:
             if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                 frequencylist1.append(initialfrac)
+                if initialfrac ==1:
+                    gluon4tz +=1
         density = len(frequencylist1)/(n*binwidth)
         gluonbinlist4.append(density)
         #print("binrange: ", linbins[i],"-",linbins[i+1])
@@ -496,8 +522,14 @@ def several_showers_dasgupta(n, opt_title):
                 frequencylist2.append(initialfrac)
         density = len(frequencylist2)/(n*binwidth)
         gluonbinhardest4.append(density)
+        if i >= len(linbins)-3:
+            print("Plot nr 4. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
+            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
     
-    
+    print("gluont1z = ", gluon1tz)
+    print("gluont2z = ", gluon2tz)
+    print("gluont3z = ", gluon3tz)
+    print("gluont4z = ", gluon4tz)
     # Now calculating normalizations for Quarks.
     print("\rCalculating bins 5...", end="")
     
@@ -621,11 +653,11 @@ def several_showers_dasgupta(n, opt_title):
     ax1.plot(binlist, quarkbinhardest1, 'b--')
     ax1.set_yscale("log")
 
-    ax1.set_title('t_0 = ' + str(t1))
+    ax1.set_title('t = ' + str(t1))
     ax1.set_xlim(0,1)
     ax1.set_ylim(0.01,10)
     ax1.set_xlabel('z ')
-    ax1.set_ylabel('f_incl(x,t)')
+    ax1.set_ylabel('f(x,t)')
     ax1.grid(linestyle='dashed', linewidth=0.2)
     ax1.legend()
     
@@ -638,11 +670,11 @@ def several_showers_dasgupta(n, opt_title):
     ax2.plot(binlist, quarkbinhardest2, 'b--')
     ax2.set_yscale("log")
 
-    ax2.set_title('t_0 = ' + str(t2))
+    ax2.set_title('t = ' + str(t2))
     ax2.set_xlim(0,1)
     ax2.set_ylim(0.01,10)
     ax2.set_xlabel('z')
-    ax2.set_ylabel('f_incl(x,t)')
+    ax2.set_ylabel('f(x,t)')
     ax2.grid(linestyle='dashed', linewidth=0.2)
     ax2.legend()
 
@@ -655,11 +687,11 @@ def several_showers_dasgupta(n, opt_title):
     ax3.plot(binlist, quarkbinhardest3, 'b--')
     ax3.set_yscale("log")
 
-    ax3.set_title('t_0 = ' + str(t3))
+    ax3.set_title('t = ' + str(t3))
     ax3.set_xlim(0,1)
     ax3.set_ylim(0.01,10)
     ax3.set_xlabel('z ')
-    ax3.set_ylabel('f_incl(x,t)')
+    ax3.set_ylabel('f(x,t)')
     ax3.grid(linestyle='dashed', linewidth=0.2)
     ax3.legend()
     
@@ -672,11 +704,11 @@ def several_showers_dasgupta(n, opt_title):
     ax4.plot(binlist, quarkbinhardest4, 'b--')
     ax4.set_yscale("log")
 
-    ax4.set_title('t_0 = ' + str(t4))
+    ax4.set_title('t = ' + str(t4))
     ax4.set_xlim(0,1)
     ax4.set_ylim(0.01,10)
     ax4.set_xlabel('z ')
-    ax4.set_ylabel('f_incl(x,t)')
+    ax4.set_ylabel('f(x,t)')
     ax4.grid(linestyle='dashed', linewidth=0.2)
     ax4.legend()
 
