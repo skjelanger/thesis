@@ -11,7 +11,7 @@ T_f = 1/2
 
 # Splitting functions gluons only program.
 def gg_simple_analytical(z):
-    return (1/(z*(1-z)))
+    return (1/(z*(1-z))) #add factor 2.6027075 for equalizing.
 
 # Splitting functions quarks/gluon programs.
 def gg_simple(z):
