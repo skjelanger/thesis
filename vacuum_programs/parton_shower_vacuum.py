@@ -26,8 +26,13 @@ gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
                                                  + qq_integral + qg_integral)
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
 
-print("Gluon contribution:", round(gluon_contribution,4))
-print("ggg contribution:",  round(gg_contribution,4))
+print("quarks & gluons gg_integral: ", (gg_integral))
+
+print("quarks & gluons gg+qg_integral: ", (gg_integral+qg_integral))
+
+
+#print("Gluon contribution:", round(gluon_contribution,4))
+#print("ggg contribution:",  round(gg_contribution,4))
 
 
 # Define classes and class functions.
@@ -353,54 +358,41 @@ def several_showers_dasgupta(n, opt_title):
     t4 = 0.3
     tvalues = (t1, t2, t3, t4)
     
-    gluonlist1 = []
-    gluonhard1 = []
-    gluonlist2 = []
-    gluonhard2 = []
-    gluonlist3 = []
-    gluonhard3 = []
-    gluonlist4 = []
-    gluonhard4 = []
-    quarklist1 = []
-    quarkhard1 = []
-    quarklist2 = []
-    quarkhard2 = []
-    quarklist3 = []
-    quarkhard3 = []
-    quarklist4 = []
-    quarkhard4 = []
-        
-    
+    gluonlists = [[],[],[],[]]
+    gluonhards = [[],[],[],[]]
+    quarklists = [[],[],[],[]]
+    quarkhards = [[],[],[],[]]
+      
     for i in range(1,n):
         print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
 
         # Gluon showers
         Shower0 = generate_shower("gluon", tvalues, p_0, Q_0, R, i)
-        gluonhard1.append(Shower0.Hardest1)
-        gluonhard2.append(Shower0.Hardest2)
-        gluonhard3.append(Shower0.Hardest3)
-        gluonhard4.append(Shower0.Hardest4)
-        gluonlist1.extend(Shower0.FinalFracList1)
-        gluonlist2.extend(Shower0.FinalFracList2)
-        gluonlist3.extend(Shower0.FinalFracList3)
-        gluonlist4.extend(Shower0.FinalFracList4)  
+        gluonhards[0].append(Shower0.Hardest1)
+        gluonhards[1].append(Shower0.Hardest2)
+        gluonhards[2].append(Shower0.Hardest3)
+        gluonhards[3].append(Shower0.Hardest4)
+        gluonlists[0].extend(Shower0.FinalFracList1)
+        gluonlists[1].extend(Shower0.FinalFracList2)
+        gluonlists[2].extend(Shower0.FinalFracList3)
+        gluonlists[3].extend(Shower0.FinalFracList4)  
         del Shower0
         
         # Quark showers.
         Shower0 = generate_shower("quark", tvalues, p_0, Q_0, R, i)
-        quarkhard1.append(Shower0.Hardest1)
-        quarkhard2.append(Shower0.Hardest2)
-        quarkhard3.append(Shower0.Hardest3)
-        quarkhard4.append(Shower0.Hardest4)
-        quarklist1.extend(Shower0.FinalFracList1)
-        quarklist2.extend(Shower0.FinalFracList2)
-        quarklist3.extend(Shower0.FinalFracList3)
-        quarklist4.extend(Shower0.FinalFracList4)  
+        quarkhards[0].append(Shower0.Hardest1)
+        quarkhards[1].append(Shower0.Hardest2)
+        quarkhards[2].append(Shower0.Hardest3)
+        quarkhards[3].append(Shower0.Hardest4)
+        quarklists[0].extend(Shower0.FinalFracList1)
+        quarklists[1].extend(Shower0.FinalFracList2)
+        quarklists[2].extend(Shower0.FinalFracList3)
+        quarklists[3].extend(Shower0.FinalFracList4)  
         del Shower0
 
         
-    # Now calculating normalizations for Gluons.
-    print("\rCalculating bins 1...", end="")
+    # Creating bins
+    print("\rCalculating bins...", end="")
     linbins1 = np.linspace(0, 0.99, num=bins)
     linbins2 = np.linspace(0.992, 0.999, num=10)
     linbins3 = np.linspace(0.9992, 1, num=10)
@@ -408,220 +400,58 @@ def several_showers_dasgupta(n, opt_title):
     linbins = np.hstack((linbins1, linbins2, linbins3))
     binlist = []
     
-    gluon1tz = 0
-    gluon2tz = 0
-    gluon3tz = 0
-    gluon4tz = 0
+    # Calculating bins.
+    gluontzs = [0,0,0,0]
+
+    gluonbinlists = [[],[],[],[]]
+    gluonbinhards = [[],[],[],[]]
+    quarkbinlists = [[],[],[],[]]
+    quarkbinhards = [[],[],[],[]]
     
-    gluonbinlist1 = []
-    gluonbinhardest1 = []
     for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
         binwidth = linbins[i+1]-linbins[i]
         bincenter = linbins[i+1] - (binwidth/2)
         binlist.append(bincenter)
         
-        for initialfrac in gluonlist1:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-                if initialfrac ==1:
-                    gluon1tz +=1
-        density = len(frequencylist1)/(n*binwidth)
-        gluonbinlist1.append(density)
+        for gluonlist in gluonlists:
+            index = gluonlists.index(gluonlist)
+            frequencylist = []
+            for initialfrac in gluonlist:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)
+                    if initialfrac ==1:
+                        gluontzs[index]+=1
+            density = len(frequencylist)/(n*binwidth)
+            gluonbinlists[index].append(density)
         
-        for initialfrac in gluonhard1:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        gluonbinhardest1.append(density)
-        if i >= len(linbins)-3:
-            print("Plot nr 1. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
-            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
-    
-    
-    print("\rCalculating bins 2...", end="")
+        for gluonhard in gluonhards:
+            index = gluonhards.index(gluonhard)
+            frequencylist = []
+            for initialfrac in gluonhard:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)/(n*binwidth)
+            gluonbinhards[index].append(density)
+            
+        for quarklist in quarklists:
+            index = quarklists.index(quarklist)
+            frequencylist = []
+            for initialfrac in quarklist:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)/(n*binwidth)
+            quarkbinlists[index].append(density)
+        
+        for quarkhard in quarkhards:
+            index = quarkhards.index(quarkhard)
+            frequencylist = []
+            for initialfrac in quarkhard:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)/(n*binwidth)
+            quarkbinhards[index].append(density)
 
-    gluonbinlist2 = []
-    gluonbinhardest2 = []
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in gluonlist2:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-                if initialfrac ==1:
-                    gluon2tz +=1
-        density = len(frequencylist1)/(n*binwidth)
-        gluonbinlist2.append(density)
-        
-        for initialfrac in gluonhard2:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        gluonbinhardest2.append(density)
-        
-        if i >=(len(linbins)-3):
-            print("Plot nr 2. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
-            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
-        
-    print("\rCalculating bins 3...", end="")
-        
-    gluonbinlist3 = []
-    gluonbinhardest3 = []
-
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in gluonlist3:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-                if initialfrac ==1:
-                    gluon3tz +=1
-        density = len(frequencylist1)/(n*binwidth)
-        gluonbinlist3.append(density)
-        
-        for initialfrac in gluonhard3:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        gluonbinhardest3.append(density)
-        
-        if i >=(len(linbins)-3):
-            print("Plot nr 3. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
-            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
-        
-
-    print("\rCalculating bins 4...", end="")
-
-    gluonbinlist4 = []
-    gluonbinhardest4 = []
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in gluonlist4:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-                if initialfrac ==1:
-                    gluon4tz +=1
-        density = len(frequencylist1)/(n*binwidth)
-        gluonbinlist4.append(density)
-        #print("binrange: ", linbins[i],"-",linbins[i+1])
-       # print("freqlist1 (n gluons): ", len(frequencylist1)," density: ", density)
-        for initialfrac in gluonhard4:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        gluonbinhardest4.append(density)
-        if i >= len(linbins)-3:
-            print("Plot nr 4. Gluons.", i, " Showers: ", n, "binwidth = ", binwidth)
-            print("Members of final bin: ", linbins[i], "-", linbins[i+1]," are, ", len(frequencylist1))
-    
-    print("gluont1z = ", gluon1tz)
-    print("gluont2z = ", gluon2tz)
-    print("gluont3z = ", gluon3tz)
-    print("gluont4z = ", gluon4tz)
-    # Now calculating normalizations for Quarks.
-    print("\rCalculating bins 5...", end="")
-    
-    quarkbinlist1 = []
-    quarkbinhardest1 = []
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in quarklist1:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*binwidth)
-        quarkbinlist1.append(quarkdensity)
-        
-        for initialfrac in quarkhard1:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        quarkbinhardest1.append(density)
-    
-    
-    print("\rCalculating bins 6...", end="")
-
-    quarkbinlist2 = []
-    quarkbinhardest2 = []
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in quarklist2:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*binwidth)
-        quarkbinlist2.append(quarkdensity)
-        
-        for initialfrac in quarkhard2:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        quarkbinhardest2.append(density)
-        
-        
-    print("\rCalculating bins 7...", end="")
-        
-    quarkbinlist3 = []
-    quarkbinhardest3 = []
-
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in quarklist3:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*binwidth)
-        quarkbinlist3.append(quarkdensity)
-        
-        for initialfrac in quarkhard3:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        quarkbinhardest3.append(density)
-        
-        
-    print("\rCalculating bins 8...", end="")
-
-    quarkbinlist4 = []
-    quarkbinhardest4 = []
-    for i in range(len(linbins)-1):
-        frequencylist1 = []
-        frequencylist2 = []
-        binwidth = linbins[i+1]-linbins[i]
-        bincenter = linbins[i+1] - (binwidth/2)
-        
-        for initialfrac in quarklist4:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist1.append(initialfrac)
-        quarkdensity = len(frequencylist1)/(n*binwidth)
-        quarkbinlist4.append(quarkdensity)
-        
-        for initialfrac in quarkhard4:
-            if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                frequencylist2.append(initialfrac)
-        density = len(frequencylist2)/(n*binwidth)
-        quarkbinhardest4.append(density)
+    print("gluontsz = ", gluontzs)
     
 
     # Now starting the plotting.
@@ -645,79 +475,33 @@ def several_showers_dasgupta(n, opt_title):
     ax3 = plt.subplot(223)
     ax4 = plt.subplot(224)
     
-    print("\rPlotting 1...", end="")
-
-    ax1.plot(binlist, gluonbinlist1, 'g-', label ="gluon")
-    ax1.plot(binlist, gluonbinhardest1, 'g--')
-    ax1.plot(binlist, quarkbinlist1, 'b-', label ="quark")
-    ax1.plot(binlist, quarkbinhardest1, 'b--')
-    ax1.set_yscale("log")
-
-    ax1.set_title('t = ' + str(t1))
-    ax1.set_xlim(0,1)
-    ax1.set_ylim(0.01,10)
-    ax1.set_xlabel('z ')
-    ax1.set_ylabel('f(x,t)')
-    ax1.grid(linestyle='dashed', linewidth=0.2)
-    ax1.legend()
+    axes = [ax1, ax2, ax3, ax4]
     
+    print("\rPlotting...", end="")
     
-    print("\rPlotting 2...", end="")
+    for ax in axes:
+        index = axes.index(ax)
 
-    ax2.plot(binlist, gluonbinlist2, 'g-', label ="gluon")
-    ax2.plot(binlist, gluonbinhardest2, 'g--')
-    ax2.plot(binlist, quarkbinlist2, 'b-', label ="quark")
-    ax2.plot(binlist, quarkbinhardest2, 'b--')
-    ax2.set_yscale("log")
+        ax.plot(binlist, gluonbinlists[index], 'g-', label ="gluon")
+        ax.plot(binlist, gluonbinhards[index], 'g--')
+        ax.plot(binlist, quarkbinlists[index], 'b-', label ="quark")
+        ax.plot(binlist, quarkbinhards[index], 'b--')
+        ax.set_yscale("log")
 
-    ax2.set_title('t = ' + str(t2))
-    ax2.set_xlim(0,1)
-    ax2.set_ylim(0.01,10)
-    ax2.set_xlabel('z')
-    ax2.set_ylabel('f(x,t)')
-    ax2.grid(linestyle='dashed', linewidth=0.2)
-    ax2.legend()
-
-    
-    print("\rPlotting 3...", end="")
-
-    ax3.plot(binlist, gluonbinlist3, 'g-', label ="gluon")
-    ax3.plot(binlist, gluonbinhardest3, 'g--')
-    ax3.plot(binlist, quarkbinlist3, 'b-', label ="quark")
-    ax3.plot(binlist, quarkbinhardest3, 'b--')
-    ax3.set_yscale("log")
-
-    ax3.set_title('t = ' + str(t3))
-    ax3.set_xlim(0,1)
-    ax3.set_ylim(0.01,10)
-    ax3.set_xlabel('z ')
-    ax3.set_ylabel('f(x,t)')
-    ax3.grid(linestyle='dashed', linewidth=0.2)
-    ax3.legend()
-    
-
-    print("\rPlotting 4...", end="")
-
-    ax4.plot(binlist, gluonbinlist4, 'g-', label ="gluon")
-    ax4.plot(binlist, gluonbinhardest4, 'g--')
-    ax4.plot(binlist, quarkbinlist4, 'b-', label ="quark")
-    ax4.plot(binlist, quarkbinhardest4, 'b--')
-    ax4.set_yscale("log")
-
-    ax4.set_title('t = ' + str(t4))
-    ax4.set_xlim(0,1)
-    ax4.set_ylim(0.01,10)
-    ax4.set_xlabel('z ')
-    ax4.set_ylabel('f(x,t)')
-    ax4.grid(linestyle='dashed', linewidth=0.2)
-    ax4.legend()
-
+        ax.set_title('t = ' + str(tvalues[index]))
+        ax.set_xlim(0,1)
+        ax.set_ylim(0.01,10)
+        ax.set_xlabel('z ')
+        ax.set_ylabel('f(x,t)')
+        ax.grid(linestyle='dashed', linewidth=0.2)
+        ax.legend()
 
     print("\rShowing", end="")
 
     plt.tight_layout()
     plt.show()
     print("\rDone!")    
+    
 
 def error_message_several_showers(n, opt_title):
     """"Checks the input parameters for erros and generates merror_msg."""
