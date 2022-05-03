@@ -47,28 +47,22 @@ def vacuum_programs_comparison(n, opt_title, scale):
 
     
     #Generating showers
-    gglist1 = []
-    gqlist1 = []
-    gglist2 = []
-    gqlist2 = []
-    gglist3 = []
-    gqlist3 = []
-    gglist4 = []
-    gqlist4 = []
+    gglists = [[], [], [], []]
+    gqlists = [[], [], [], []]
         
     for i in range(1,n):
         print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
         Showergg = ggv.generate_shower(tvalues, p_0, Q_0, R, i)
         Showergq = gqv.generate_shower("gluon", tvalues, p_0, Q_0, R, i)
         
-        gglist1.extend(Showergg.FinalFracList1)
-        gglist2.extend(Showergg.FinalFracList2)
-        gglist3.extend(Showergg.FinalFracList3)
-        gglist4.extend(Showergg.FinalFracList4)  
-        gqlist1.extend(Showergq.FinalFracList1)
-        gqlist2.extend(Showergq.FinalFracList2)
-        gqlist3.extend(Showergq.FinalFracList3)
-        gqlist4.extend(Showergq.FinalFracList4)  
+        gglists[0].extend(Showergg.FinalFracList1)
+        gglists[1].extend(Showergg.FinalFracList2)
+        gglists[2].extend(Showergg.FinalFracList3)
+        gglists[3].extend(Showergg.FinalFracList4)  
+        gqlists[0].extend(Showergq.FinalFracList1)
+        gqlists[1].extend(Showergq.FinalFracList2)
+        gqlists[2].extend(Showergq.FinalFracList3)
+        gqlists[3].extend(Showergq.FinalFracList4)  
         del Showergg
         del Showergq
     
@@ -92,87 +86,33 @@ def vacuum_programs_comparison(n, opt_title, scale):
 
     print("\rCalculating bins...", end="")
     
-    ggbinlist1 = []
-    ggbinlist2 = []
-    ggbinlist3 = []
-    ggbinlist4 = []
-    gqbinlist1 = []
-    gqbinlist2 = []
-    gqbinlist3 = []
-    gqbinlist4 = []
+    ggbinlists = [[], [], [], []]
+    gqbinlists = [[], [], [], []]
     
     for i in range(len(bins)-1):
         binwidth = bins[i+1]-bins[i]
         bincenter = bins[i+1] - (binwidth/2)
         binlist.append(bincenter)
+        for gglist in gglists:
+            index = gglists.index(gglist)
+            frequencylist = []
+            for initialfrac in gglist:
+                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            ggbinlists[index].append(density)
         
-        # Calculating bins 1
-        frequencylist1 = []
-        frequencylist2 = []
-        for initialfrac in gglist1:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist1.append(initialfrac)
-        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
-        ggbinlist1.append(gluondensity)
-        
-        for initialfrac in gqlist1:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
-        gqbinlist1.append(binharddensity)
-    
-        # Calculating bins 2
-        frequencylist1 = []
-        frequencylist2 = []
-        for initialfrac in gglist2:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist1.append(initialfrac)
-        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
-        ggbinlist2.append(gluondensity)
-
-        
-        for initialfrac in gqlist2:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
-        gqbinlist2.append(binharddensity)
-        
-        # Calculating bins 3
-        frequencylist1 = []
-        frequencylist2 = []
-        for initialfrac in gglist3:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist1.append(initialfrac)
-        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
-        ggbinlist3.append(gluondensity)
-
-        for initialfrac in gqlist3:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
-        gqbinlist3.append(binharddensity)
-        
-        # Calculating bins 4
-        frequencylist1 = []
-        frequencylist2 = []
-        for initialfrac in gglist4:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist1.append(initialfrac)
-        gluondensity = len(frequencylist1)*bincenter/(n*binwidth)
-        ggbinlist4.append(gluondensity)
-
-        for initialfrac in gqlist4:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist2.append(initialfrac)
-        binharddensity = len(frequencylist2)*bincenter/(n*binwidth)
-        gqbinlist4.append(binharddensity)
-    
+        for gqlist in gqlists:
+            index = gqlists.index(gqlist)
+            frequencylist = []
+            for initialfrac in gqlist:
+                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            gqbinlists[index].append(density)
     
     # Calculating solutions
-    solution1 = []
-    solution2 = []
-    solution3 = []
-    solution4 = []
+    solutions = [[], [], [], []]
     gamma = 0.57721566490153286
     
     for x in xrange:
@@ -181,10 +121,10 @@ def vacuum_programs_comparison(n, opt_title, scale):
         D3 = (1/2)*(t3/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t3+ 2*np.sqrt(t3*np.log(1/x)))
         D4 = (1/2)*(t4/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t4+ 2*np.sqrt(t4*np.log(1/x)))
         
-        solution1.append(D1)
-        solution2.append(D2)
-        solution3.append(D3)
-        solution4.append(D4)
+        solutions[0].append(D1)
+        solutions[1].append(D2)
+        solutions[2].append(D3)
+        solutions[3].append(D4)
 
 
     # Plot    
@@ -205,87 +145,38 @@ def vacuum_programs_comparison(n, opt_title, scale):
     ax3 = plt.subplot(223)
     ax4 = plt.subplot(224)
     
-    print("\rPlotting 1...", end="")
-
-    ax1.plot(binlist, ggbinlist1, 'b--', label ="gluons only")
-    ax1.plot(binlist, gqbinlist1, 'g--', label="quarks & gluons")
-    ax1.plot(xrange, solution1, 'r:', label="solution gluons only")
-    ax1.set_title('t = ' + str(t1))
-    ax1.set_xlim(plot_lim,1)
-    ax1.set_ylim(0.01,10)
-    ax1.set_xlabel('z ')
-    ax1.set_ylabel('D(x,t)')
-    ax1.grid(linestyle='dashed', linewidth=0.2)
-    ax1.legend()
+    axes = [ax1, ax2, ax3, ax4]
     
+    print("\rPlotting..." + 10*" ", end="")
     
-    print("\rPlotting 2...", end="")
+    for ax in axes:
+        index = axes.index(ax)
 
-    ax2.plot(binlist, ggbinlist2, 'b--', label ="gluons only")
-    ax2.plot(binlist, gqbinlist2, 'g--', label="quarks & gluons")
+        ax.plot(binlist, ggbinlists[index], 'b--', label ="gluons only")
+        ax.plot(binlist, gqbinlists[index], 'g--', label="quarks & gluons")
+        ax.plot(xrange, solutions[index], 'r:', label="solution gluons only")
+        ax.set_title('t = ' + str(tvalues[index]))
+        ax.set_xlim(plot_lim,1)
+        ax.set_ylim(0.01,10)
+        ax.set_xlabel('z ')
+        ax.set_ylabel('D(x,t)')
+        ax.grid(linestyle='dashed', linewidth=0.2)
+        ax.legend()
 
-    ax2.plot(xrange, solution2, 'r:', label="solution gluons only")
-    ax2.set_title('t = ' + str(t2))
-    ax2.set_xlim(plot_lim,1)
-    ax2.set_ylim(0.01,10)
-    ax2.set_xlabel('z')
-    ax2.set_ylabel('D(x,t)')
-    ax2.grid(linestyle='dashed', linewidth=0.2)
-    ax2.legend()
+        if scale == "lin":
+            ax.set_xscale("linear")
+            ax.set_yscale("log")
 
-    
-    print("\rPlotting 3...", end="")
+        elif scale == "log":
+            ax.set_xscale("log")
+            ax.set_yscale("log")
 
-    ax3.plot(binlist, ggbinlist3, 'b--', label ="gluons only")
-    ax3.plot(binlist, gqbinlist3, 'g--', label="quarks & gluons")
-    ax3.plot(xrange, solution3, 'r:', label="solution gluons only")
-    ax3.set_title('t = ' + str(t3))
-    ax3.set_xlim(plot_lim,1)
-    ax3.set_ylim(0.01,10)
-    ax3.set_xlabel('z ')
-    ax3.set_ylabel('D(x,t)')
-    ax3.grid(linestyle='dashed', linewidth=0.2)
-    ax3.legend()
-    
 
-    print("\rPlotting 4...", end="")
-
-    ax4.plot(binlist, ggbinlist4, 'b--', label ="gluons only")
-    ax4.plot(binlist, gqbinlist4, 'g--', label="quarks & gluons")
-    ax4.plot(xrange, solution4, 'r:', label="solution gluons only")
-    ax4.set_title('t = ' + str(t4))
-    ax4.set_xlim(plot_lim,1)
-    ax4.set_ylim(0.01,10)
-    ax4.set_xlabel('z ')
-    ax4.set_ylabel('D(x,t)')
-    ax4.grid(linestyle='dashed', linewidth=0.2)
-    ax4.legend()
-
-    if scale == "lin":
-        ax1.set_xscale("linear")
-        ax1.set_yscale("log")
-        ax2.set_xscale("linear")
-        ax2.set_yscale("log")
-        ax3.set_xscale("linear")
-        ax3.set_yscale("log")
-        ax4.set_xscale("linear")
-        ax4.set_yscale("log")
-
-    elif scale == "log":
-        ax1.set_xscale("log")
-        ax1.set_yscale("log")
-        ax2.set_xscale("log")
-        ax2.set_yscale("log")
-        ax3.set_xscale("log")
-        ax3.set_yscale("log")
-        ax4.set_xscale("log")
-        ax4.set_yscale("log")
-
-    print("\rShowing", end="")
+    print("\rShowing..." + 10*" ", end="")
 
     plt.tight_layout()
     plt.show()
-    print("\rDone!")
+    print("\rDone!" + 10*" ")
 
 
 def error_message_several_showers(n, opt_title, scale):

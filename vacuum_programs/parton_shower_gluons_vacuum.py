@@ -376,7 +376,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     
     axes = [ax1, ax2, ax3, ax4]
     
-    print("\rPlotting...", end="")
+    print("\rPlotting..." + 10*" ", end="")
     
     for ax in axes:
         index = axes.index(ax)
@@ -399,11 +399,11 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
             ax.set_xscale("log")
             ax.set_yscale("log")
 
-    print("\rShowing", end="")
+    print("\rShowing" + 10*" ", end="")
 
     plt.tight_layout()
     plt.show()
-    print("\rDone!")    
+    print("\rDone!" + 10*" ")    
         
     
 def error_message_several_showers(n, opt_title, scale):

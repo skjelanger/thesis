@@ -477,7 +477,7 @@ def several_showers_dasgupta(n, opt_title):
     
     axes = [ax1, ax2, ax3, ax4]
     
-    print("\rPlotting...", end="")
+    print("\rPlotting..." + 10*" ", end="")
     
     for ax in axes:
         index = axes.index(ax)
@@ -496,11 +496,11 @@ def several_showers_dasgupta(n, opt_title):
         ax.grid(linestyle='dashed', linewidth=0.2)
         ax.legend()
 
-    print("\rShowing", end="")
+    print("\rShowing" + 10*" ", end="")
 
     plt.tight_layout()
     plt.show()
-    print("\rDone!")    
+    print("\rDone!" + 10*" ")    
     
 
 def error_message_several_showers(n, opt_title):
