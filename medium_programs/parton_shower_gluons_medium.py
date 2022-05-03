@@ -239,19 +239,16 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     tauvalues = (tau1, tau2, tau3, tau4)
     
     #Generating showers
-    gluonlist1 = []
-    gluonlist2 = []
-    gluonlist3 = []
-    gluonlist4 = []
+    gluonlists = [[],[],[],[]]
 
     for i in range (1,n):
-        print("\rLooping... " + str(round(100*i/(4*n),2)) +"%", end="")
+        print("\rLooping... " + str(round(100*i/(n),2)) +"%", end="")
 
         Shower0 = generate_shower(tauvalues, p_0, Q_0, R, i)
-        gluonlist1.extend(Shower0.FinalFracList1)
-        gluonlist2.extend(Shower0.FinalFracList2)
-        gluonlist3.extend(Shower0.FinalFracList3)
-        gluonlist4.extend(Shower0.FinalFracList4)        
+        gluonlists[0].extend(Shower0.FinalFracList1)
+        gluonlists[1].extend(Shower0.FinalFracList2)
+        gluonlists[2].extend(Shower0.FinalFracList3)
+        gluonlists[3].extend(Shower0.FinalFracList4)        
         del Shower0
 
     # Sets the different ranges required for the plots.
@@ -271,82 +268,40 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     # Normalizing the showers.
     print("\rCalculating bins...", end="")
     binlist = []
-    gluonbinlist1 = []
-    gluonbinlist2 = []
-    gluonbinlist3 = []
-    gluonbinlist4 = []
-    
-    gluon1tz = 0
-    gluon2tz = 0
-    gluon3tz = 0
-    gluon4tz = 0
+    gluonbinlists = [[],[],[],[]]
+
+    gluontzs = [0,0,0,0]
 
     for i in range(len(bins)-1):
         binwidth = bins[i+1]-bins[i]
         bincenter = bins[i+1] - (binwidth/2)
         binlist.append(bincenter)
-                
-        # Calculating bins 1
-        frequencylist = []
-        for initialfrac in gluonlist1:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist.append(initialfrac)       
-                if initialfrac ==1:
-                    gluon1tz +=1
-        binvalue = len(frequencylist)*bincenter/(n*binwidth)
-        gluonbinlist1.append(binvalue)
-
-        # Calculating bins 2
-        frequencylist = []
-        for initialfrac in gluonlist2:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist.append(initialfrac)   
-                if initialfrac ==1:
-                    gluon2tz +=1
-        binvalue = len(frequencylist)*bincenter/(n*binwidth)
-        gluonbinlist2.append(binvalue)
-
-        # Calculating bins 3
-        frequencylist = []
-        for initialfrac in gluonlist3:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist.append(initialfrac)
-                if initialfrac ==1:
-                    gluon3tz +=1
-        binvalue = len(frequencylist)*bincenter/(n*binwidth)
-        gluonbinlist3.append(binvalue)
-
-        # Calculating bins 4
-        frequencylist = []
-        for initialfrac in gluonlist4:
-            if initialfrac > bins[i] and initialfrac <= bins[i+1]:
-                frequencylist.append(initialfrac)
-                if initialfrac ==1:
-                    gluon4tz +=1
-        binvalue = len(frequencylist)*bincenter/(n*binwidth)
-        gluonbinlist4.append(binvalue)
         
+        for gluonlist in gluonlists:
+            index = gluonlists.index(gluonlist)
+            frequencylist = []
+            for initialfrac in gluonlist:
+                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                    frequencylist.append(initialfrac)       
+                    if initialfrac ==1:
+                        gluontzs[index] +=1             
+            binvalue = len(frequencylist)*bincenter/(n*binwidth)
+            gluonbinlists[index].append(binvalue)
     
-    print("gluont1z = ", gluon1tz)
-    print("gluont2z = ", gluon2tz)
-    print("gluont3z = ", gluon3tz)
-    print("gluont4z = ", gluon4tz)
+    print("gluontzs = ", gluontzs)
     
     # Calculating solutions
-    solution1 = []
-    solution2 = []
-    solution3 = []
-    solution4 = []
+    solutions = [[],[],[],[]]
     
     for x in xrange:
         D1 = ((tau1)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau1**2)/(1-x)))
         D2 = ((tau2)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau2**2)/(1-x)))
         D3 = ((tau3)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau3**2)/(1-x)))
         D4 = ((tau4)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau4**2)/(1-x)))
-        solution1.append(D1)
-        solution2.append(D2)
-        solution3.append(D3)
-        solution4.append(D4)
+        solutions[0].append(D1)
+        solutions[1].append(D2)
+        solutions[2].append(D3)
+        solutions[3].append(D4)
     
     # Do the actual plotting. 
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
@@ -367,67 +322,31 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     ax3 = plt.subplot(223)
     ax4 = plt.subplot(224)
     
+    axes = [ax1, ax2, ax3, ax4]
+    
     print("\rPlotting...", end="")
 
-    ax1.plot(binlist, gluonbinlist1, "--", label="MC")
-    ax1.plot(xrange, solution1, 'r', label="solution")
-    ax1.set_title('tau = ' +str(tau1))
-    ax1.set_xlim(plot_lim,1)
-    ax1.set_ylim(0.01,10)
-    ax1.set_xlabel('z ')
-    ax1.set_ylabel('D(x,t)')
-    ax1.grid(linestyle='dashed', linewidth=0.2)
-    ax1.legend()
+    for ax in axes:
+        index = axes.index(ax)
+        
+        ax.plot(binlist, gluonbinlists[index], "--", label="MC")
+        ax.plot(xrange, solutions[index], 'r', label="solution")
+        ax.set_title('tau = ' +str(tauvalues[index]))
+        ax.set_xlim(plot_lim,1)
+        ax.set_ylim(0.01,10)
+        ax.set_xlabel('z ')
+        ax.set_ylabel('D(x,t)')
+        ax.grid(linestyle='dashed', linewidth=0.2)
+        ax.legend()
     
-    ax2.plot(binlist, gluonbinlist2, "--", label="MC")
-    ax2.plot(xrange, solution2, 'r', label="solution")
-    ax2.set_title('tau = ' +str(tau2))
-    ax2.set_xlim(plot_lim,1)
-    ax2.set_ylim(0.01,10)
-    ax2.set_xlabel('z')
-    ax2.set_ylabel('D(x,t)')
-    ax2.grid(linestyle='dashed', linewidth=0.2)
-    ax2.legend()
+        if scale == "lin":
+            ax.set_xscale("linear")
+            ax.set_yscale("log")
 
-    ax3.plot(binlist, gluonbinlist3, "--", label="MC")
-    ax3.plot(xrange, solution3, 'r', label="solution")
-    ax3.set_title('tau = ' +str(tau3))
-    ax3.set_xlim(plot_lim,1)
-    ax3.set_ylim(0.01,10)
-    ax3.set_xlabel('z ')
-    ax3.set_ylabel('D(x,t)')
-    ax3.grid(linestyle='dashed', linewidth=0.2)
-    ax3.legend()
-    
-    ax4.plot(binlist, gluonbinlist4, "--", label="MC")
-    ax4.plot(xrange, solution4, 'r', label="solution")
-    ax4.set_title('tau = ' +str(tau4))
-    ax4.set_xlim(plot_lim,1)
-    ax4.set_ylim(0.01,10)
-    ax4.set_xlabel('z ')
-    ax4.set_ylabel('D(x,t)')
-    ax4.grid(linestyle='dashed', linewidth=0.2)
-    ax4.legend()
-    
-    if scale == "lin":
-        ax1.set_xscale("linear")
-        ax1.set_yscale("log")
-        ax2.set_xscale("linear")
-        ax2.set_yscale("log")
-        ax3.set_xscale("linear")
-        ax3.set_yscale("log")
-        ax4.set_xscale("linear")
-        ax4.set_yscale("log")
+        elif scale == "log":
+            ax.set_xscale("log")
+            ax.set_yscale("log")
 
-    elif scale == "log":
-        ax1.set_xscale("log")
-        ax1.set_yscale("log")
-        ax2.set_xscale("log")
-        ax2.set_yscale("log")
-        ax3.set_xscale("log")
-        ax3.set_yscale("log")
-        ax4.set_xscale("log")
-        ax4.set_yscale("log")
 
     print("\rShowing")
 
