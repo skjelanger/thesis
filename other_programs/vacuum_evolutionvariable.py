@@ -47,13 +47,13 @@ def evolution_variable():
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 0.40)
     ax1.set_xscale("linear")
-    ax1.set_xlabel('R ')
-    ax1.set_ylabel('t')
+    ax1.set_xlabel('jet radius - R ')
+    ax1.set_ylabel('evolution variable - t')
     ax1.grid(linestyle='dashed', linewidth=0.2)
 
     print("Showing")
 
-    plt.legend()
+    plt.legend(loc='upper left')
     plt.tight_layout()
     
     plt.show()
