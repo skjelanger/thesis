@@ -500,7 +500,7 @@ def several_showers_dasgupta(n, opt_title):
              ". zmin: " + str(z_min) + 
              "\n " + opt_title)
 
-    plt.suptitle(title)
+    #plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
