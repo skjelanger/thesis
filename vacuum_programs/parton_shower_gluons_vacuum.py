@@ -11,11 +11,12 @@ from treelib import Tree
 
 #constants
 epsilon = 10**(-3)
-z_min = 10**(-5)
+z_min = 10**(-3)
 plot_lim = 10**(-3)
 binnumber = 100
 
 gg_integral, __ = quad((sf.gg_simple_analytical), epsilon, 1-epsilon)
+
 print("epsilon: ", epsilon)
 print("gluons only gg_integral: ", gg_integral)
 
@@ -167,15 +168,12 @@ class Parton(object):
 # This program generates a single parton shower, given the initial conditions. 
 # When running n showers, this program is called n times, and the each 
 # iteration returns a Shower-class object.
-def generate_shower(tvalues, p_t, Q_0, R, showernumber):
+def generate_shower(tvalues, showernumber):
     """
     Main parton shower program for gluons in vacuum.
     
         Parameters: 
-            t_max (int): Maximum value of evolution variable.
-            p_t (int) - Initital parton momentum.
-            Q_0 (int) - Hadronization scale.
-            R (int) - Jet radius.
+            tvalues (list): Maximum values of the evolution variable.
             showernumber (int) - Showernumber.
             
         Returns:
@@ -263,23 +261,27 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
         return
     
     R = 0.4 # Jet radius.    
-    p_0 = 100 # Initial parton momentum.
     Q_0 = 1 # Hadronization scale.
+    alpha = 0.1184
     
     t1 = 0.04
     t2 = 0.1
     t3 = 0.2
     t4 = 0.3
-    tvalues = (t1, t2, t3, t4)
-
+    tvalues = [t1, t2, t3, t4]
+    pvalues = []
     
+    for t in tvalues:
+        pvalue = Q_0/R * np.exp(t*np.pi/alpha)
+        pvalues.append(pvalue)
+        
     #Generating showers
     gluonlists = [[],[],[],[]]
     gluonhards = [[],[],[],[]]
         
     for i in range(1,n):
         print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
-        Shower0 = generate_shower(tvalues, p_0, Q_0, R, i)
+        Shower0 = generate_shower(tvalues, i)
         gluonhards[0].append(Shower0.Hardest1)
         gluonhards[1].append(Shower0.Hardest2)
         gluonhards[2].append(Shower0.Hardest3)
@@ -343,23 +345,38 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     
     # Calculating solutions
     solutions = [[],[],[],[]]
-    gamma = 0.57721566490153286
-    
+    gamma = 0.57721566490153286060651209008240243104215933593992
+    sqp = np.sqrt(np.pi)
+    C = 1
     for x in xrange:
-        D1 = (1/2)*(t1/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t1+ 2*np.sqrt(t1*np.log(1/x)))
-        D2 = (1/2)*(t2/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t2+ 2*np.sqrt(t2*np.log(1/x)))
-        D3 = (1/2)*(t3/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t3+ 2*np.sqrt(t3*np.log(1/x)))
-        D4 = (1/2)*(t4/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t4+ 2*np.sqrt(t4*np.log(1/x)))
+        logx = np.log(1/x)
+        logx3 = (np.log(1/x))**3
+        D1 = np.exp(np.sqrt(2*C*t1*logx)-2*C*gamma*t1)* (1/(2*sqp))* ((2*C*t1)/(logx3))**(1/4)
+        D2 = np.exp(np.sqrt(2*C*t2*logx)-2*C*gamma*t2)* (1/(2*sqp))* ((2*C*t2)/(logx3))**(1/4)
+        D3 = np.exp(np.sqrt(2*C*t3*logx)-2*C*gamma*t3)* (1/(2*sqp))* ((2*C*t3)/(logx3))**(1/4)
+        D4 = np.exp(np.sqrt(2*C*t4*logx)-2*C*gamma*t4)* (1/(2*sqp))* ((2*C*t4)/(logx3))**(1/4)
         
         solutions[0].append(D1)
         solutions[1].append(D2)
         solutions[2].append(D3)
         solutions[3].append(D4)
+        
+    # Calculating N partons for each t.
+    Ngluons = []
+    Egluons = []
+    
+    for p in pvalues:
+        index = pvalues.index(p)
+        Ngluon = round(len(gluonlists[index])/n)
+        Egluon = round((C*alpha/np.pi)*(np.log(pvalues[index]*R/Q_0))**2)
+        Ngluons.append(Ngluon)
+        Egluons.append(Egluon)
+        
 
     # Plot    
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
-             ". epsilon: " + str(epsilon) + 
+             ". epsilon: " + str(epsilon) + ". zmin: " + str(z_min) + 
              "\n " + opt_title)    
     plt.suptitle(title)
 
@@ -384,13 +401,17 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
         ax.plot(binlist, gluonbinlists[index], 'b--', label ="MC")
         ax.plot(binlist, gluonbinhards[index], 'b:')
         ax.plot(xrange, solutions[index], 'r', label="solution")
-        ax.set_title('t = ' + str(tvalues[index]))
+        ax.set_title('t  = ' + str(tvalues[index]))
         ax.set_xlim(plot_lim,1)
         ax.set_ylim(0.01,10)
-        ax.set_xlabel('z ')
-        ax.set_ylabel('D(x,t)')
+        ax.set_xlabel('z')
+        ax.set_ylabel('$D_a(x,t)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend()
+        ax.legend(loc='upper left')
+        
+        textstring = '$<N>= $' + str(Ngluons[index]) + "\n$N_e= $" + str(Egluons[index])
+        ax.text(0.5, 0.95, textstring, fontsize = "xx-small", #bbox=dict(facecolor='white', alpha=0.5),
+                horizontalalignment='center', verticalalignment='top', transform=ax.transAxes)
     
         if scale == "lin":
             ax.set_xscale("linear")
@@ -399,7 +420,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
             ax.set_xscale("log")
             ax.set_yscale("log")
 
-    print("\rShowing" + 10*" ", end="")
+    print("\rShowing..." + 10*" ", end="")
 
     plt.tight_layout()
     plt.show()

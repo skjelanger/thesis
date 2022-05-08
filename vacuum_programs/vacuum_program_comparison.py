@@ -44,7 +44,6 @@ def vacuum_programs_comparison(n, opt_title, scale):
     t3 = 0.2
     t4 = 0.3
     tvalues = (t1, t2, t3, t4)
-
     
     #Generating showers
     gglists = [[], [], [], []]
@@ -125,7 +124,6 @@ def vacuum_programs_comparison(n, opt_title, scale):
         solutions[1].append(D2)
         solutions[2].append(D3)
         solutions[3].append(D4)
-
 
     # Plot    
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
