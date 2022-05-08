@@ -363,7 +363,7 @@ def several_showers_dasgupta(n, opt_title):
     quarklists = [[],[],[],[]]
     quarkhards = [[],[],[],[]]
       
-    for i in range(1,n):
+    for i in range(0,n):
         print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
 
         # Gluon showers
@@ -372,10 +372,10 @@ def several_showers_dasgupta(n, opt_title):
         gluonhards[1].append(Shower0.Hardest2)
         gluonhards[2].append(Shower0.Hardest3)
         gluonhards[3].append(Shower0.Hardest4)
-        gluonlists[0].extend(Shower0.FinalFracList1)
-        gluonlists[1].extend(Shower0.FinalFracList2)
-        gluonlists[2].extend(Shower0.FinalFracList3)
-        gluonlists[3].extend(Shower0.FinalFracList4)  
+        gluonlists[0].append(Shower0.FinalFracList1)
+        gluonlists[1].append(Shower0.FinalFracList2)
+        gluonlists[2].append(Shower0.FinalFracList3)
+        gluonlists[3].append(Shower0.FinalFracList4)  
         del Shower0
         
         # Quark showers.
@@ -401,7 +401,7 @@ def several_showers_dasgupta(n, opt_title):
     binlist = []
     
     # Calculating bins.
-    gluontzs = [0,0,0,0]
+    gluontzsums = [0,0,0,0]
 
     gluonbinlists = [[],[],[],[]]
     gluonbinhards = [[],[],[],[]]
@@ -416,11 +416,12 @@ def several_showers_dasgupta(n, opt_title):
         for gluonlist in gluonlists:
             index = gluonlists.index(gluonlist)
             frequencylist = []
-            for initialfrac in gluonlist:
-                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
-                    frequencylist.append(initialfrac)
-                    if initialfrac ==1:
-                        gluontzs[index]+=1
+            for showerlist in gluonlist:
+                for initialfrac in showerlist:
+                    if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                        frequencylist.append(initialfrac)
+                        if initialfrac ==1:
+                            gluontzsums[index] += 1                
             density = len(frequencylist)/(n*binwidth)
             gluonbinlists[index].append(density)
         
@@ -449,20 +450,57 @@ def several_showers_dasgupta(n, opt_title):
                 if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             density = len(frequencylist)/(n*binwidth)
-            quarkbinhards[index].append(density)
+            quarkbinhards[index].append(density)    
+            
+            
+    # Calculate gluontzlists deviations
+    gluontzlists = [[],[],[],[]]
+    gluontzvalues = []
 
-    print("gluontsz = ", gluontzs)
+
+    for gluonlist in gluonlists:
+        index = gluonlists.index(gluonlist)
+        
+        for showerlist in gluonlist:
+            gluontznumber = 0
+            for initialfrac in showerlist:
+                if initialfrac == 1:
+                    gluontznumber += 1
+            gluontzlists[index].append(gluontznumber)
+                
     
-
+    for gluontzlist in gluontzlists:
+        index = gluontzlists.index(gluontzlist)
+        gluontzsum = 0
+        variancesum = 0
+        for gluontznumber in gluontzlist:
+            gluontzsum += gluontznumber
+        mean = n*gluontzsum/len(gluontzlist)
+        
+        for gluontznumber in gluontzlist:
+            variancesum = (gluontznumber*n-mean)**2
+        variance = np.sqrt(variancesum/len(gluontzlist))
+        
+        try:
+            floor = round(abs(np.floor(np.log10(variance))))
+        except:
+            floor = 1
+        mean = round(mean, floor)
+        variance = round(variance, floor)
+        gluontzvalues.append([mean, variance])
+            
+    print("sums: ", gluontzsums)
+    print("values: ", gluontzvalues)
+    
     # Now starting the plotting.
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h)
 
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
-             ". gluon contr: " + str(round(gluon_contribution,3)) + 
+             ". zmin: " + str(z_min) + 
              "\n " + opt_title)
 
-    #plt.suptitle(title)
+    plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
@@ -488,15 +526,21 @@ def several_showers_dasgupta(n, opt_title):
         ax.plot(binlist, quarkbinhards[index], 'b--')
         ax.set_yscale("log")
 
-        ax.set_title('t = ' + str(tvalues[index]))
+        ax.set_title("$t = $" + str(tvalues[index]))
         ax.set_xlim(0,1)
         ax.set_ylim(0.01,10)
-        ax.set_xlabel('z ')
-        ax.set_ylabel('f(x,t)')
+        ax.set_xlabel('$z$')
+        ax.set_ylabel('$f(x,t)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend()
+        ax.legend(loc='lower right')
+        
+        textstring = ("$n =$" + str(n) + "\n" + 
+                      "$N_{z}= $" + str(gluontzvalues[index][0]) + 
+                      "$\pm$" + str(gluontzvalues[index][1]))
+        ax.text(0.85, 0.22, textstring, fontsize = "xx-small", #bbox=dict(facecolor='white', alpha=0.5),
+                horizontalalignment='center', verticalalignment='bottom', transform=ax.transAxes)
 
-    print("\rShowing" + 10*" ", end="")
+    print("\rShowing..." + 10*" ", end="")
 
     plt.tight_layout()
     plt.show()
