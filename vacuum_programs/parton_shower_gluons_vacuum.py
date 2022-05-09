@@ -361,17 +361,6 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
         solutions[2].append(D3)
         solutions[3].append(D4)
         
-    # Calculating N partons for each t.
-    Ngluons = []
-    Egluons = []
-    
-    for p in pvalues:
-        index = pvalues.index(p)
-        Ngluon = round(len(gluonlists[index])/n)
-        Egluon = round((C*alpha/np.pi)*(np.log(pvalues[index]*R/Q_0))**2)
-        Ngluons.append(Ngluon)
-        Egluons.append(Egluon)
-        
 
     # Plot    
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
@@ -402,17 +391,13 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
         ax.plot(binlist, gluonbinhards[index], 'b:')
         ax.plot(xrange, solutions[index], 'r', label="solution")
         ax.set_title('t  = ' + str(tvalues[index]))
-        ax.set_xlim(plot_lim,1)
+        ax.set_xlim(0,1)
         ax.set_ylim(0.01,10)
         ax.set_xlabel('z')
         ax.set_ylabel('$D_a(x,t)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
         ax.legend(loc='upper left')
         
-        textstring = '$<N>= $' + str(Ngluons[index]) + "\n$N_e= $" + str(Egluons[index])
-        ax.text(0.5, 0.95, textstring, fontsize = "xx-small", #bbox=dict(facecolor='white', alpha=0.5),
-                horizontalalignment='center', verticalalignment='top', transform=ax.transAxes)
-    
         if scale == "lin":
             ax.set_xscale("linear")
             ax.set_yscale("log")

@@ -8,6 +8,7 @@ import vacuum_splittingfunctions as sf # Includes color factors.
 import numpy as np
 from scipy.integrate import quad 
 from treelib import Tree 
+import datetime
 
 #constants
 epsilon = 10**(-3)
@@ -264,6 +265,7 @@ def generate_shower(initialtype, tvalues , p_t, Q_0, R, showernumber):
         Returns:
             Shower (object) - Object of the class Shower.
     """
+
     t = 0
     
     Shower0 = Shower(initialtype, showernumber) 
@@ -484,13 +486,46 @@ def several_showers_dasgupta(n, opt_title):
         try:
             floor = round(abs(np.floor(np.log10(variance))))
         except:
-            floor = 1
+            floor = 0
         mean = round(mean, floor)
         variance = round(variance, floor)
         gluontzvalues.append([mean, variance])
             
     print("sums: ", gluontzsums)
     print("values: ", gluontzvalues)
+    
+    
+    # Save data to file
+    fulldate = datetime.datetime.now()
+    datetext = (fulldate.strftime("%y") +"_" + 
+                fulldate.strftime("%m") +"_" + 
+                fulldate.strftime("%d") +"_" )
+    filename = "data" + datetext + "_" + str(n) + "_showers"
+    filenameloc = "data\\parton_shower_vacuum_data\\" + filename
+    np.savez(filenameloc, 
+             n = n,
+             tvalues = tvalues,
+             binlist = binlist, 
+             gluonlist1 = gluonbinlists[0],
+             gluonlist2 = gluonbinlists[1],
+             gluonlist3 = gluonbinlists[2],
+             gluonlist4 = gluonbinlists[3],
+             gluonhard1 = gluonbinhards[0],
+             gluonhard2 = gluonbinhards[1],
+             gluonhard3 = gluonbinhards[2],
+             gluonhard4 = gluonbinhards[3],
+             quarklist1 = quarkbinlists[0],
+             quarklist2 = quarkbinlists[1],
+             quarkhard3 = quarkbinhards[2],
+             quarklist4 = quarkbinlists[3],
+             quarkhard1 = quarkbinhards[0],
+             quarkhard2 = quarkbinhards[1],
+             quarklist3 = quarkbinlists[2],
+             quarkhard4 = quarkbinhards[3],
+             gluontz1 = gluontzvalues[0],
+             gluontz2 = gluontzvalues[1],
+             gluontz3 = gluontzvalues[2],
+             gluontz4 = gluontzvalues[3])
     
     # Now starting the plotting.
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h)
