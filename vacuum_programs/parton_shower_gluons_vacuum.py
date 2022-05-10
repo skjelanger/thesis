@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import vacuum_splittingfunctions as sf # Includes color factors.
 import numpy as np
 from scipy.integrate import quad 
-from treelib import Tree
 
 #constants
 epsilon = 10**(-3)
@@ -24,15 +23,8 @@ print("gluons only gg_integral: ", gg_integral)
 # These classes will be used for managing the different partons created in 
 # different showers, throughout the rest of the program. 
 # The Shower and Parton objecs will generally be deleted at the end of a given
-# shower, and the required data will be written a list.
-class IterShower(type):
-    """This class is a metaclass for Shower, and serves to make the class 
-    Shower iterable - meaning you can iterate a list of all the objects. 
-    This is only used for the Treelib plotting, if desired. """
-    def __iter__(cls):
-        return iter(cls.allShowers)
-    
-class Shower(object, metaclass= IterShower):
+# shower, and the required data will be written a list.    
+class Shower(object):
     """
     Class used for storing information about individual partons.
     
@@ -52,9 +44,7 @@ class Shower(object, metaclass= IterShower):
         allShowers (list): Contains all shower objects.
     """
 
-    allShowers = []
     def __init__(self, showernumber):
-        self.allShowers.append(self)
 
         self.ShowerNumber = showernumber
         self.PartonList = [] # List for all Shower Partons. Used for treelib.
@@ -63,10 +53,10 @@ class Shower(object, metaclass= IterShower):
         self.FinalFracList2 = [] # Contains all partons above z_min.
         self.FinalFracList3 = [] # Contains all partons above z_min.
         self.FinalFracList4 = [] # Contains all partons above z_min.
-        self.Hardest1 = None
-        self.Hardest2 = None
-        self.Hardest3 = None
-        self.Hardest4 = None
+        self.Hardest1 = 0
+        self.Hardest2 = 0
+        self.Hardest3 = 0
+        self.Hardest4 = 0
         self.SplittingPartons = []
         self.Loops = (True, True, True, True)
         
@@ -199,7 +189,7 @@ def generate_shower(tvalues, showernumber):
         Shower0.SplittingPartons.remove(SplittingParton)
         Shower0.FinalList.remove(SplittingParton)
         momfrac = SplittingParton.split()
-
+        
         for j in range(0,2): # Loop for generating the new partons.
             if j==0: # Parton 1.
                 initialfrac = SplittingParton.InitialFrac * momfrac
@@ -212,31 +202,11 @@ def generate_shower(tvalues, showernumber):
                 SplittingParton.Secondary = NewParton
             
             Shower0.FinalList.append(NewParton)
-            if NewParton.InitialFrac > z_min:
+            if NewParton.InitialFrac > 0.001:
                 Shower0.SplittingPartons.append(NewParton)
     
     return Shower0
 
-
-# Parton tree program.
-def create_parton_tree(showernumber):
-    """This program can draw a tree of the partons. It is really only practical
-    for vacuum showers. Creates the tree fora given showernumber."""
-    tree = Tree()
-    for ShowerObj in Shower: 
-        if ShowerObj.ShowerNumber == showernumber:
-            print("ShowerNumber is:", ShowerObj.ShowerNumber, 
-                  ". Number of partons is: ", len(ShowerObj.FinalList))
-        
-            for PartonObj in ShowerObj.PartonList: # Loop for creating tree.
-                initialfrac = str(round(PartonObj.InitialFrac, 3))
-                title = initialfrac + " - " + PartonObj.Type
-                tree.create_node(title, PartonObj, parent= PartonObj.Parent)
-
-    tree.show()
-    tree.remove_node(tree.root)
-    return
-    
 
 # Program for comparing the shower program with analytical calculations.
 # Four different values of tau are used, and n showers are generated for each
@@ -294,10 +264,10 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     
     # Sets the different ranges required for the plots.
     if scale == "lin":
-        #linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-        #linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
-        #bins = np.hstack((linbins1, linbins2))
-        bins = np.linspace(plot_lim, 1, num=binnumber)
+        linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
+        linbins2 = (np.linspace(0.991, 1, num= 10))
+        bins = np.hstack((linbins1, linbins2))
+        #bins = np.linspace(plot_lim, 1, num=binnumber)
         xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
 
     elif scale == "log":
@@ -314,6 +284,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     
     gluonbinlists = [[],[],[],[]]
     gluonbinhards = [[],[],[],[]]
+
 
     for i in range(len(bins)-1):
         binwidth = bins[i+1]-bins[i]
@@ -342,32 +313,15 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
             binharddensity = len(frequencylist)*bincenter/(n*binwidth)
             gluonbinhards[index].append(binharddensity)
     
-    
-    # Calculating solutions
-    solutions = [[],[],[],[]]
-    gamma = 0.57721566490153286060651209008240243104215933593992
-    sqp = np.sqrt(np.pi)
-    C = 1
-    for x in xrange:
-        logx = np.log(1/x)
-        logx3 = (np.log(1/x))**3
-        D1 = np.exp(np.sqrt(2*C*t1*logx)-2*C*gamma*t1)* (1/(2*sqp))* ((2*C*t1)/(logx3))**(1/4)
-        D2 = np.exp(np.sqrt(2*C*t2*logx)-2*C*gamma*t2)* (1/(2*sqp))* ((2*C*t2)/(logx3))**(1/4)
-        D3 = np.exp(np.sqrt(2*C*t3*logx)-2*C*gamma*t3)* (1/(2*sqp))* ((2*C*t3)/(logx3))**(1/4)
-        D4 = np.exp(np.sqrt(2*C*t4*logx)-2*C*gamma*t4)* (1/(2*sqp))* ((2*C*t4)/(logx3))**(1/4)
-        
-        solutions[0].append(D1)
-        solutions[1].append(D2)
-        solutions[2].append(D3)
-        solutions[3].append(D4)
-        
-
+    # Calculate solutions
+    solutions = DGLAP_solutions(tvalues, xrange)
+     
     # Plot    
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + ". zmin: " + str(z_min) + 
              "\n " + opt_title)    
-    plt.suptitle(title)
+    #plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
     plt.rc('xtick', labelsize="x-small")
@@ -386,24 +340,34 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     
     for ax in axes:
         index = axes.index(ax)
-
+        
         ax.plot(binlist, gluonbinlists[index], 'b--', label ="MC")
-        ax.plot(binlist, gluonbinhards[index], 'b:')
+        #ax.plot(binlist, gluonbinhards[index], 'b:')
         ax.plot(xrange, solutions[index], 'r', label="solution")
-        ax.set_title('t  = ' + str(tvalues[index]))
-        ax.set_xlim(0,1)
-        ax.set_ylim(0.01,10)
-        ax.set_xlabel('z')
-        ax.set_ylabel('$D_a(x,t)$')
+
+        ax.set_title('t = ' + str(tvalues[index]))
+        ax.set_xlabel('$z$')
+        ax.set_ylabel('$D(x,t)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend(loc='upper left')
+        ax.legend(loc='lower right')
+        
+        #ax.text(0.1, 0.9, r'${0:}x^{{{1:}}}_{{\rm map}}$'.format(A, b))
+
+        
+        textstring = '$n={%i}$'%n
+        ax.text(0.85, 0.2, textstring, fontsize = "xx-small",
+                horizontalalignment='center', verticalalignment='bottom', transform=ax.transAxes)
         
         if scale == "lin":
             ax.set_xscale("linear")
             ax.set_yscale("log")
+            ax.set_xlim(0,1)
+            ax.set_ylim(0.01,10)
         elif scale == "log":
             ax.set_xscale("log")
             ax.set_yscale("log")
+            ax.set_xlim(0.001,1)
+            ax.set_ylim(0.01,10)
 
     print("\rShowing..." + 10*" ", end="")
 
@@ -430,3 +394,30 @@ def error_message_several_showers(n, opt_title, scale):
         if scale_error:
             msg = msg+ "\nERROR! - 'scale' must be 'lin' or 'log'."
     return error, msg
+
+def DGLAP_solutions(tvalues, xrange):
+    """"
+    Calculated the solutions of the DGLAP equation.
+    
+    Parameters: 
+        tvalues (list): Vales of t to calculate for..
+        xrange (list): xvalues for plot
+
+    Returns:
+        solutions (list): List of the caculated solutions for each x in xrange.
+    """
+
+    solutions = [[],[],[],[]]
+    gamma = 0.57721566490153286060651209008240243104215933593992
+    sqp = np.sqrt(np.pi)
+    C = 1
+    
+    for t in tvalues:
+        index = tvalues.index(t)
+    
+        for x in xrange:
+            logx = np.log(1/x)
+            logx3 = (np.log(1/x))**3
+            D = np.exp(2*np.sqrt(2*C*t*logx)-2*C*gamma*t)* (1/(2*sqp))* ((2*C*t)/(logx3))**(1/4)
+            solutions[index].append(D)
+    return solutions
