@@ -28,6 +28,9 @@ gluon_contribution = (gg_integral+ qg_integral)/(gg_integral
 gg_contribution = (gg_integral)/(gg_integral+ qg_integral)
 
 print("quarks & gluons gg_integral: ", (gg_integral))
+print("quarks & gluons qq_integral: ", (qq_integral))
+print("quarks & gluons qg_integral: ", (qg_integral))
+
 
 print("quarks & gluons gg+qg_integral: ", (gg_integral+qg_integral))
 
@@ -251,15 +254,12 @@ class Parton(object):
 # Main shower program. Given the initial conditions, it performs splitting 
 # of the initial parton, until the evolution interval t is too large for more
 # branchings, or there are no more partons to split. 
-def generate_shower(initialtype, tvalues , p_t, Q_0, R, showernumber):
+def generate_shower(initialtype, tvalues, showernumber):
     """Main parton shower program for quarks and gluons in vacuum.
     
         Parameters: 
             initialtype (str): Flavor of initial parton.
             t_max (int): Maximum value of evolution variable.
-            p_t (int) - Initital parton momentum.
-            Q_0 (int) - Hadronization scale.
-            R (int) - Jet radius.
             showernumber (int) - Showernumber.
             
         Returns:
@@ -369,7 +369,7 @@ def several_showers_dasgupta(n, opt_title):
         print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
 
         # Gluon showers
-        Shower0 = generate_shower("gluon", tvalues, p_0, Q_0, R, i)
+        Shower0 = generate_shower("gluon", tvalues, i)
         gluonhards[0].append(Shower0.Hardest1)
         gluonhards[1].append(Shower0.Hardest2)
         gluonhards[2].append(Shower0.Hardest3)
@@ -381,7 +381,7 @@ def several_showers_dasgupta(n, opt_title):
         del Shower0
         
         # Quark showers.
-        Shower0 = generate_shower("quark", tvalues, p_0, Q_0, R, i)
+        Shower0 = generate_shower("quark", tvalues, i)
         quarkhards[0].append(Shower0.Hardest1)
         quarkhards[1].append(Shower0.Hardest2)
         quarkhards[2].append(Shower0.Hardest3)
