@@ -11,7 +11,7 @@ import parton_shower_vacuum as gqv
 
 #constants
 epsilon = 10**(-3)
-z_min = 10**(-5)
+z_min = 10**(-3)
 plot_lim = 10**(-3)
 binnumber = 100
 
@@ -48,11 +48,13 @@ def vacuum_programs_comparison(n, opt_title, scale):
     #Generating showers
     gglists = [[], [], [], []]
     gqlists = [[], [], [], []]
+    gghards = [[], [], [], []]
+    gqhards = [[], [], [], []]
         
     for i in range(1,n):
         print("\rLooping... "+ str(round(100*i/(n),1)) + "%",end="")
-        Showergg = ggv.generate_shower(tvalues, p_0, Q_0, R, i)
-        Showergq = gqv.generate_shower("gluon", tvalues, p_0, Q_0, R, i)
+        Showergg = ggv.generate_shower(tvalues, i)
+        Showergq = gqv.generate_shower("gluon", tvalues, i)
         
         gglists[0].extend(Showergg.FinalFracList1)
         gglists[1].extend(Showergg.FinalFracList2)
@@ -62,6 +64,15 @@ def vacuum_programs_comparison(n, opt_title, scale):
         gqlists[1].extend(Showergq.FinalFracList2)
         gqlists[2].extend(Showergq.FinalFracList3)
         gqlists[3].extend(Showergq.FinalFracList4)  
+        
+        gghards[0].append(Showergg.Hardest1)
+        gghards[1].append(Showergg.Hardest2)
+        gghards[2].append(Showergg.Hardest3)
+        gghards[3].append(Showergg.Hardest4)  
+        gqhards[0].append(Showergq.Hardest1)
+        gqhards[1].append(Showergq.Hardest2)
+        gqhards[2].append(Showergq.Hardest3)
+        gqhards[3].append(Showergq.Hardest4)  
         del Showergg
         del Showergq
     
@@ -87,6 +98,8 @@ def vacuum_programs_comparison(n, opt_title, scale):
     
     ggbinlists = [[], [], [], []]
     gqbinlists = [[], [], [], []]
+    ggbinhards = [[], [], [], []]
+    gqbinhards = [[], [], [], []]
     
     for i in range(len(bins)-1):
         binwidth = bins[i+1]-bins[i]
@@ -109,28 +122,34 @@ def vacuum_programs_comparison(n, opt_title, scale):
                     frequencylist.append(initialfrac)
             density = len(frequencylist)*bincenter/(n*binwidth)
             gqbinlists[index].append(density)
+            
+        for gghard in gghards:
+            index = gghards.index(gghard)
+            frequencylist = []
+            for initialfrac in gghard:
+                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            ggbinhards[index].append(density)
+        
+        for gqhard in gqhards:
+            index = gqhards.index(gqhard)
+            frequencylist = []
+            for initialfrac in gqhard:
+                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            gqbinhards[index].append(density)
     
     # Calculating solutions
-    solutions = [[], [], [], []]
-    gamma = 0.57721566490153286
-    
-    for x in xrange:
-        D1 = (1/2)*(t1/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t1+ 2*np.sqrt(t1*np.log(1/x)))
-        D2 = (1/2)*(t2/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t2+ 2*np.sqrt(t2*np.log(1/x)))
-        D3 = (1/2)*(t3/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t3+ 2*np.sqrt(t3*np.log(1/x)))
-        D4 = (1/2)*(t4/(np.pi**2 * np.log(1/x)**3))**(1/4) * np.exp(-gamma*t4+ 2*np.sqrt(t4*np.log(1/x)))
-        
-        solutions[0].append(D1)
-        solutions[1].append(D2)
-        solutions[2].append(D3)
-        solutions[3].append(D4)
+    solutions = ggv.DGLAP_solutions(tvalues, xrange)
 
     # Plot    
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
              "\n " + opt_title)    
-    plt.suptitle(title)
+    #plt.suptitle(title)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")
     plt.rc('xtick', labelsize="x-small")
@@ -150,16 +169,23 @@ def vacuum_programs_comparison(n, opt_title, scale):
     for ax in axes:
         index = axes.index(ax)
 
-        ax.plot(binlist, ggbinlists[index], 'b--', label ="gluons only")
+        ax.plot(binlist, ggbinlists[index], 'b--', label ="gluons")
         ax.plot(binlist, gqbinlists[index], 'g--', label="quarks & gluons")
-        ax.plot(xrange, solutions[index], 'r:', label="solution gluons only")
+        ax.plot(binlist, ggbinhards[index], 'b:')
+        ax.plot(binlist, gqbinhards[index], 'g:')
+        ax.plot(xrange, solutions[index], 'r', label="solution gluons")
         ax.set_title('t = ' + str(tvalues[index]))
         ax.set_xlim(plot_lim,1)
         ax.set_ylim(0.01,10)
         ax.set_xlabel('z ')
         ax.set_ylabel('D(x,t)')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend()
+        ax.legend(loc="lower right")
+        
+        textstring = '$n={%i}$'%n
+        ax.text(0.8, 0.3, textstring, fontsize = "xx-small",
+                horizontalalignment='center', verticalalignment='bottom', transform=ax.transAxes)
+        
 
         if scale == "lin":
             ax.set_xscale("linear")
