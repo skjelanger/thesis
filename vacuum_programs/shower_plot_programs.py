@@ -37,7 +37,7 @@ def dasgupta_plot(filename):
                   file["gluontz4"]]
 
     # Now starting the plotting.
-    plt.figure(dpi=1000, figsize= (6,5)) #(w,h)
+    plt.figure(dpi=500, figsize= (6,5)) #(w,h)
 
     #plt.suptitle(title)
     plt.rc('axes', titlesize="small" , labelsize="x-small")

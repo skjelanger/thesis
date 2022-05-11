@@ -27,7 +27,7 @@ def evolution_variable():
         
     # Plot    
 
-    plt.figure(dpi=1000) #figsize= (10,3)
+    plt.figure(dpi=600) #figsize= (10,3)
     title = "Evolution variable vacuum showers. alpha_S = " + str(alpha_S)
     #plt.suptitle(title)
 

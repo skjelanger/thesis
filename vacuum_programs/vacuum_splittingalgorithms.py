@@ -128,16 +128,17 @@ def comparison_qg(n):
         randomsample = (0.5+0.5*b-(0.5/b))
         random_samples.append(randomsample)
         
-    plt.figure(figsize= (5,3), dpi=1000)
+    plt.figure(figsize= (5,3), dpi=500)
 
     plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="small")
     plt.rc('ytick', labelsize="small")
     
     plt.plot(xvalues, fullfunction_values, 'r-', label='qg_full(z)')
-    plt.hist(random_samples, 200, density='true')
+    plt.hist(random_samples, 200, density='true', label="samples")
     plt.title("Original histogram")
-
+    
+    plt.xlim(0,1)
     plt.ylim(0,3)
     plt.xlabel('z')
     plt.legend(fontsize="x-small")
@@ -193,7 +194,7 @@ def MH_comparison_qq(n):
 def plot_results(xvalues, simple_function, full_function, simple_samples,
                  MH_samples, splitting, n):
     """This program plots the results from the MH_comparison programs"""
-    plt.figure(figsize= (10,3), dpi=1000)
+    plt.figure(figsize= (10,3), dpi=500)
     plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="small")
     plt.rc('ytick', labelsize="small")
@@ -205,13 +206,15 @@ def plot_results(xvalues, simple_function, full_function, simple_samples,
     ax1.plot(xvalues, full_function, 'r-', label=splitting+'_full(z)')
     ax2.plot(xvalues, simple_function, 'y-', label=splitting+'_simple(z)')
     ax2.plot(xvalues, full_function, 'r-', label=splitting+'_full(z)')
-    ax1.hist(simple_samples, 200, density='true')
-    ax2.hist(MH_samples, 200, density='true')
+    ax1.hist(simple_samples, 200, density='true', label="samples")
+    ax2.hist(MH_samples, 200, density='true', label="samples")
     
     ax1.set_title("Original histogram")
     ax2.set_title("MH corrected histogram")
 
+    ax1.set_xlim(0,1)
     ax1.set_ylim(0,3)
+    ax2.set_xlim(0,1)
     ax2.set_ylim(0,3)
     ax1.set_xlabel('z')
     ax2.set_xlabel('z')
