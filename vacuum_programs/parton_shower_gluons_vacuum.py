@@ -369,7 +369,7 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     
      
     # Plot    
-    plt.figure(dpi=500, figsize= (6,5)) #(w,h) figsize= (10,3)
+    plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + ". zmin: " + str(z_min) + 
              "\n " + opt_title)    
