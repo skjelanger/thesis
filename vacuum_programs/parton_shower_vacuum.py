@@ -500,7 +500,7 @@ def several_showers_dasgupta(n, opt_title):
     datetext = (fulldate.strftime("%y") +"_" + 
                 fulldate.strftime("%m") +"_" + 
                 fulldate.strftime("%d") +"_" )
-    filename = "data" + datetext + "_" + str(n) + "_showers"
+    filename = "data" + datetext + str(n) + "_showers"
     filenameloc = "data\\parton_shower_vacuum_data\\" + filename
     np.savez(filenameloc, 
              n = n,

@@ -228,7 +228,7 @@ def comparison_gg_simple(n):
         samplevalue = 0.5 + (a/( 2* np.sqrt((16 + a**2)))) 
         samples.append(samplevalue)
      
-    plt.figure(figsize= (5,3), dpi=500)
+    plt.figure(figsize= (5,3), dpi=300)
 
     plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="small")
@@ -249,7 +249,7 @@ def comparison_gg_simple(n):
 def plot_results(xvalues, simple_function, full_function, simple_samples,
                  MH_samples, splitting, n):
     """This program plots the results from the MH_comparison programs"""
-    plt.figure(figsize= (10,3), dpi=500)
+    plt.figure(figsize= (10,3), dpi=300)
     plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="small")
     plt.rc('ytick', labelsize="small")
@@ -268,9 +268,9 @@ def plot_results(xvalues, simple_function, full_function, simple_samples,
     ax2.set_title("MH corrected histogram")
 
     ax1.set_xlim(0,1)
-    ax1.set_ylim(0,3)
+    ax1.set_ylim(0,1)
     ax2.set_xlim(0,1)
-    ax2.set_ylim(0,3)
+    ax2.set_ylim(0,1)
     ax1.set_xlabel('z')
     ax2.set_xlabel('z')
     ax1.legend(fontsize="x-small")

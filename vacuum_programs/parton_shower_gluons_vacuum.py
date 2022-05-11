@@ -7,12 +7,13 @@ import matplotlib.pyplot as plt
 import vacuum_splittingfunctions as sf # Includes color factors.
 import numpy as np
 from scipy.integrate import quad 
+import datetime
 
 #constants
 epsilon = 10**(-3)
 z_min = 10**(-3)
 plot_lim = 10**(-3)
-binnumber = 100
+binnumber = 125
 
 gg_integral, __ = quad((sf.gg_simple_analytical), epsilon, 1-epsilon)
 
@@ -263,61 +264,112 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
         del Shower0
     
     # Sets the different ranges required for the plots.
-    if scale == "lin":
-        linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-        linbins2 = (np.linspace(0.991, 1, num= 10))
-        bins = np.hstack((linbins1, linbins2))
-        #bins = np.linspace(plot_lim, 1, num=binnumber)
-        xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
+    linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
+    linbins2 = (np.linspace(0.991, 1, num= 10))
+    linbins = np.hstack((linbins1, linbins2))
+    #bins = np.linspace(plot_lim, 1, num=binnumber)
+    xlinrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
 
-    elif scale == "log":
-        logbins1 = np.logspace(-3, -0.1, num=binnumber)
-        logbins2 = np.logspace(-0.09, 0, num = 10)
-        bins = np.hstack((logbins1, logbins2))
-        xrange = np.logspace(-3, -0.0001, num=(4*binnumber))
+    logbins1 = np.logspace(-3, -0.1, num=binnumber)
+    logbins2 = np.logspace(-0.09, 0, num = 10)
+    logbins = np.hstack((logbins1, logbins2))
+    xlogrange = np.logspace(-3, -0.0001, num=(4*binnumber))
             
         
     # Normalizing showers
-    binlist = []
-
     print("\rCalculating bins...", end="")
-    
-    gluonbinlists = [[],[],[],[]]
-    gluonbinhards = [[],[],[],[]]
 
+    linbinlist = []
+    gluonlinlists = [[],[],[],[]]
+    gluonlinhards = [[],[],[],[]]
 
-    for i in range(len(bins)-1):
-        binwidth = bins[i+1]-bins[i]
-        bincenter = bins[i+1] - (binwidth/2)
-        binlist.append(bincenter)
+    for i in range(len(linbins)-1):
+        binwidth = linbins[i+1]-linbins[i]
+        bincenter = linbins[i+1] - (binwidth/2)
+        linbinlist.append(bincenter)
         
-        # Calculating gluonbins
+        # Calculating gluonlinbins
         for gluonlist in gluonlists:
             index = gluonlists.index(gluonlist)
             frequencylist = []
             
             for initialfrac in gluonlist:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             gluondensity = len(frequencylist)*bincenter/(n*binwidth)
-            gluonbinlists[index].append(gluondensity)
+            gluonlinlists[index].append(gluondensity)
         
-        # Calculating hardbins.
+        # Calculating hardlinbins.
         for gluonhard in gluonhards:
             index = gluonhards.index(gluonhard)
             frequencylist = []
 
             for initialfrac in gluonhard:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             binharddensity = len(frequencylist)*bincenter/(n*binwidth)
-            gluonbinhards[index].append(binharddensity)
+            gluonlinhards[index].append(binharddensity)
+    
+    logbinlist = []
+    gluonloglists = [[],[],[],[]]
+    gluonloghards = [[],[],[],[]]
+
+    for i in range(len(logbins)-1):
+        binwidth = logbins[i+1]-logbins[i]
+        bincenter = logbins[i+1] - (binwidth/2)
+        logbinlist.append(bincenter)
+        
+        # Calculating gluonlogbins
+        for gluonlist in gluonlists:
+            index = gluonlists.index(gluonlist)
+            frequencylist = []
+            
+            for initialfrac in gluonlist:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            gluondensity = len(frequencylist)*bincenter/(n*binwidth)
+            gluonloglists[index].append(gluondensity)
+        
+        # Calculating hardlogbins.
+        for gluonhard in gluonhards:
+            index = gluonhards.index(gluonhard)
+            frequencylist = []
+
+            for initialfrac in gluonhard:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            binharddensity = len(frequencylist)*bincenter/(n*binwidth)
+            gluonloghards[index].append(binharddensity)
     
     # Calculate solutions
-    solutions = DGLAP_solutions(tvalues, xrange)
+    linsolutions = DGLAP_solutions(tvalues, xlinrange)
+    logsolutions = DGLAP_solutions(tvalues, xlogrange)
+
+    
+    # Save data to file
+    fulldate = datetime.datetime.now()
+    datetext = (fulldate.strftime("%y") +"_" + 
+                fulldate.strftime("%m") +"_" + 
+                fulldate.strftime("%d") +"_" )
+    filename = "data" + datetext + str(n) + "showers"
+    filenameloc = "data\\parton_shower_gluons_vacuum_data\\" + filename
+    np.savez(filenameloc, 
+             n = n,
+             tvalues = tvalues,
+             linbinlist = linbinlist,
+             logbinlist = logbinlist, 
+             gluonlinlists = gluonlinlists,
+             gluonlinhards = gluonlinhards,
+             gluonloglists = gluonloglists,
+             gluonloghards = gluonloghards,
+             xlinrange = xlinrange,
+             xlogrange = xlogrange,
+             linsolutions = linsolutions,
+             logsolutions = logsolutions)
+    
      
     # Plot    
-    plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
+    plt.figure(dpi=500, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + ". zmin: " + str(z_min) + 
              "\n " + opt_title)    
@@ -341,33 +393,33 @@ def several_showers_vacuum_analytical_comparison(n, opt_title, scale):
     for ax in axes:
         index = axes.index(ax)
         
-        ax.plot(binlist, gluonbinlists[index], 'b--', label ="MC")
-        #ax.plot(binlist, gluonbinhards[index], 'b:')
-        ax.plot(xrange, solutions[index], 'r', label="solution")
+        if scale == "lin":
+            ax.plot(linbinlist, gluonlinlists[index], 'b--', label ="MC")
+            #ax.plot(linbinlist, gluonlinhards[index], 'b:')
+            ax.plot(xlinrange, linsolutions[index], 'r', label="solution")
+            ax.set_xscale("linear")
+            ax.set_yscale("log")
+            ax.set_xlim(0,1)
+            
+        elif scale == "log":
+            ax.plot(logbinlist, gluonloglists[index], 'b--', label ="MC")
+            #ax.plot(logbinlist, gluonloghards[index], 'b:')
+            ax.plot(xlogrange, logsolutions[index], 'r', label="solution")
+            ax.set_xscale("log")
+            ax.set_yscale("log")
+            ax.set_xlim(0.001,1)
 
+        ax.set_ylim(0.01,10)
         ax.set_title('t = ' + str(tvalues[index]))
         ax.set_xlabel('$z$')
         ax.set_ylabel('$D(x,t)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
         ax.legend(loc='lower right')
-        
-        #ax.text(0.1, 0.9, r'${0:}x^{{{1:}}}_{{\rm map}}$'.format(A, b))
-
-        
+                
         textstring = '$n={%i}$'%n
         ax.text(0.85, 0.2, textstring, fontsize = "xx-small",
                 horizontalalignment='center', verticalalignment='bottom', transform=ax.transAxes)
         
-        if scale == "lin":
-            ax.set_xscale("linear")
-            ax.set_yscale("log")
-            ax.set_xlim(0,1)
-            ax.set_ylim(0.01,10)
-        elif scale == "log":
-            ax.set_xscale("log")
-            ax.set_yscale("log")
-            ax.set_xlim(0.001,1)
-            ax.set_ylim(0.01,10)
 
     print("\rShowing..." + 10*" ", end="")
 

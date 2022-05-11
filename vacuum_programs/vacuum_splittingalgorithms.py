@@ -128,7 +128,7 @@ def comparison_qg(n):
         randomsample = (0.5+0.5*b-(0.5/b))
         random_samples.append(randomsample)
         
-    plt.figure(figsize= (5,3), dpi=500)
+    plt.figure(figsize= (5,3), dpi=300)
 
     plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="small")
@@ -194,7 +194,7 @@ def MH_comparison_qq(n):
 def plot_results(xvalues, simple_function, full_function, simple_samples,
                  MH_samples, splitting, n):
     """This program plots the results from the MH_comparison programs"""
-    plt.figure(figsize= (10,3), dpi=500)
+    plt.figure(figsize= (10,3), dpi=300)
     plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="small")
     plt.rc('ytick', labelsize="small")

@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from medium_splittingfunctions import gg_simple_analytical
 import numpy as np
 from scipy.integrate import quad
+import datetime
+
 
 # Constants
 epsilon = 10**(-3)
@@ -46,10 +48,12 @@ class Shower(object):
         self.FinalFracList2 = [] # Contains all partons above z_min.
         self.FinalFracList3 = [] # Contains all partons above z_min.
         self.FinalFracList4 = [] # Contains all partons above z_min.
+        self.Hardest1 = None
+        self.Hardest2 = None
+        self.Hardest3 = None
+        self.Hardest4 = None
         self.SplittingPartons = []
-
         self.Loops = (True, True, True, True)
-        self.Hardest = None
         
     def select_splitting_parton(self):
         """
@@ -77,25 +81,30 @@ class Shower(object):
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList1.append(PartonObj.InitialFrac) 
+            self.Hardest1 = max(self.FinalFracList1)
                     
         if tau > tauvalues[1] and self.Loops[1]:
             self.Loops = (False, False, True, True)
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList2.append(PartonObj.InitialFrac) 
+            self.Hardest2 = max(self.FinalFracList2)
                     
         if tau > tauvalues[2] and self.Loops[2]:
             self.Loops = (False, False, False, True)
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList3.append(PartonObj.InitialFrac) 
+            self.Hardest3 = max(self.FinalFracList3)
                     
         if tau > tauvalues[3] and self.Loops[3]:
             self.Loops = (False, False, False, False)
+            
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList4.append(PartonObj.InitialFrac)   
                 del PartonObj
+            self.Hardest4 = max(self.FinalFracList4)
             end_shower = True
             
         return end_shower
@@ -198,11 +207,6 @@ def generate_shower(tauvalues, p_t, Q_0, R, showernumber):
             if initialfrac > z_min: # Limit on how soft gluons can split.
                 Shower0.SplittingPartons.append(NewParton)  
 
-    try:
-        Shower0.Hardest = max(Shower0.FinalFracList4)
-    except:
-        print("ERROR, all partons radiated to soft.")
-
     return Shower0
 
 
@@ -240,6 +244,7 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     
     #Generating showers
     gluonlists = [[],[],[],[]]
+    gluonhards = [[],[],[],[]]
 
     for i in range (1,n):
         print("\rLooping... " + str(round(100*i/(n),2)) +"%", end="")
@@ -248,60 +253,114 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         gluonlists[0].extend(Shower0.FinalFracList1)
         gluonlists[1].extend(Shower0.FinalFracList2)
         gluonlists[2].extend(Shower0.FinalFracList3)
-        gluonlists[3].extend(Shower0.FinalFracList4)        
+        gluonlists[3].extend(Shower0.FinalFracList4)      
+        gluonhards[0].append(Shower0.Hardest1)
+        gluonhards[1].append(Shower0.Hardest2)
+        gluonhards[2].append(Shower0.Hardest3)
+        gluonhards[3].append(Shower0.Hardest4)
         del Shower0
 
     # Sets the different ranges required for the plots.
-    if scale == "lin":
-        linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-        linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
-        bins = np.hstack((linbins1, linbins2))
-        xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
+    linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
+    linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
+    linbins = np.hstack((linbins1, linbins2))
+    xlinrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
         
-    elif scale == "log":
-        logbins1 = np.logspace(-3, -0.1, num=binnumber)
-        logbins2 = np.logspace(-0.09, 0, num = 10)
-        bins = np.hstack((logbins1, logbins2))
-        xrange = np.logspace(-3, -0.0001, num=(4*binnumber))
+    logbins1 = np.logspace(-3, -0.1, num=binnumber)
+    logbins2 = np.logspace(-0.09, 0, num = 10)
+    logbins = np.hstack((logbins1, logbins2))
+    xlogrange = np.logspace(-3, -0.0001, num=(4*binnumber))
 
 
     # Normalizing the showers.
     print("\rCalculating bins...", end="")
-    binlist = []
-    gluonbinlists = [[],[],[],[]]
+    linbinlist = []
+    gluonlinlists = [[],[],[],[]]
+    gluonlinhards = [[],[],[],[]]
 
     gluontzs = [0,0,0,0]
 
-    for i in range(len(bins)-1):
-        binwidth = bins[i+1]-bins[i]
-        bincenter = bins[i+1] - (binwidth/2)
-        binlist.append(bincenter)
+    for i in range(len(linbins)-1):
+        binwidth = linbins[i+1]-linbins[i]
+        bincenter = linbins[i+1] - (binwidth/2)
+        linbinlist.append(bincenter)
         
         for gluonlist in gluonlists:
             index = gluonlists.index(gluonlist)
             frequencylist = []
             for initialfrac in gluonlist:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)       
                     if initialfrac ==1:
                         gluontzs[index] +=1             
             binvalue = len(frequencylist)*bincenter/(n*binwidth)
-            gluonbinlists[index].append(binvalue)
+            gluonlinlists[index].append(binvalue)
+            
+        for gluonhard in gluonhards:
+            index = gluonhards.index(gluonhard)
+            frequencylist = []
+            for initialfrac in gluonhard:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)                  
+            binvalue = len(frequencylist)*bincenter/(n*binwidth)
+            gluonlinhards[index].append(binvalue)
     
-    print("gluontzs = ", gluontzs)
-    
+    logbinlist = []
+    gluonloglists = [[],[],[],[]]
+    gluonloghards = [[],[],[],[]]
+
+    for i in range(len(logbins)-1):
+        binwidth = logbins[i+1]-logbins[i]
+        bincenter = logbins[i+1] - (binwidth/2)
+        logbinlist.append(bincenter)
+        
+        # Calculating gluonlogbins
+        for gluonlist in gluonlists:
+            index = gluonlists.index(gluonlist)
+            frequencylist = []
+            
+            for initialfrac in gluonlist:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            gluondensity = len(frequencylist)*bincenter/(n*binwidth)
+            gluonloglists[index].append(gluondensity)
+        
+        # Calculating hardlogbins.
+        for gluonhard in gluonhards:
+            index = gluonhards.index(gluonhard)
+            frequencylist = []
+
+            for initialfrac in gluonhard:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            binharddensity = len(frequencylist)*bincenter/(n*binwidth)
+            gluonloghards[index].append(binharddensity)   
+            
     # Calculating solutions
-    solutions = [[],[],[],[]]
+    linsolutions = BDMPS_solutions(tauvalues, xlinrange)
+    logsolutions = BDMPS_solutions(tauvalues, xlogrange)
     
-    for x in xrange:
-        D1 = ((tau1)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau1**2)/(1-x)))
-        D2 = ((tau2)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau2**2)/(1-x)))
-        D3 = ((tau3)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau3**2)/(1-x)))
-        D4 = ((tau4)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau4**2)/(1-x)))
-        solutions[0].append(D1)
-        solutions[1].append(D2)
-        solutions[2].append(D3)
-        solutions[3].append(D4)
+    # Save data to file
+    fulldate = datetime.datetime.now()
+    datetext = (fulldate.strftime("%y") +"_" + 
+                fulldate.strftime("%m") +"_" + 
+                fulldate.strftime("%d") +"_" )
+    filename = "data" + datetext  + str(n) + "showers"
+    filenameloc = "data\\parton_shower_gluons_medium_data\\" + filename
+    np.savez(filenameloc, 
+             n = n,
+             tauvalues = tauvalues,
+             linbinlist = linbinlist,
+             logbinlist = logbinlist, 
+             gluonlinlists = gluonlinlists,
+             gluonlinhards = gluonlinhards,
+             gluonloglists = gluonloglists,
+             gluonloghards = gluonloghards,
+             xlinrange = xlinrange,
+             xlogrange = xlogrange,
+             linsolutions = linsolutions,
+             logsolutions = logsolutions)
+    
     
     # Do the actual plotting. 
     plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
@@ -329,8 +388,18 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     for ax in axes:
         index = axes.index(ax)
         
-        ax.plot(binlist, gluonbinlists[index], "--", label="MC")
-        ax.plot(xrange, solutions[index], 'r', label="solution")
+        if scale == "lin":
+            ax.plot(linbinlist, gluonlinlists[index], "--", label="MC")
+            ax.plot(xlinrange, linsolutions[index], 'r', label="solution")
+            ax.set_xscale("linear")
+            ax.set_yscale("log")
+
+        elif scale == "log":
+            ax.plot(logbinlist, gluonloglists[index], "--", label="MC")
+            ax.plot(xlogrange, logsolutions[index], 'r', label="solution")
+            ax.set_xscale("log")
+            ax.set_yscale("log")
+        
         ax.set_title('tau = ' +str(tauvalues[index]))
         ax.set_xlim(plot_lim,1)
         ax.set_ylim(0.01,10)
@@ -339,15 +408,6 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         ax.grid(linestyle='dashed', linewidth=0.2)
         ax.legend()
     
-        if scale == "lin":
-            ax.set_xscale("linear")
-            ax.set_yscale("log")
-
-        elif scale == "log":
-            ax.set_xscale("log")
-            ax.set_yscale("log")
-
-
     print("\rShowing" + 10*" ")
 
     plt.tight_layout()
@@ -372,3 +432,27 @@ def error_message_several_showers(n, opt_title, scale):
         if scale_error:
             msg = msg+ "\nERROR! - 'scale' must be 'lin' or 'log'."
     return error, msg
+
+
+def BDMPS_solutions(tvalues, xrange):
+    """"
+    Calculated the solutions of the BDMPS equation.
+    
+    Parameters: 
+        tvalues (list): Vales of t to calculate for..
+        xrange (list): xvalues for plot
+
+    Returns:
+        solutions (list): List of the caculated solutions for each x in xrange.
+    """
+
+    solutions = [[],[],[],[]]
+
+    for tau in tvalues:
+        index = tvalues.index(tau)
+        
+        for x in xrange:
+            D = ((tau)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
+            solutions[index].append(D)
+            
+    return solutions
