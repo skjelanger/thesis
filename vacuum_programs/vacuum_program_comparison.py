@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import parton_shower_gluons_vacuum as ggv
 import parton_shower_vacuum as gqv
+import datetime
 
 
 #constants
@@ -77,75 +78,145 @@ def vacuum_programs_comparison(n, opt_title, scale):
         del Showergq
     
     # Sets the different ranges required for the plots.
-    if scale == "lin":
-        #linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-        #linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
-        #bins = np.hstack((linbins1, linbins2))
-        bins = np.linspace(plot_lim, 1, num=binnumber)
-        xrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
+    linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
+    linbins2 = (np.linspace(0.991, 1, num= 10))
+    linbins = np.hstack((linbins1, linbins2))
+    xlinrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
 
-    elif scale == "log":
-        logbins1 = np.logspace(-3, -0.1, num=binnumber)
-        logbins2 = np.logspace(-0.09, 0, num = 10)
-        bins = np.hstack((logbins1, logbins2))
-        xrange = np.logspace(-3, -0.0001, num=(4*binnumber))
+    logbins1 = np.logspace(-3, -0.1, num=binnumber)
+    logbins2 = np.logspace(-0.09, 0, num = 10)
+    logbins = np.hstack((logbins1, logbins2))
+    xlogrange = np.logspace(-3, -0.0001, num=(4*binnumber))
             
-        
     # Normalizing showers
-    binlist = []
-
     print("\rCalculating bins...", end="")
     
-    ggbinlists = [[], [], [], []]
-    gqbinlists = [[], [], [], []]
-    ggbinhards = [[], [], [], []]
-    gqbinhards = [[], [], [], []]
+    linbinlist = []
+
+    gglinlists = [[], [], [], []]
+    gqlinlists = [[], [], [], []]
+    gglinhards = [[], [], [], []]
+    gqlinhards = [[], [], [], []]
     
-    for i in range(len(bins)-1):
-        binwidth = bins[i+1]-bins[i]
-        bincenter = bins[i+1] - (binwidth/2)
-        binlist.append(bincenter)
+    for i in range(len(linbins)-1):
+        binwidth = linbins[i+1]-linbins[i]
+        bincenter = linbins[i+1] - (binwidth/2)
+        linbinlist.append(bincenter)
         for gglist in gglists:
             index = gglists.index(gglist)
             frequencylist = []
             for initialfrac in gglist:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             density = len(frequencylist)*bincenter/(n*binwidth)
-            ggbinlists[index].append(density)
+            gglinlists[index].append(density)
         
         for gqlist in gqlists:
             index = gqlists.index(gqlist)
             frequencylist = []
             for initialfrac in gqlist:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             density = len(frequencylist)*bincenter/(n*binwidth)
-            gqbinlists[index].append(density)
+            gqlinlists[index].append(density)
             
         for gghard in gghards:
             index = gghards.index(gghard)
             frequencylist = []
             for initialfrac in gghard:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             density = len(frequencylist)*bincenter/(n*binwidth)
-            ggbinhards[index].append(density)
+            gglinhards[index].append(density)
         
         for gqhard in gqhards:
             index = gqhards.index(gqhard)
             frequencylist = []
             for initialfrac in gqhard:
-                if initialfrac > bins[i] and initialfrac <= bins[i+1]:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
                     frequencylist.append(initialfrac)
             density = len(frequencylist)*bincenter/(n*binwidth)
-            gqbinhards[index].append(density)
+            gqlinhards[index].append(density)
+            
+    logbinlist = []
+
+    ggloglists = [[], [], [], []]
+    gqloglists = [[], [], [], []]
+    ggloghards = [[], [], [], []]
+    gqloghards = [[], [], [], []]
+    
+    for i in range(len(logbins)-1):
+        binwidth = logbins[i+1]-logbins[i]
+        bincenter = logbins[i+1] - (binwidth/2)
+        logbinlist.append(bincenter)
+        for gglist in gglists:
+            index = gglists.index(gglist)
+            frequencylist = []
+            for initialfrac in gglist:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            ggloglists[index].append(density)
+        
+        for gqlist in gqlists:
+            index = gqlists.index(gqlist)
+            frequencylist = []
+            for initialfrac in gqlist:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            gqloglists[index].append(density)
+            
+        for gghard in gghards:
+            index = gghards.index(gghard)
+            frequencylist = []
+            for initialfrac in gghard:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            ggloghards[index].append(density)
+        
+        for gqhard in gqhards:
+            index = gqhards.index(gqhard)
+            frequencylist = []
+            for initialfrac in gqhard:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)
+            density = len(frequencylist)*bincenter/(n*binwidth)
+            gqloghards[index].append(density)
     
     # Calculating solutions
-    solutions = ggv.DGLAP_solutions(tvalues, xrange)
+    linsolutions = ggv.DGLAP_solutions(tvalues, xlinrange)
+    logsolutions = ggv.DGLAP_solutions(tvalues, xlinrange)
+
+    # Save data to file
+    fulldate = datetime.datetime.now()
+    datetext = (fulldate.strftime("%y") +"_" + 
+                fulldate.strftime("%m") +"_" + 
+                fulldate.strftime("%d") +"_" )
+    filename = "data" + datetext  + str(n) + "showers"
+    filenameloc = "data\\vacuum_program_comparison_data\\" + filename
+    np.savez(filenameloc, 
+             n = n,
+             C_A = ggv.sf.C_A,
+             tvalues = tvalues,
+             linbinlist = linbinlist,
+             logbinlist = logbinlist, 
+             gglinlists = gglinlists,
+             gglinhards = gglinhards,
+             gqlinlists = gqlinlists,
+             gqlinhards = gqlinhards,
+             ggloglists = ggloglists,
+             ggloghards = ggloghards,
+             gqloglists = gqloglists,
+             gqloghards = gqloghards,
+             xlinrange = xlinrange,
+             xlogrange = xlogrange,
+             linsolutions = linsolutions,
+             logsolutions = logsolutions)
 
     # Plot    
-    plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
+    plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Vaccum showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
              "\n " + opt_title)    
@@ -168,14 +239,29 @@ def vacuum_programs_comparison(n, opt_title, scale):
     
     for ax in axes:
         index = axes.index(ax)
+        
+        if scale == "lin":
+            ax.plot(linbinlist, gglinlists[index], 'b--', label ="gluons")
+            ax.plot(linbinlist, gqlinlists[index], 'g--', label="quarks & gluons")
+            ax.plot(linbinlist, gglinhards[index], 'b:')
+            ax.plot(linbinlist, gqlinhards[index], 'g:')
+            ax.plot(xlinrange, linsolutions[index], 'r', label="solution gluons")
+            ax.set_xscale("linear")
+            ax.set_yscale("log")
+            ax.set_xlim(0,1)
 
-        ax.plot(binlist, ggbinlists[index], 'b--', label ="gluons")
-        ax.plot(binlist, gqbinlists[index], 'g--', label="quarks & gluons")
-        ax.plot(binlist, ggbinhards[index], 'b:')
-        ax.plot(binlist, gqbinhards[index], 'g:')
-        ax.plot(xrange, solutions[index], 'r', label="solution gluons")
+        elif scale == "log":
+            ax.plot(logbinlist, ggloglists[index], 'b--', label ="gluons")
+            ax.plot(logbinlist, gqloglists[index], 'g--', label="quarks & gluons")
+            ax.plot(logbinlist, ggloghards[index], 'b:')
+            ax.plot(logbinlist, gqloghards[index], 'g:')
+            ax.plot(xlogrange, logsolutions[index], 'r', label="solution gluons")
+            ax.set_xscale("log")
+            ax.set_yscale("log")
+            ax.set_xlim(0.001,1)
+
+
         ax.set_title('t = ' + str(tvalues[index]))
-        ax.set_xlim(plot_lim,1)
         ax.set_ylim(0.01,10)
         ax.set_xlabel('z ')
         ax.set_ylabel('D(x,t)')
@@ -186,18 +272,6 @@ def vacuum_programs_comparison(n, opt_title, scale):
         ax.text(0.8, 0.3, textstring, fontsize = "xx-small",
                 horizontalalignment='center', verticalalignment='bottom', transform=ax.transAxes)
         
-
-        if scale == "lin":
-            ax.set_xscale("linear")
-            ax.set_yscale("log")
-
-        elif scale == "log":
-            ax.set_xscale("log")
-            ax.set_yscale("log")
-
-
-    print("\rShowing..." + 10*" ", end="")
-
     plt.tight_layout()
     plt.show()
     print("\rDone!" + 10*" ")
