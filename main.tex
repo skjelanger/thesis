@@ -3,7 +3,7 @@
 \usepackage{subfiles}
 \setcounter{tocdepth}{2}
 
-\title{\Huge{Some dive into some QCD parton showers} 
+\title{\Huge{QCD parton fragmentation in vacuum and medium with leading jet energy loss} 
         \endgraf 
         \Large{hello there}}
 \author{Kristoffer Skjelanger}
@@ -32,33 +32,28 @@
     \end{titlepage}
 
     % Start main sections %%%
-    \newpage
-    \chapter*{Introduction}\label{cpt:intro}
-        \addcontentsline{toc}{part}{\nameref{cpt:intro}}
+    \clearpage
         \subfile{sections/section1_introduction.tex}
-    \newpage    
-    \chapter{Fundamentals}
+    \clearpage   
         \subfile{sections/section2_fundamentals.tex}
-    \newpage
-    \chapter{Analytical}
+    \clearpage
         \subfile{sections/section3_analytical.tex}
-    \newpage
-    \chapter{Numerical}
+    \clearpage
         \subfile{sections/section4_numerical.tex}
-    \newpage
-    \chapter{Results}
+    \clearpage
+        \subfile{sections/section5_discussion.tex}
 
     %%% Start appendices %%%
     \appendix
     \begin{appendices}
-        \newpage
-        \subfile{appendixes/appendix1.tex}
-        \newpage
-        \subfile{appendixes/appendix2.tex}
+        \clearpage
+            \subfile{appendixes/DGLAP_derivation.tex}
+        \clearpage
+            \subfile{appendixes/medium_MH_steps.tex}
     \end{appendices}
         
     %%% Start Bibliography %%%
-    \newpage
+    \clearpage
     \phantomsection %for hyperlinking from toc.
     \addcontentsline{toc}{section}{References} %adds bib to toc
     \bibliographystyle{unsrt}

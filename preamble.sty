@@ -10,12 +10,27 @@
 \usepackage{parskip}
 \usepackage{setspace}
 \setlength\parindent{0pt}
+\usepackage[section]{placeins}
+\usepackage[hyperfootnotes=false]{hyperref}
+\usepackage[multiple, hang, bottom]{footmisc}
+\usepackage{footnotebackref}
+\usepackage{bookmark}
+
+%Algorithm environment
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\algrenewcommand\algorithmicdo{\textbf{:}}
+\algrenewcommand\algorithmicthen{\textbf{:}}
+\algnewcommand{\Statey}[0]{\Statex \hskip \ALG@tlm }
+
 
 % Physics packages
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{slashed}
 \usepackage{physics}
+
+% Tikz packages
 \usepackage{tikz-feynman}
 \tikzfeynmanset{compat=1.1.0}
 
@@ -32,31 +47,30 @@
 \appendixtitleon    % puts \appendixname before each appendix title
 \appendixtitletocon % puts \appendixname before each TOC entry
 \let\origappendix\appendix % save the existing appendix command
-\renewcommand\appendix{\clearpage\pagenumbering{Roman}\origappendix}
+%\renewcommand\appendix{\clearpage\pagenumbering{Roman}\origappendix} #Roman numerals for appendix
 
-% Bibliography
-%\usepackage[nottoc,numbib]{tocbibind}
 
-% Chapers - rename "part" to "chapter"
+% Chapters - rename "part" to "chapter"
 \renewcommand{\partname}{Chapter}
 \newcommand{\chapter}{\part}
 
 % Graphics packages
 \usepackage{graphicx}
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=1in, a4paper]{geometry}
 \usepackage{xsim,tcolorbox}
 \usepackage[framemethod=default]{mdframed}
 
 % Other
 \graphicspath{ {./images/} }
-\setstretch{1.1} %changes line spacing
+\setstretch{1.125} %changes line spacing
 
 % Referencing
-\usepackage{hyperref}
 \def\equationautorefname~#1\null{Eqn.~(#1)\null}
 \def\figureautorefname~#1\null{Figure.~#1\null}
 \def\sectionautorefname~#1\null{Section~#1\null}
 \def\subsectionautorefname~#1\null{Section~#1\null}
+\def\algorithmautorefname~#1\null{Algorithm~#1\null}
+
 
 % Numbering and enumerate format
 \numberwithin{equation}{section}
@@ -64,8 +78,6 @@
 \numberwithin{table}{section}
 \renewcommand{\thesection}{\arabic{section}}
 \usepackage[shortlabels]{enumitem}
-%\usepackage{enumerate}
-
 
 % Define Note-environment
 \newenvironment{note}[1]{%
@@ -79,10 +91,16 @@
     leftmargin=1cm,rightmargin=1cm,]
 }{\end{mdframed}}
 
-% Define \ggg, \gqq, and \qqg notation.
-\newcommand{\jet}{\text{jet}}
-\newcommand{\nn}{\nonumber\\}
 
 % Vector notation
 \let\oldhat\hat
 \renewcommand{\vec}[1]{\mathbf{#1}}
+
+% Custom commands.
+\newcommand{\lit}[1]{\footnote{Literature warning: #1}}
+\newcommand{\kty}[1]{\textcolor{orange}{\textit{#1}}}
+\newcommand{\krs}[1]{\textcolor{red}{#1}}
+\newcommand{\elab}[0]{\textcolor{blue}{\newline Elaborate...}}
+
+
+
