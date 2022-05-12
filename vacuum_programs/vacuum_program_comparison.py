@@ -187,7 +187,7 @@ def vacuum_programs_comparison(n, opt_title, scale):
     
     # Calculating solutions
     linsolutions = ggv.DGLAP_solutions(tvalues, xlinrange)
-    logsolutions = ggv.DGLAP_solutions(tvalues, xlinrange)
+    logsolutions = ggv.DGLAP_solutions(tvalues, xlogrange)
 
     # Save data to file
     fulldate = datetime.datetime.now()

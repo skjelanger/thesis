@@ -157,7 +157,7 @@ def program_comparison(filename, scale):
     file = np.load(destination)    
     
     n        = file["n"]
-    C_A      = file["C_A"]
+    Cfac     = round(float(file["C_A"]),1)
     tvalues      = file["tvalues"]
     xlinrange    = file["xlinrange"]
     linsolutions = file["linsolutions"]
@@ -174,7 +174,6 @@ def program_comparison(filename, scale):
     ggloghards   = file["ggloghards"]
     gqloglists   = file["gqloglists"]
     gqloghards   = file["gqloghards"]
-    
     
     # Plot    
     plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
@@ -198,20 +197,20 @@ def program_comparison(filename, scale):
         index = axes.index(ax)
         
         if scale == "lin":
-            ax.plot(linbinlist, gglinlists[index], 'b--', label ="gluons")
-            ax.plot(linbinlist, gqlinlists[index], 'g--', label="quarks & gluons")
-            ax.plot(linbinlist, gglinhards[index], 'b:')
-            ax.plot(linbinlist, gqlinhards[index], 'g:')
+            ax.plot(linbinlist, gglinlists[index], 'b--', label ="gluons only")
+            ax.plot(linbinlist, gqlinlists[index], 'g--', label="gluon initiated")
+            #ax.plot(linbinlist, gglinhards[index], 'b:')
+            #ax.plot(linbinlist, gqlinhards[index], 'g:')
             ax.plot(xlinrange, linsolutions[index], 'r', label="solution gluons")
             ax.set_xscale("linear")
             ax.set_yscale("log")
             ax.set_xlim(0,1)
 
         elif scale == "log":
-            ax.plot(logbinlist, ggloglists[index], 'b--', label ="gluons")
-            ax.plot(logbinlist, gqloglists[index], 'g--', label="quarks & gluons")
-            ax.plot(logbinlist, ggloghards[index], 'b:')
-            ax.plot(logbinlist, gqloghards[index], 'g:')
+            ax.plot(logbinlist, ggloglists[index], 'b--', label ="gluons only")
+            ax.plot(logbinlist, gqloglists[index], 'g--', label="gluon initiated")
+            #ax.plot(logbinlist, ggloghards[index], 'b:')
+            #ax.plot(logbinlist, gqloghards[index], 'g:')
             ax.plot(xlogrange, logsolutions[index], 'r', label="solution gluons")
             ax.set_xscale("log")
             ax.set_yscale("log")
@@ -223,11 +222,11 @@ def program_comparison(filename, scale):
         ax.set_xlabel('z ')
         ax.set_ylabel('D(x,t)')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend(loc="lower right")
+        ax.legend(loc="lower left")
         
-        textstring = '$n={%i}$'%n + "\n$C_A={%f}$"%C_A
-        ax.text(0.8, 0.3, textstring, fontsize = "xx-small",
-                horizontalalignment='center', verticalalignment='bottom', transform=ax.transAxes)
+        textstring = '$n={%i}$'%n
+        ax.text(0.45, 0.05, textstring, fontsize = "xx-small",
+                horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
         
     plt.tight_layout()
     plt.show()
