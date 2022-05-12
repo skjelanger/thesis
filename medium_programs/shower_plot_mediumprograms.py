@@ -59,7 +59,7 @@ def medium_analytical_comparison(filename, scale):
             ax.set_yscale("log")
             ax.set_xlim(0.001,1)        
             
-        ax.set_title('tau = ' +str(tauvalues[index]))
+        ax.set_title('$\\tau = $' +str(tauvalues[index]))
         ax.set_ylim(0.01,10)
         ax.set_xlabel('$z$')
         ax.set_ylabel('$D(x,t)$')
@@ -73,3 +73,54 @@ def medium_analytical_comparison(filename, scale):
     plt.tight_layout()
     plt.show()
     print("\rDone!" + 10*" ")    
+    
+def medium_scaling_comparison(filename):
+    filelocation = "data\\parton_shower_gluons_medium_scaling_data\\"
+    destination = filelocation + filename + ".npz"
+    file = np.load(destination)
+    
+    n          = file["n"]
+    tauvalues  = file["tauvalues"]
+    logbinlist    = file["logbinlist"]
+    gluonloglists = file["gluonloglists"]
+    gluonloghards = file["gluonloghards"]
+    
+    # Do the actual plotting. 
+    plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
+
+    plt.rc('axes', titlesize="small" , labelsize="x-small")
+    plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
+    plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
+    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('lines', linewidth=0.8)
+
+    ax = plt.subplot(111) #H B NR
+    
+
+    ax.plot(logbinlist, gluonloglists[0], "--", label="$\\tau = $"+str(tauvalues[0]))
+    ax.plot(logbinlist, gluonloglists[1], "--", label="$\\tau = $"+str(tauvalues[1]))
+    ax.plot(logbinlist, gluonloglists[2], "--", label="$\\tau = $"+str(tauvalues[2]))
+    ax.plot(logbinlist, gluonloglists[3], "--", label="$\\tau = $"+str(tauvalues[3]))
+    ax.plot(logbinlist, gluonloglists[4], "--", label="$\\tau = $"+str(tauvalues[4]))
+    ax.plot(logbinlist, gluonloglists[5], "--", label="$\\tau = $"+str(tauvalues[5]))
+    ax.plot(logbinlist, gluonloglists[6], "--", label="$\\tau = $"+str(tauvalues[6]))
+    ax.plot(logbinlist, gluonloglists[7], "--", label="$\\tau = $"+str(tauvalues[7]))
+    
+    ax.set_xlim(0.001,1)
+    ax.set_ylim(0.01,10)
+    ax.set_xlabel('z ')
+    ax.set_ylabel('$D(x,t)$')
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.grid(linestyle='dashed', linewidth=0.2)
+    ax.legend(loc="lower left")
+    
+    textstring = '$n={%i}$'%n
+    ax.text(0.02, 0.25, textstring, fontsize = "xx-small",
+            horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
+        
+    
+    plt.tight_layout()
+    plt.show()
+    print("\rDone!")   
+    
