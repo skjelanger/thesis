@@ -8,7 +8,7 @@ from medium_splittingfunctions import gg_simple_analytical
 import numpy as np
 from scipy.integrate import quad
 import datetime
-
+from operator import attrgetter
 
 # Constants
 epsilon = 10**(-3)
@@ -48,10 +48,15 @@ class Shower(object):
         self.FinalFracList2 = [] # Contains all partons above z_min.
         self.FinalFracList3 = [] # Contains all partons above z_min.
         self.FinalFracList4 = [] # Contains all partons above z_min.
-        self.Hardest1 = None
-        self.Hardest2 = None
-        self.Hardest3 = None
-        self.Hardest4 = None
+        self.Hardest1 = 0
+        self.Hardest2 = 0
+        self.Hardest3 = 0
+        self.Hardest4 = 0
+        self.Leadingbranchparton = None
+        self.Leadingbranch1 = None
+        self.Leadingbranch2 = None
+        self.Leadingbranch3 = None
+        self.Leadingbranch4 = None
         self.SplittingPartons = []
         self.Loops = (True, True, True, True)
         
@@ -81,21 +86,27 @@ class Shower(object):
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList1.append(PartonObj.InitialFrac) 
-            self.Hardest1 = max(self.FinalFracList1)
+            hardest = max(self.FinalList, key=attrgetter('InitialFrac'))
+            self.Leadingbranch1 = hardest.find_branch()
+            self.Hardest1 = hardest.InitialFrac
                     
         if tau > tauvalues[1] and self.Loops[1]:
             self.Loops = (False, False, True, True)
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList2.append(PartonObj.InitialFrac) 
-            self.Hardest2 = max(self.FinalFracList2)
+            hardest = max(self.FinalList, key=attrgetter('InitialFrac'))
+            self.Leadingbranch2 = hardest.find_branch()
+            self.Hardest2 = hardest.InitialFrac
                     
         if tau > tauvalues[2] and self.Loops[2]:
             self.Loops = (False, False, False, True)
             for PartonObj in self.FinalList:
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList3.append(PartonObj.InitialFrac) 
-            self.Hardest3 = max(self.FinalFracList3)
+            hardest = max(self.FinalList, key=attrgetter('InitialFrac'))
+            self.Leadingbranch3 = hardest.find_branch()
+            self.Hardest3 = hardest.InitialFrac
                     
         if tau > tauvalues[3] and self.Loops[3]:
             self.Loops = (False, False, False, False)
@@ -104,7 +115,9 @@ class Shower(object):
                 if PartonObj.InitialFrac > plot_lim:
                     self.FinalFracList4.append(PartonObj.InitialFrac)   
                 del PartonObj
-            self.Hardest4 = max(self.FinalFracList4)
+            hardest = max(self.FinalList, key=attrgetter('InitialFrac'))
+            self.Leadingbranch4 = hardest.find_branch()
+            self.Hardest4 = hardest.InitialFrac
             end_shower = True
             
         return end_shower
@@ -152,6 +165,46 @@ class Parton(object):
         delta_tau = -2*np.sqrt(self.InitialFrac)*np.log(rnd1)/(gg_integral)
         return delta_tau
     
+    def find_parent(self, Shower0):
+        """Determines which initial branch a parton belongs to. """
+        parton = self
+        leadingbranch = Shower0.Leadingbranchparton
+        while True:
+            parentparton = parton.Parent
+            if parentparton == leadingbranch:
+                return True
+            elif parentparton == None:
+                return False
+            else: 
+                parton = parentparton
+
+
+    def find_branch(self):
+        """Determines if a parton has been on every leading branch. """
+        parton = self
+        while True:
+            parentparton = parton.Parent
+
+            if parentparton == None:
+                return True
+
+            elif parentparton.Primary == parton:
+                if parentparton.Secondary.InitialFrac <= parton.InitialFrac:
+                    parton = parentparton
+                elif parentparton.Secondary.InitialFrac > parton.InitialFrac:
+                    return False
+                
+            elif parentparton.Secondary == parton:
+
+                if parentparton.Primary.InitialFrac <= parton.InitialFrac:
+                    parton = parentparton
+                elif parentparton.Primary.InitialFrac > parton.InitialFrac:
+                    return False
+            
+            else:
+                print("ERROR - parton is not a daughterparton.")
+                
+            
 
 # Main shower program. 
 # This program generates a single parton shower, given the initial conditions. 
@@ -203,7 +256,9 @@ def generate_shower(tauvalues, p_t, Q_0, R, showernumber):
                 SplittingParton.Secondary = NewParton
                 
             Shower0.FinalList.append(NewParton)
-
+            if (Shower0.Leadingbranchparton == None and initialfrac >= 0.5):
+                Shower0.Leadingbranchparton = NewParton
+                
             if initialfrac > z_min: # Limit on how soft gluons can split.
                 Shower0.SplittingPartons.append(NewParton)  
 
@@ -245,6 +300,11 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     #Generating showers
     gluonlists = [[],[],[],[]]
     gluonhards = [[],[],[],[]]
+    hardestbranches = [0,0,0,0]
+    branchhards = [[],[],[],[]]
+    nonbranchhards = [[],[],[],[]]
+
+
 
     for i in range (1,n):
         print("\rLooping... " + str(round(100*i/(n),2)) +"%", end="")
@@ -258,7 +318,37 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         gluonhards[1].append(Shower0.Hardest2)
         gluonhards[2].append(Shower0.Hardest3)
         gluonhards[3].append(Shower0.Hardest4)
+        
+        if Shower0.Leadingbranch1 == True:
+            hardestbranches[0] += 1
+            branchhards[0].append(Shower0.Hardest1)
+        elif Shower0.Leadingbranch1 == False:
+            nonbranchhards[0].append(Shower0.Hardest1)
+            
+        if Shower0.Leadingbranch2 == True:
+            hardestbranches[1] += 1
+            branchhards[1].append(Shower0.Hardest2)
+        elif Shower0.Leadingbranch2 == False:
+            nonbranchhards[1].append(Shower0.Hardest2)
+            
+        if Shower0.Leadingbranch3 == True:
+            hardestbranches[2] += 1
+            branchhards[2].append(Shower0.Hardest3)
+        elif Shower0.Leadingbranch3 == False:
+            nonbranchhards[2].append(Shower0.Hardest3)
+            
+        if Shower0.Leadingbranch4 == True:
+            hardestbranches[3] += 1
+            branchhards[3].append(Shower0.Hardest4)
+        elif Shower0.Leadingbranch4 == False:
+            nonbranchhards[3].append(Shower0.Hardest4)
+            
         del Shower0
+        
+    print("tau1, leadingbranches = ", hardestbranches[0], ". percentage: ", round(hardestbranches[0]*(100/n),2))
+    print("tau2, leadingbranches = ", hardestbranches[1], ". percentage: ", round(hardestbranches[1]*(100/n),2))
+    print("tau3, leadingbranches = ", hardestbranches[2], ". percentage: ", round(hardestbranches[2]*(100/n),2))
+    print("tau4, leadingbranches = ", hardestbranches[3], ". percentage: ", round(hardestbranches[3]*(100/n),2))
 
     # Sets the different ranges required for the plots.
     linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
@@ -277,6 +367,9 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     linbinlist = []
     gluonlinlists = [[],[],[],[]]
     gluonlinhards = [[],[],[],[]]
+    branchlinhards = [[],[],[],[]]
+    nonbranchlinhards = [[],[],[],[]]
+
 
     gluontzs = [0,0,0,0]
 
@@ -304,10 +397,31 @@ def several_showers_analytical_comparison(n, opt_title, scale):
                     frequencylist.append(initialfrac)                  
             binvalue = len(frequencylist)*bincenter/(n*binwidth)
             gluonlinhards[index].append(binvalue)
+            
+        #Branchhards
+        for branchhard in branchhards:
+            index = branchhards.index(branchhard)
+            frequencylist = []
+            for initialfrac in branchhard:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)                  
+            binvalue = len(frequencylist)*bincenter/(n*binwidth)
+            branchlinhards[index].append(binvalue)
+            
+        for nonbranchhard in nonbranchhards:
+            index = nonbranchhards.index(nonbranchhard)
+            frequencylist = []
+            for initialfrac in nonbranchhard:
+                if initialfrac > linbins[i] and initialfrac <= linbins[i+1]:
+                    frequencylist.append(initialfrac)                  
+            binvalue = len(frequencylist)*bincenter/(n*binwidth)
+            nonbranchlinhards[index].append(binvalue)
     
     logbinlist = []
     gluonloglists = [[],[],[],[]]
     gluonloghards = [[],[],[],[]]
+    branchloghards = [[],[],[],[]]
+    nonbranchloghards = [[],[],[],[]]
 
     for i in range(len(logbins)-1):
         binwidth = logbins[i+1]-logbins[i]
@@ -336,6 +450,25 @@ def several_showers_analytical_comparison(n, opt_title, scale):
             binharddensity = len(frequencylist)*bincenter/(n*binwidth)
             gluonloghards[index].append(binharddensity)   
             
+        #Branchhards
+        for branchhard in branchhards:
+            index = branchhards.index(branchhard)
+            frequencylist = []
+            for initialfrac in branchhard:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)                  
+            binvalue = len(frequencylist)*bincenter/(n*binwidth)
+            branchloghards[index].append(binvalue)
+            
+        for nonbranchhard in nonbranchhards:
+            index = nonbranchhards.index(nonbranchhard)
+            frequencylist = []
+            for initialfrac in nonbranchhard:
+                if initialfrac > logbins[i] and initialfrac <= logbins[i+1]:
+                    frequencylist.append(initialfrac)                  
+            binvalue = len(frequencylist)*bincenter/(n*binwidth)
+            nonbranchloghards[index].append(binvalue)
+            
     # Calculating solutions
     linsolutions = BDMPS_solutions(tauvalues, xlinrange)
     logsolutions = BDMPS_solutions(tauvalues, xlogrange)
@@ -359,11 +492,16 @@ def several_showers_analytical_comparison(n, opt_title, scale):
              xlinrange = xlinrange,
              xlogrange = xlogrange,
              linsolutions = linsolutions,
-             logsolutions = logsolutions)
+             logsolutions = logsolutions,
+             hardestbranches = hardestbranches,
+             branchlinhards = branchlinhards,
+             nonbranchlinhards = nonbranchlinhards,
+             branchloghards = branchloghards,
+             nonbranchloghards = nonbranchloghards)
     
     
     # Do the actual plotting. 
-    plt.figure(dpi=1000, figsize= (6,5)) #(w,h) figsize= (10,3)
+    plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
     title = ("Medium showers: " + str(n) + 
              ". epsilon: " + str(epsilon) + 
              ". z_min: " + str(z_min) +
@@ -391,6 +529,9 @@ def several_showers_analytical_comparison(n, opt_title, scale):
         if scale == "lin":
             ax.plot(linbinlist, gluonlinlists[index], "--", label="MC")
             ax.plot(xlinrange, linsolutions[index], 'r', label="solution")
+            ax.plot(linbinlist, branchlinhards[index], ':', label="branchard")
+            ax.plot(linbinlist, nonbranchlinhards[index], ':', label="nonbranchhard")
+
             ax.set_xscale("linear")
             ax.set_yscale("log")
 
@@ -400,20 +541,23 @@ def several_showers_analytical_comparison(n, opt_title, scale):
             ax.set_xscale("log")
             ax.set_yscale("log")
         
-        ax.set_title('tau = ' +str(tauvalues[index]))
+        ax.set_title('$\\tau = $' +str(tauvalues[index]))
         ax.set_xlim(plot_lim,1)
         ax.set_ylim(0.01,10)
-        ax.set_xlabel('z ')
-        ax.set_ylabel('D(x,t)')
+        ax.set_xlabel('$z$')
+        ax.set_ylabel('$D(x,\\tau)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
         ax.legend()
+        textstring = '$n={%i}$'%n + "\n$Hardestbr:{%i}$"%hardestbranches[index]
+        ax.text(0.7, 0.85, textstring, fontsize = "xx-small",
+                horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     
     print("\rShowing" + 10*" ")
 
     plt.tight_layout()
     plt.show()
     print("\rDone!" + 10*" ")    
-
+    
 
 def error_message_several_showers(n, opt_title, scale):
     """"Checks the input parameters for erros and generates merror_msg."""
@@ -434,12 +578,12 @@ def error_message_several_showers(n, opt_title, scale):
     return error, msg
 
 
-def BDMPS_solutions(tvalues, xrange):
+def BDMPS_solutions(tauvalues, xrange):
     """"
     Calculated the solutions of the BDMPS equation.
     
     Parameters: 
-        tvalues (list): Vales of t to calculate for..
+        tauvalues (list): Vales of tau to calculate for..
         xrange (list): xvalues for plot
 
     Returns:
@@ -448,8 +592,8 @@ def BDMPS_solutions(tvalues, xrange):
 
     solutions = [[],[],[],[]]
 
-    for tau in tvalues:
-        index = tvalues.index(tau)
+    for tau in tauvalues:
+        index = tauvalues.index(tau)
         
         for x in xrange:
             D = ((tau)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
