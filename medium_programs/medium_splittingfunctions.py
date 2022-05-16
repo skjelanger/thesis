@@ -8,6 +8,9 @@ C_F = 4/3
 N_f = 5
 T_f = 1/2
 
+def gg_super_simple_analytical(z):
+    return (1/(z)**(3/2))
+
 def gg_simple_analytical(z):
     return (1/(z*(1-z))**(3/2))
 

@@ -80,7 +80,7 @@ def medium_scaling_comparison(filename):
     file = np.load(destination)
     
     n          = file["n"]
-    tauvalues  = file["tauvalues"]
+    tauvalues  = file["tauvalues"].tolist()
     logbinlist    = file["logbinlist"]
     gluonloglists = file["gluonloglists"]
     gluonloghards = file["gluonloghards"]
@@ -88,11 +88,15 @@ def medium_scaling_comparison(filename):
     branchloghards      = file["branchloghards"]
     nonbranchloghards   = file["nonbranchloghards"]
     
+    textstring = '$n = {%i}$'%n
+    
     for hard in hardestbranches:
         index = hardestbranches.index(hard)
         percentage = round(hard*(100/n),2)
         print("For tau = ", tauvalues[index],
               ". Percentage of hardest on branch: ", percentage)
+        #textstring = textstring + "\nhob: ${%s}$"%tauvalues[index] %percentage +"%"
+
     
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
@@ -106,14 +110,14 @@ def medium_scaling_comparison(filename):
     ax = plt.subplot(111) #H B NR
     
 
-    ax.plot(logbinlist, gluonloglists[0], "--", label="$\\tau = $"+str(tauvalues[0]))
-    ax.plot(logbinlist, gluonloglists[1], "--", label="$\\tau = $"+str(tauvalues[1]))
-    ax.plot(logbinlist, gluonloglists[2], "--", label="$\\tau = $"+str(tauvalues[2]))
-    ax.plot(logbinlist, gluonloglists[3], "--", label="$\\tau = $"+str(tauvalues[3]))
-    ax.plot(logbinlist, gluonloglists[4], "--", label="$\\tau = $"+str(tauvalues[4]))
-    ax.plot(logbinlist, gluonloglists[5], "--", label="$\\tau = $"+str(tauvalues[5]))
-    ax.plot(logbinlist, gluonloglists[6], "--", label="$\\tau = $"+str(tauvalues[6]))
-    ax.plot(logbinlist, gluonloglists[7], "--", label="$\\tau = $"+str(tauvalues[7]))
+    ax.plot(logbinlist, branchloghards[0], "--", label="$\\tau = $"+str(tauvalues[0])+"- hob:" + str(round(hardestbranches[0]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[1], "--", label="$\\tau = $"+str(tauvalues[1])+"- hob:" + str(round(hardestbranches[1]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[2], "--", label="$\\tau = $"+str(tauvalues[2])+"- hob:" + str(round(hardestbranches[2]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[3], "--", label="$\\tau = $"+str(tauvalues[3])+"- hob:" + str(round(hardestbranches[3]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[4], "--", label="$\\tau = $"+str(tauvalues[4])+"- hob:" + str(round(hardestbranches[4]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[5], "--", label="$\\tau = $"+str(tauvalues[5])+"- hob:" + str(round(hardestbranches[5]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[6], "--", label="$\\tau = $"+str(tauvalues[6])+"- hob:" + str(round(hardestbranches[6]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[7], "--", label="$\\tau = $"+str(tauvalues[7])+"- hob:" + str(round(hardestbranches[7]*(100/n),2))+"%")
     
     ax.set_xlim(0.001,1)
     ax.set_ylim(0.01,10)
@@ -124,8 +128,70 @@ def medium_scaling_comparison(filename):
     ax.grid(linestyle='dashed', linewidth=0.2)
     ax.legend(loc="lower left")
     
-    textstring = '$n={%i}$'%n
     ax.text(0.02, 0.25, textstring, fontsize = "xx-small",
+            horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
+        
+    
+    plt.tight_layout()
+    plt.show()
+    print("\rDone!")   
+    
+def medium_leading_scaling(filename):
+    filelocation = "data\\parton_shower_gluons_medium_scaling_data\\"
+    destination = filelocation + filename + ".npz"
+    file = np.load(destination)
+    
+    n          = file["n"]
+    tauvalues  = file["tauvalues"].tolist()
+    logbinlist    = file["logbinlist"]
+    gluonloglists = file["gluonloglists"]
+    gluonloghards = file["gluonloghards"]
+    hardestbranches = file["hardestbranches"].tolist()
+    branchloghards      = file["branchloghards"]
+    nonbranchloghards   = file["nonbranchloghards"]
+    
+    textstring = '$n = {%i}$'%n
+    
+    for hard in hardestbranches:
+        index = hardestbranches.index(hard)
+        percentage = round(hard*(100/n),2)
+        print("For tau = ", tauvalues[index],
+              ". Percentage of hardest on branch: ", percentage)
+        #textstring = textstring + "\nhob: ${%s}$"%tauvalues[index] %percentage +"%"
+
+    empty = [None] * len(logbinlist)
+
+    # Do the actual plotting. 
+    plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
+
+    plt.rc('axes', titlesize="small" , labelsize="x-small")
+    plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
+    plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
+    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('lines', linewidth=0.8)
+
+    ax = plt.subplot(111) #H B NR
+    
+
+    ax.plot(logbinlist, branchloghards[0], "--", label="$\\tau = $"+str(tauvalues[0])+"- hob:" + str(round(hardestbranches[0]*(100/n),2))+"%")
+    ax.plot(logbinlist, empty, "--", label="$\\tau = $"+str(tauvalues[1])+"- hob:" + str(round(hardestbranches[1]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[2], "--", label="$\\tau = $"+str(tauvalues[2])+"- hob:" + str(round(hardestbranches[2]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[3], "--", label="$\\tau = $"+str(tauvalues[3])+"- hob:" + str(round(hardestbranches[3]*(100/n),2))+"%")
+    ax.plot(logbinlist, empty, "--", label="$\\tau = $"+str(tauvalues[4])+"- hob:" + str(round(hardestbranches[4]*(100/n),2))+"%")
+    ax.plot(logbinlist, branchloghards[5], "--", label="$\\tau = $"+str(tauvalues[5])+"- hob:" + str(round(hardestbranches[5]*(100/n),2))+"%")
+    ax.plot(logbinlist, empty, "--", label="$\\tau = $"+str(tauvalues[6])+"- hob:" + str(round(hardestbranches[6]*(100/n),2))+"%")
+    ax.plot(logbinlist, empty, "--", label="$\\tau = $"+str(tauvalues[7])+"- hob:" + str(round(hardestbranches[7]*(100/n),2))+"%")
+    
+    ax.set_xlim(0.001,1)
+    ax.set_ylim(0.01,10)
+    ax.set_xlabel('z ')
+    ax.set_ylabel('$D(x,\\tau)$')
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.grid(linestyle='dashed', linewidth=0.2)
+    ax.legend(loc="upper left")
+    
+    ax.text(0.02, 0.7, textstring, fontsize = "xx-small",
             horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
         
     
@@ -210,8 +276,8 @@ def medium_leading_branches(filename, scale):
         ax.legend(loc="upper left")
         
         textstring = "Hardest on leading branch:${%i}$"%round(hardestbranches[index]*(100/n),2) +"%" + '\n$n={%i}$'%n
-        ax.text(0.4, 0.95, textstring, fontsize = "xx-small",
-                horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+        ax.text(0.4, 0.1, textstring, fontsize = "xx-small",
+                horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
         
     plt.tight_layout()
     plt.show()
@@ -226,9 +292,11 @@ def medium_leading_parton_test(filename, scale):
     tauvalues  = file["tauvalues"].tolist()
     xlinrange     = file["xlinrange"]
     linbinlist    = file["linbinlist"]
+    gluonlinlists = file["gluonlinlists"]
     gluonlinhards = file["gluonlinhards"]
     xlogrange     = file["xlogrange"]
     logbinlist    = file["logbinlist"]
+    gluonloglists = file["gluonloglists"]
     gluonloghards = file["gluonloghards"]
     BDMPSlinsolutions = file["linsolutions"]
     BDMPSlogsolutions = file["logsolutions"]
@@ -259,7 +327,7 @@ def medium_leading_parton_test(filename, scale):
             leadingsolutions[index].append(leading)
 
     # Do the actual plotting. 
-    plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
+    plt.figure(dpi=300, figsize= (8,6)) #(w,h) figsize= (10,3)
 
     plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
@@ -278,31 +346,33 @@ def medium_leading_parton_test(filename, scale):
         index = axes.index(ax)
         
         if scale == "lin":
-            ax.plot(linbinlist, gluonlinhards[index], "--", label="MC")
-            ax.plot(xlinrange, BDMPSlinsolutions[index], label="BDMPS sol")
+            ax.plot(linbinlist, gluonlinlists[index], "C0--", label="MC incl")
+            ax.plot(linbinlist, gluonlinhards[index], "C0:", label="MC leading")
+            ax.plot(xlinrange, BDMPSlinsolutions[index], "r", label="BDMPS sol")
             ax.set_xscale("linear")
             ax.set_yscale("log")
             ax.set_xlim(0,1)
 
         elif scale == "log":
-            ax.plot(logbinlist, gluonloghards[index], "--", label="MC")
-            ax.plot(xlogrange, BDMPSlogsolutions[index], label="BDMPS sol")
+            ax.plot(linbinlist, gluonloglists[index], "C0--", label="MC incl")
+            ax.plot(logbinlist, gluonloghards[index], "C0:", label="MC leading")
+            ax.plot(xlogrange, BDMPSlogsolutions[index], "r", label="BDMPS sol")
             ax.set_xscale("log")
             ax.set_yscale("log")
             ax.set_xlim(0.001,1)   
             
-        ax.plot(xrange, leadingsolutions[index], 'r', label="Leading sol")
-        ax.plot(xrange, BDMPSsolutions[index], 'c', label="BDMPS alt sol")
+        ax.plot(xrange, leadingsolutions[index], "tab:orange",  label="Leading sol")
+        #ax.plot(xrange, BDMPSsolutions[index], 'c', label="BDMPS alt sol")
 
         ax.set_title('$\\tau = $' +str(tauvalues[index]))
         ax.set_ylim(0.01,10)
         ax.set_xlabel('$z$')
         ax.set_ylabel('$D(x,\\tau)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend(loc="upper left")
+        ax.legend(loc="upper center")
         
         textstring = '$n={%i}$'%n
-        ax.text(0.05, 0.75, textstring, fontsize = "xx-small",
+        ax.text(0.03, 0.92, textstring, fontsize = "xx-small",
                 horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
         
     plt.tight_layout()
