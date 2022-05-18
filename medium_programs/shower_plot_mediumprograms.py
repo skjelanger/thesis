@@ -7,6 +7,8 @@ import numpy as np
 from scipy.optimize import curve_fit
     
 def medium_analytical_comparison(filename, scale):
+    """Plots the MonteCarlo results for gluons in medium, alongside the 
+    analytical results. """
     filelocation = "data\\parton_shower_gluons_medium_data\\"
     destination = filelocation + filename + ".npz"
     file = np.load(destination)
@@ -23,9 +25,7 @@ def medium_analytical_comparison(filename, scale):
     logbinlist    = file["logbinlist"]
     gluonloglists = file["gluonloglists"]
     gluonloghards = file["gluonloghards"]
-
-    
-    
+        
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
 
@@ -75,6 +75,11 @@ def medium_analytical_comparison(filename, scale):
     print("\rDone!" + 10*" ")    
     
 def medium_scaling_comparison(filename):
+    """
+    Plots the inclusive distribution of partons from the 
+    'parton_shower_gluon_medium_scaling.py' program on a log scale. 
+    This illustrates the scaling property of the medium cascade. 
+    """
     filelocation = "data\\parton_shower_gluons_medium_scaling_data\\"
     destination = filelocation + filename + ".npz"
     file = np.load(destination)
@@ -126,6 +131,12 @@ def medium_scaling_comparison(filename):
     print("\rDone!")   
     
 def medium_leading_scaling(filename):
+    """
+    Plots the leading partons of 'parton_shower_gluon_medium_scaling.py', 
+    on a log scale. Off-branch and on-branch partons are plotted seperately, 
+    to illustrate how they are distributed.
+    """
+    
     filelocation = "data\\parton_shower_gluons_medium_scaling_data\\"
     destination = filelocation + filename + ".npz"
     file = np.load(destination)
@@ -201,6 +212,11 @@ def medium_leading_scaling(filename):
     
     
 def medium_leading_fit(filename):
+    """
+    Plots the percentage of on-branch leading partons as generated from  
+    'parton_shower_gluon_medium_scaling.py'. A plyfit is also done to create a
+    graph for the datapoints.
+    """
     filelocation = "data\\parton_shower_gluons_medium_scaling_data\\"
     destination = filelocation + filename + ".npz"
     file = np.load(destination)
@@ -272,6 +288,12 @@ def medium_leading_fit(filename):
     
     
 def medium_leading_branches(filename, scale):
+    """
+    Plots the leading partons of 'parton_shower_gluon_medium.py'. 
+    The off-branch and on-branch partons are plotted seperately, alongside the 
+    'supersimple' solution of the energy-loss.
+    TO BE USED FOR PLOTTING SOLUTION OF LEADING???
+    """
     filelocation = "data\\parton_shower_gluons_medium_data\\"
     destination = filelocation + filename + ".npz"
     file = np.load(destination)
@@ -325,6 +347,8 @@ def medium_leading_branches(filename, scale):
             ax.plot(xlinrange, linsolutions[index], 'r', label="solution incl")
             ax.plot(linbinlist, branchlinhards[index], ':', label="Leading on-branch")
             ax.plot(linbinlist, nonbranchlinhards[index], ':', label="leading off-branch")
+            ax.plot(linbinlist, gluonlinhards[index], ':', label="allleading")
+
             ax.set_xscale("linear")
             ax.set_yscale("log")
             ax.set_xlim(0,1)
@@ -353,7 +377,12 @@ def medium_leading_branches(filename, scale):
     plt.show()
     print("\rDone!" + 10*" ")   
     
-def medium_leading_parton_test(filename, scale):
+def medium_solutions(filename, scale):
+    """
+    Plots the inlcusive and leading partons of 'parton_shower_gluon_medium.py'. 
+    The off-branch and on-branch partons are plotted together, alongside the 
+    'supersimple' solution of the energy-loss, and the incl solution.
+    """
     filelocation = "data\\parton_shower_gluons_medium_data\\"
     destination = filelocation + filename + ".npz"
     file = np.load(destination)
@@ -370,11 +399,9 @@ def medium_leading_parton_test(filename, scale):
     gluonloghards = file["gluonloghards"]
     BDMPSlinsolutions = file["linsolutions"]
     BDMPSlogsolutions = file["logsolutions"]
-
     
     leadingsolutions = [[],[],[],[]]
     BDMPSsolutions = [[],[],[],[]]
-
 
     if scale == "lin":
         xrange = xlinrange
