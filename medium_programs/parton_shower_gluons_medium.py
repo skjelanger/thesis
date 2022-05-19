@@ -352,7 +352,7 @@ def several_showers_analytical_comparison(n, opt_title, scale):
 
     # Sets the different ranges required for the plots.
     linbins1 = (np.linspace(plot_lim, 0.99, num=binnumber))
-    linbins2 = (np.linspace(0.991, 1, num= round((binnumber/4))))
+    linbins2 = (np.linspace(0.991, 1, num= 10))
     linbins = np.hstack((linbins1, linbins2))
     xlinrange = np.linspace(plot_lim, 0.9999, num=(4*binnumber))
         
@@ -369,7 +369,6 @@ def several_showers_analytical_comparison(n, opt_title, scale):
     gluonlinhards = [[],[],[],[]]
     branchlinhards = [[],[],[],[]]
     nonbranchlinhards = [[],[],[],[]]
-
 
     gluontzs = [0,0,0,0]
 

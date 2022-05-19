@@ -235,7 +235,7 @@ def medium_leading_fit(filename):
     
     for hard in hardestbranches:
         index = hardestbranches.index(hard)
-        dec = round(hard/n,2)
+        dec = round(hard/n,3)
         declist.append(dec)
         dectuples.append((tauvalues[index], dec))
         print("Hardestbranches decimal = ", dec)
