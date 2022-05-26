@@ -5,6 +5,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.special import gamma
+
     
 def medium_analytical_comparison(filename, scale):
     """Plots the MonteCarlo results for gluons in medium, alongside the 
@@ -179,8 +181,8 @@ def medium_leading_scaling(filename):
     ax.plot(logbinlist, branchloghards[3], "C3-", label="$\\tau = $"+str(tauvalues[3])+"- hob:" + str(round(hardestbranches[3]*(100/n),2))+"%")
     ax.plot(logbinlist, branchloghards[4], "C4-", label="$\\tau = $"+str(tauvalues[4])+"- hob:" + str(round(hardestbranches[4]*(100/n),2))+"%")
     ax.plot(logbinlist, branchloghards[5], "C8-", label="$\\tau = $"+str(tauvalues[5])+"- hob:" + str(round(hardestbranches[5]*(100/n),2))+"%")
-    ax.plot(logbinlist, empty, "C6:", label="$\\tau = $"+str(tauvalues[6])+"- hob:" + str(round(hardestbranches[6]*(100/n),2))+"%")
-    ax.plot(logbinlist, empty, "C7:", label="$\\tau = $"+str(tauvalues[7])+"- hob:" + str(round(hardestbranches[7]*(100/n),2))+"%")
+    ax.plot(logbinlist, empty, "C6",linestyle=None, label="$\\tau = $"+str(tauvalues[6])+"- hob:" + str(round(hardestbranches[6]*(100/n),2))+"%")
+    ax.plot(logbinlist, empty, "C7", label="$\\tau = $"+str(tauvalues[7])+"- hob:" + str(round(hardestbranches[7]*(100/n),2))+"%")
     
     ax.plot(logbinlist, nonbranchloghards[0], "C0--")
     ax.plot(logbinlist, nonbranchloghards[1], "C1--")
@@ -244,6 +246,7 @@ def medium_leading_fit(filename):
     z = np.polyfit(tauvalues, declist, 2)
     f = np.poly1d(z)
     
+    print(z)
     textstring = '$n = {%i}$'%n
     polystring = ("$P_{on:branch}={%s}\\tau^2$"%round(z[0],2) + 
                 "${%s}\\tau$"%round(z[1],2) + "$+{%s}$"%round(z[2],2))    
@@ -400,8 +403,8 @@ def medium_solutions(filename, scale):
     BDMPSlinsolutions = file["linsolutions"]
     BDMPSlogsolutions = file["logsolutions"]
     
+    simpleleadingsolution = [[],[],[],[]]
     leadingsolutions = [[],[],[],[]]
-    BDMPSsolutions = [[],[],[],[]]
 
     if scale == "lin":
         xrange = xlinrange
@@ -413,15 +416,25 @@ def medium_solutions(filename, scale):
     
     for tau in tauvalues:
         index = tauvalues.index(tau)
-        for x in xrange:
-            leading = ((tau)/((1-x)**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
+        if index != 0:
+            for x in xrange:
+                leadingsolutions[index].append(None)
+                simpleleadingsolution[index].append(None)
+        
+        else:
+            for x in xrange:
+                y = 1-x
+                leading = ((tau)/((1-x)**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
             
-            if x > 0.5:
-                BDMPS = ((tau)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
-            else:
-                BDMPS = None
-            BDMPSsolutions[index].append(BDMPS)
-            leadingsolutions[index].append(leading)
+                if x< 0.5:
+                    BDMPS = tau/(np.sqrt(x)) * 2**(y-4*tau) * (tau)**(y-4*tau) * gamma(-y+ 4*tau) + 1/((1-x)**(3/2))
+                    print("BDMPS: ", BDMPS, ". x is: ", x)
+                elif x>0.5: 
+                    BDMPS = ((tau)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
+                else:
+                    BDMPS = None
+                leadingsolutions[index].append(BDMPS)
+                simpleleadingsolution[index].append(leading)
 
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (8,6)) #(w,h) figsize= (10,3)
@@ -458,11 +471,11 @@ def medium_solutions(filename, scale):
             ax.set_yscale("log")
             ax.set_xlim(0.001,1)   
             
-        ax.plot(xrange, leadingsolutions[index], "tab:orange",  label="Leading sol")
-        #ax.plot(xrange, BDMPSsolutions[index], 'c', label="BDMPS alt sol")
+        ax.plot(xrange, simpleleadingsolution[index], "tab:orange",  label="Simple leading sol")
+        ax.plot(xrange, leadingsolutions[index], 'c', label="leading alt sol")
 
         ax.set_title('$\\tau = $' +str(tauvalues[index]))
-        ax.set_ylim(0.01,10)
+        ax.set_ylim(0.0001,100)
         ax.set_xlabel('$z$')
         ax.set_ylabel('$D(x,\\tau)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
