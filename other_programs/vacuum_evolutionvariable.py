@@ -31,24 +31,24 @@ def evolution_variable():
     title = "Evolution variable vacuum showers. alpha_S = " + str(alpha_S)
     #plt.suptitle(title)
 
-    plt.rc('axes', titlesize="small", labelsize="x-small")     # fontsize of the axes title and labels.
+    plt.rc('axes', titlesize="small", labelsize="small")     # fontsize of the axes title and labels.
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
     plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('legend',fontsize='x-small')    # fontsize of the legend labels.
     plt.rc('lines', linewidth=0.8)
 
     ax1 = plt.subplot(111) #H B NR
     
     for i in range(len(p_values)):  
         print("Plotting... " + str(i))
-        ax1.plot(Rrange, tvalues[i], label= "p_t: " + str(p_values[i]) + " GeV")
+        ax1.plot(Rrange, tvalues[i], label= "$p_t$: " + str(p_values[i]) + " GeV")
     
     ax1.set_title('')
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 0.40)
     ax1.set_xscale("linear")
-    ax1.set_xlabel('jet radius - R ')
-    ax1.set_ylabel('evolution variable - t')
+    ax1.set_xlabel('jet radius - $R$ ')
+    ax1.set_ylabel('evolution variable - $t$')
     ax1.grid(linestyle='dashed', linewidth=0.2)
 
     print("Showing")

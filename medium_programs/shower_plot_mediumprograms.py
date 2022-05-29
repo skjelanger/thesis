@@ -4,7 +4,6 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import curve_fit
 from scipy.special import gamma
 
     
@@ -94,10 +93,10 @@ def medium_scaling_comparison(filename):
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
 
-    plt.rc('axes', titlesize="small" , labelsize="x-small")
+    plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
     plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('legend',fontsize='x-small')    # fontsize of the legend labels.
     plt.rc('lines', linewidth=0.8)
 
     ax = plt.subplot(111) #H B NR
@@ -124,7 +123,7 @@ def medium_scaling_comparison(filename):
     
     textstring = '$n = {%i}$'%n
 
-    ax.text(0.02, 0.25, textstring, fontsize = "xx-small",
+    ax.text(0.02, 0.295, textstring, fontsize = "xx-small",
             horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
         
     
@@ -166,10 +165,10 @@ def medium_leading_scaling(filename):
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (6,5)) #(w,h) figsize= (10,3)
 
-    plt.rc('axes', titlesize="small" , labelsize="x-small")
+    plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
     plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('legend',fontsize='x-small')    # fontsize of the legend labels.
     plt.rc('lines', linewidth=0.8)
 
     ax = plt.subplot(111) #H B NR
@@ -198,13 +197,13 @@ def medium_leading_scaling(filename):
     ax.set_xlim(0.001,1)
     ax.set_ylim(0.01,10)
     ax.set_xlabel('z ')
-    ax.set_ylabel('$D(x,\\tau)$')
+    ax.set_ylabel('$J(x,\\tau)$')
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.grid(linestyle='dashed', linewidth=0.2)
     ax.legend(loc="upper left")
     
-    ax.text(0.02, 0.7, textstring, fontsize = "xx-small",
+    ax.text(0.02, 0.65, textstring, fontsize = "xx-small",
             horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
         
     
@@ -248,7 +247,7 @@ def medium_leading_fit(filename):
     
     print(z)
     textstring = '$n = {%i}$'%n
-    polystring = ("$P_{on:branch}={%s}\\tau^2$"%round(z[0],2) + 
+    polystring = ("$P_{on-branch}={%s}\\tau^2$"%round(z[0],2) + 
                 "${%s}\\tau$"%round(z[1],2) + "$+{%s}$"%round(z[2],2))    
     
     x_new = np.linspace(tauvalues[0], tauvalues[-1], 50)
@@ -258,10 +257,10 @@ def medium_leading_fit(filename):
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (5,4)) #(w,h) figsize= (10,3)
 
-    plt.rc('axes', titlesize="small" , labelsize="x-small")
+    plt.rc('axes', titlesize="small" , labelsize="small")
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
     plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('legend',fontsize='x-small')    # fontsize of the legend labels.
     plt.rc('lines', linewidth=0.8)
 
     ax = plt.subplot(111) #H B NR
@@ -273,13 +272,13 @@ def medium_leading_fit(filename):
     ax.set_xlim(0,1.5)
     ax.set_ylim(0,1)
     ax.set_xlabel('$\\tau$')
-    ax.set_ylabel('$P_{on:branch}$')
+    ax.set_ylabel('$P_{on-branch}$')
     ax.set_xscale("linear")
     ax.set_yscale("linear")
     ax.grid(linestyle='dashed', linewidth=0.2)
     ax.legend(loc="lower left")
     
-    ax.text(0.02, 0.11, textstring, fontsize = "xx-small",
+    ax.text(0.02, 0.125, textstring, fontsize = "xx-small",
             horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     ax.text(0.5, 0.7, polystring, fontsize = "small", color="C2",
             horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
@@ -346,18 +345,18 @@ def medium_leading_branches(filename, scale):
         index = axes.index(ax)
         
         if scale == "lin":
-            ax.plot(linbinlist, gluonlinlists[index], "--", label="MC incl")
+            ax.plot(linbinlist, gluonlinlists[index], "C0--", label="MC incl")
             ax.plot(xlinrange, linsolutions[index], 'r', label="solution incl")
-            ax.plot(linbinlist, branchlinhards[index], ':', label="Leading on-branch")
-            ax.plot(linbinlist, nonbranchlinhards[index], ':', label="leading off-branch")
-            ax.plot(linbinlist, gluonlinhards[index], ':', label="allleading")
+            #ax.plot(linbinlist, branchlinhards[index], ':', label="Leading on-branch")
+            #ax.plot(linbinlist, nonbranchlinhards[index], ':', label="leading off-branch")
+            ax.plot(linbinlist, gluonlinhards[index], 'C0:', label="allleading")
 
             ax.set_xscale("linear")
             ax.set_yscale("log")
             ax.set_xlim(0,1)
 
         elif scale == "log":
-            ax.plot(logbinlist, gluonloglists[index], "b--", label="MC incl")
+            ax.plot(logbinlist, gluonloglists[index], "C0--", label="MC incl")
             ax.plot(xlogrange, logsolutions[index], 'r', label="solution incl")
             ax.plot(logbinlist, branchloghards[index], ':', label="Leading on-branch")
             ax.plot(logbinlist, nonbranchloghards[index], ':', label="Leading off-branch")
@@ -370,7 +369,7 @@ def medium_leading_branches(filename, scale):
         ax.set_xlabel('$z$')
         ax.set_ylabel('$D(x,\\tau)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
-        ax.legend(loc="upper left")
+        ax.legend(loc="upper center")
         
         textstring = "on-branch:${%i}$"%round(hardestbranches[index]*(100/n),2) +"%" + '\n$n={%i}$'%n
         ax.text(0.38, 0.85, textstring, fontsize = "xx-small",
@@ -416,7 +415,7 @@ def medium_solutions(filename, scale):
     
     for tau in tauvalues:
         index = tauvalues.index(tau)
-        if index != 0:
+        if index > 5:
             for x in xrange:
                 leadingsolutions[index].append(None)
                 simpleleadingsolution[index].append(None)
@@ -428,7 +427,6 @@ def medium_solutions(filename, scale):
             
                 if x< 0.5:
                     BDMPS = tau/(np.sqrt(x)) * 2**(y-4*tau) * (tau)**(y-4*tau) * gamma(-y+ 4*tau) + 1/((1-x)**(3/2))
-                    print("BDMPS: ", BDMPS, ". x is: ", x)
                 elif x>0.5: 
                     BDMPS = ((tau)/(np.sqrt(x)*((1-x))**(3/2)) )* np.exp(-np.pi*((tau**2)/(1-x)))
                 else:
@@ -439,10 +437,10 @@ def medium_solutions(filename, scale):
     # Do the actual plotting. 
     plt.figure(dpi=300, figsize= (8,6)) #(w,h) figsize= (10,3)
 
-    plt.rc('axes', titlesize="small" , labelsize="x-small")     # fontsize of the axes title and labels.
+    plt.rc('axes', titlesize="small" , labelsize="small")     # fontsize of the axes title and labels.
     plt.rc('xtick', labelsize="x-small")    # fontsize of the tick labels.
     plt.rc('ytick', labelsize="x-small")    # fontsize of the tick labels.
-    plt.rc('legend',fontsize='xx-small')    # fontsize of the legend labels.
+    plt.rc('legend',fontsize='x-small')    # fontsize of the legend labels.
     plt.rc('lines', linewidth=0.8)
 
     ax1 = plt.subplot(221) #H B NR
@@ -458,7 +456,7 @@ def medium_solutions(filename, scale):
         if scale == "lin":
             ax.plot(linbinlist, gluonlinlists[index], "C0--", label="MC incl")
             ax.plot(linbinlist, gluonlinhards[index], "C0:", label="MC leading")
-            ax.plot(xlinrange, BDMPSlinsolutions[index], "r", label="BDMPS sol")
+            ax.plot(xlinrange, BDMPSlinsolutions[index], "r", label="sol incl")
             ax.set_xscale("linear")
             ax.set_yscale("log")
             ax.set_xlim(0,1)
@@ -466,16 +464,16 @@ def medium_solutions(filename, scale):
         elif scale == "log":
             ax.plot(linbinlist, gluonloglists[index], "C0--", label="MC incl")
             ax.plot(logbinlist, gluonloghards[index], "C0:", label="MC leading")
-            ax.plot(xlogrange, BDMPSlogsolutions[index], "r", label="BDMPS sol")
+            ax.plot(xlogrange, BDMPSlogsolutions[index], "r", label="sol incl")
             ax.set_xscale("log")
             ax.set_yscale("log")
             ax.set_xlim(0.001,1)   
             
-        ax.plot(xrange, simpleleadingsolution[index], "tab:orange",  label="Simple leading sol")
-        ax.plot(xrange, leadingsolutions[index], 'c', label="leading alt sol")
+        ax.plot(xrange, simpleleadingsolution[index], "tab:orange",  label="EL sol")
+        #ax.plot(xrange, leadingsolutions[index], 'c', label="leading alt sol")
 
         ax.set_title('$\\tau = $' +str(tauvalues[index]))
-        ax.set_ylim(0.0001,100)
+        ax.set_ylim(0.01,10)
         ax.set_xlabel('$z$')
         ax.set_ylabel('$D(x,\\tau)$')
         ax.grid(linestyle='dashed', linewidth=0.2)
