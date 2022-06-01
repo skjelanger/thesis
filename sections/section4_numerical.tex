@@ -1,45 +1,36 @@
 \documentclass[main.tex]{subfiles}
 
 \begin{document}
-\chapter{Numerical}
-While the previous chapter introduced the formalism for parton branchings in both vacuum and medium, we will now turn to a numerical treatment of the evolution equations. This will be done by effectively using the results of the previous chapter to build a Monte-Carlo program for simulating parton showers. This will be done for both vacuum and medium cascades, where each of the sections will be structured in the same manner. Beginning by determining how the cascade evolves relative to the branching probability, then developing methods for sampling random energy fractions from the splitting functions already introduced, and finally implementing this into Monte-Carlo programs. By Monte-Carlo we mean programs which run based on randomly chosen values.  The results obtained from these programs can then be used to compare with the analytical results derived in the previous chapter.
 
-\section{Monte-Carlo for parton branching in vacuum}
-Starting off by creating the Monte-Carlo programs for the vacuum cascades, where we want to develop one for pure gluon cascades (only \(gg\) splittings), and one for both quarks and gluons. The former will be created using a simplified \(P_{gg}^{\text{simple}}\) splitting function, which can then be compared to the analytical results of the DGLAP cascade. The latter will be done with the full splitting functions, sampled using the Metropolis-Hastings algorithm, and will give us a more realistic picture of the branching process but no exact analytical solution to compare with.
+\addtocontents{toc}{\let\protect\contentsline\protect\nopagecontentsline}
+\chapter{Numerical}\label{cpt:num}
+\addtocontents{toc}{\let\protect\contentsline\protect\oldcontentsline}
+
+While the previous chapter introduced the formalism for parton branchings in vacuum and medium, we will now turn to a numerical treatment of the evolution equations. This will be done by using the results of the previous chapter to build a Monte-Carlo program for simulating parton showers, both for vacuum and medium cascades. Each section will be structured in the same manner, starting by determining how the cascade evolves relative to the branching probability, then developing methods for sampling random energy fractions from the splitting functions, and finally implementing this into Monte-Carlo programs. The results obtained from these programs will then be compared with the analytical results derived in \autoref{cpt:ana}, and used to highlight different properties of the cascades.
+
+\section{Monte-Carlo for Parton Branching in Vacuum}
+Starting by creating the Monte-Carlo programs for the vacuum cascades, where we want to develop one for pure gluon cascades (only \(gg\) splittings), and one for both quarks and gluons. The former will be created using the simplified \(gg\) splitting function, which can then be compared to the analytical results of the DGLAP cascade. The latter will be done using the full splitting functions, sampled using the \emph{Metropolis-Hastings algorithm} (MH), and will give us a more realistic picture of the branching process but no exact analytical solution to compare with.
 
 \subsection{Evolution interval }\label{sec: determining_evolution_time_from_sudakov}
-We will now begin by demonstrating how to determine the maximum value of the evolution variable \(t\), for pure gluon cascades.
-
-The Jets will evolve according to the evolution variable given with a fixed coupling in \autoref{eqn: evolution_variable_vacuum}. The minimum angle for our evolution is already given as \(\theta_{\text{min}} = \frac{Q_0}{p_t}\), and the initial angle is naturally the jet-radius \(R\). However we need to implement these limits on \(\theta\), to be limits on \(t\), as we will gradually evolve the cascade by increments of \(\Delta t\) as we will see shortly. 
-
-From our evolution variable we can see that its boundary values must be given from the minimum and maximum values of \(\theta\).
-\begin{align}\label{eqn: evolution_parameter_boundaries}
-    \frac{\alpha_S}{\pi} \ln \frac{R}{\theta_{\text{max}}} &< t < \frac{\alpha_S}{\pi} \ln \frac{R}{\theta_{\text{min}}} \nonumber \\
-    \frac{\alpha_S}{\pi} \ln \frac{R}{R} &< t < \frac{\alpha_S}{\pi} \ln \frac{Rp_t}{Q_0}  \nonumber \\
-    0 &< t < \frac{\alpha_S}{\pi} \ln \frac{Rp_t}{Q_0}
-\end{align}
-Therefore, as we increase in values for the evolution variable \(t\) we will be reducing our emission angles, which leads to angular ordering being directly implemented into our showers. A plot of the maximum value for \(t\) for a given range of \(p_t\) and \(R\) values is given by
-\autoref{fig: evolution_variable_vacuumshowers}. Here it is apparent that most values are below \(t_{\text{max}} < 0.4\).
+For our Monte-Carlo programs we need to determine the limits of the evolution variable \(t\), such that we know when to terminate a given shower. Recalling the evolution variable defined in \autoref{eqn: evolution_variable_vacuum}, and that our jets evolve in angle from some initial jet radius \(R\), down to the minimum angle \(\theta_{\text{min}} = Q_0/p_t\), with boundary values of the evolution variable given by \autoref{eqn: evolution_variable__limits_vacuum}. A plot of the maximum value for \(t\) for a given range of \(p_t\) and \(R\) values is given by \autoref{fig: evolution_variable_vacuumshowers}. Here it is apparent that most values of \(t\) are below \(0.4\).
 \begin{figure}[htb]
     \centering
     \includegraphics[width=9cm]{pictures/plots/misc/evolution_variable_vacuumshowers.png}
-    \caption{Maximum values of the evolution variable \(t\) for vacuum showers, plotted up to \(p_t\,R > Q_0\). The strong coupling is set to be constant \(\alpha_S = 0.1184\), and hadronization scale \(Q_0 = 1 GeV\).}
+    \caption{Maximum values of the evolution variable \(t\) for vacuum showers, plotted up to \(p_t\,R > Q_0\). The strong coupling is set constant \(\alpha_s = 0.1184\) and \(Q_0 = 1 GeV\). Not that most values of \(t\) are well below \(0.4\). }
     \label{fig: evolution_variable_vacuumshowers}
 \end{figure}
 
-Knowing the boundaries we need to impose on the evolution parameter for our MC, we can now move on to determining how to sample intervals of the evolution parameter.
-This can be done using the Sudakov form factor - which is related to the branching probability - to randomly determine an interval \(\Delta t\) in which we can expect a branching. This is because the probability of no branching in the interval \([t_0, t]\), is given directly from the Sudakov form factor introduced in \autoref{eqn: sudakov_form_factor_dasguptalike},
+Knowing the boundaries we need to impose on the evolution variable for our Monte-Carlo, we can now move on to determining how to sample intervals of the evolution variable from the Sudakov form factor. As discussed in \autoref{cpt:ana}, the Sudakov form factor gives us the probability of no branching to occur in a given interval, so it is the natural candidate for generating random values of \(\Delta t\). Writing the Sudakov from \autoref{eqn: sudakov_form_factor_dasguptalike} in terms of the probability of splitting in the interval \(\mathcal{P}(\Delta t)\), in a given interval \(\Delta t\) 
 \begin{equation}\label{eqn: branching_probability_from_sudakov_gg}
     \mathcal{P}(\Delta t) = \frac{\Delta(t)}{\Delta(t_0)} = \exp\left(-\Delta t \int_\epsilon^{1-\epsilon}dz \, P_{gg}(z)\right) 
 \end{equation}
-Therefore, we can generate a random number in the interval \(\mathcal{P}(\Delta t) = \mathcal{R} \in [0,1]\), and use it to solve for \(\Delta t\), at which we can expect to get a new splitting, 
-%\begin{equation*}
-%    \mathcal{R} = exp\left(-\Delta t \int_\epsilon^{1-\epsilon}dz \, P_{gg}(z)\right) 
-%\end{equation*}
+then it is trivial to rewrite the equation in terms of \(\Delta t\), and generate a random number in the interval \(\mathcal{P}(\Delta t) = \mathcal{R} \in [0,1]\), to obtain a random interval in which we can expect a new splitting
 \begin{equation}\label{eqn: expected_branching_interval}
-    \Delta t = -\frac{ln(\mathcal{R})}{ \int_\epsilon^{1-\epsilon}dz \, P_{gg}(z)} 
+    \Delta t = -\frac{\ln(\mathcal{R})}{ \int_\epsilon^{1-\epsilon}dz \, P_{gg}(z)}.
 \end{equation}
-Therefore, in our Monte-Carlo, the evolution boundaries will be implemented as given in \autoref{alg: evolution_boundaries},
+The expected splitting interval must be calculated for all the available partons. The parton which generates the smallest interval \(\Delta t\) is then expected to split first and will be the parton selected for splitting in our Monte-Carlo. 
+
+\autoref{alg: evolution_boundaries} represents how our Monte-Carlo samples random evolution intervals, select a splitting parton, and imposes the boundary conditions of the evolution variable to determine when the terminate the shower. The general method outlined here is valid for all the vacuum programs, but \autoref{eqn: expected_branching_interval} is only valid for \(gg\)-branchings.
 \begin{center}
 \begin{minipage}{.8\linewidth}
 \begin{algorithm}[H]
@@ -47,7 +38,7 @@ Therefore, in our Monte-Carlo, the evolution boundaries will be implemented as g
 \label{alg: evolution_boundaries}
 \begin{algorithmic}[1]
     \State calculate \(t_{\text{max}}\),
-         \[t_{\text{max}} = \frac{\alpha_S}{\pi} \ln \frac{Rp_t}{Q_0}\]
+         \[t_{\text{max}} = \frac{\alpha_s}{\pi} \ln \frac{Rp_t}{Q_0}\]
     \While{\(t< t_{\text{max}}\)}
         \For{parton \textbf{in} AllPartons}
         \State calculate expected splitting interval. \[\Delta t = -\frac{ln(\mathcal{R})}{ \int_\epsilon^{1-\epsilon}dz \, P_{gg}(z)}\]
@@ -60,43 +51,37 @@ Therefore, in our Monte-Carlo, the evolution boundaries will be implemented as g
 \end{minipage}
 \end{center}
 
-The general method outlined here is valid for all the vacuum programs, but \autoref{eqn: expected_branching_interval} is only valid for \(gg\)-branchings.
-
 \subsection{Managing quarks and gluons}\label{sec: managing_quarks_and_gluons}
-When creating a program with both quarks and gluons, we need to evolve the interval based on which kind of parton we are splitting. When splitting a gluon the interval will evolve according to the Sudakov given in \autoref{eqn: sudakov_vacuum_gluons}, and when splitting quarks the Sudakov is \autoref{eqn: sudakov_vacuum_quarks}. The branching probabilities are then calculated from the following equations,
+When creating a program with both quarks and gluons, the interval \(\Delta t\) must be advanced based on the type of parton being split. When splitting a gluon the interval will evolve according to the Sudakov given in \autoref{eqn: sudakov_vacuum_gluons}, and when splitting quarks the Sudakov is \autoref{eqn: sudakov_vacuum_quarks}. The branching probabilities are then calculated from the following equations
 \begin{align}
-    \mathcal{P}_{g}(\Delta t) &= \exp\left(-\Delta t \int_\epsilon^{1-\epsilon} P_{qg}(z) + P_{gg}(z) \, dz \right)  \label{eqn: sudakov_splitting_interval_gluons}  \\
-    \mathcal{P}_{q}(\Delta t) &= \exp\left(-\Delta t \int_\epsilon^{1-\epsilon} P_{qq}(z) \, dz \right) \label{eqn: sudakov_splitting_interval_quarks}
+    \mathcal{P}_{g}(\Delta t) &= \exp\left(-\Delta t \int_\epsilon^{1-\epsilon} \left[ P_{qg}(z) + P_{gg}(z) \right] \, dz \right)  \label{eqn: sudakov_splitting_interval_gluons}  \\
+    \mathcal{P}_{q}(\Delta t) &= \exp\left(-\Delta t \int_\epsilon^{1-\epsilon} P_{qq}(z) \, dz \right). \label{eqn: sudakov_splitting_interval_quarks}
 \end{align}
-As mentioned above, we will branch the parton which gives to lowest value for \(\Delta t\). The question that remains is how to determine the splitting vertex when this parton is a gluon. This can be done by comparing the contribution of the two vertices have on the available phase space.
+The question that remains is how to determine the splitting vertex when this parton is a gluon, as it can split with two different vertices. This can be done by comparing the contribution of the two vertices have on the available phase space
 \begin{equation}\label{eqn: gluon_splitting_selection_ratios}
-    W_{gg} = \frac{\int_\epsilon^{1-\epsilon} P_{gg}(z) \, dz}{\int_\epsilon^{1-\epsilon}P_{qg}(z) + P_{gg}(z) \, dz}
+    W_{gg} = \frac{\int_\epsilon^{1-\epsilon} P_{gg}(z) \, dz}{\int_\epsilon^{1-\epsilon} \left[P_{qg}(z) + P_{gg}(z) \right]\, dz}.
 \end{equation}
-If the splitting parton is a gluon, we need to roll a random number\(\mathcal{R}\in[0,1)\), if the value \(\mathcal{R}< W_{gg}\), we will use the \(gg\) vertex, and if \(\mathcal{R}\geq W_{gg}\) it will be the \(qg\) vertex. When setting \(\epsilon = 10^{-3}\), the value is \(W_{gg} \approx 0.96\), so the vast majority of gluon splittings will be done via the \(gg\) vertex.
+If the splitting parton is a gluon, we need to roll a random number \(\mathcal{R}\in[0,1)\), if the value \(\mathcal{R}< W_{gg}\), we will use the \(gg\) vertex, and if \(\mathcal{R}\geq W_{gg}\) it will be the \(qg\) vertex. When setting \(\epsilon = 10^{-3}\), the value is \(W_{gg} \approx 0.96\), so the vast majority of gluon splittings will be done via the \(gg\) vertex.
 
 A similar comparison could have been done for the relative contributions on the total phase space for quarks and gluons, but this is already implemented into the calculations for \(\mathcal{P}_q(\Delta t)\), and \(\mathcal{P}_g(\Delta t)\), so this is not necessary. 
 
-
 \subsection{Sampling from the vacuum splitting functions}\label{sec: metropolis_hastings}
-Now, that we know at what evolution interval we can expect to get a branching and how to select quarks or gluons to branch, we must determine the momentum fraction carried by the branched partons.
-This can be done if we consider the probability density given as,
+The process of evolving the evolution variable, and selecting which parton and what vertex to use for each splitting, has now been outlined. The final piece of the Monte-Carlo puzzle is to determine how to sample random energy fractions from the splitting functions. This can be done if we consider the probability density of obtaining a parton with momentum fraction \(z\) as
 \begin{equation}\label{eqn: probability_density_for_splitting}
-    \mathcal{P}(z) = \frac{ P_{ba}(z)}{\int_\epsilon^{1-\epsilon} dz \, P_{ba}(z)}
+    \mathcal{P}= \frac{ P_{ba}(z)}{\int_\epsilon^{1-\epsilon} dz \, P_{ba}(z)}.
 \end{equation}
-which means that we can generate random momentum fractions for the branched parton, to be equal the distribution of \eqref{eqn: probability_density_for_splitting}, by the following relation,
+The probability \(\mathcal{P}\) can then be replaced with a randomly generated number, and the momentum fraction of the branched parton can be calculated from
 \begin{equation}\label{eqn: energyfraction_function_R}
-    \mathcal{R} \cdot \int_\epsilon^{1-\epsilon} dz \, P_{ba}(z) = \int_\epsilon^{y}dz \, P_{ba}(z)
+    \mathcal{R} \int_\epsilon^{1-\epsilon} dz \, P_{ba}(z) = \int_\epsilon^{y}dz \, P_{ba}(z).
 \end{equation}
-where \(\mathcal{R}\in [0,1]\) \cite{ellis_stirling_webber_1996}. Note that since the splitting function is present on both sides of the equation, we can disregard any color and symmetry factors when calculating the splitting value, as they will not impact the final sample.
+where \(\mathcal{R}\in [0,1]\)~\cite{ellis_stirling_webber_1996}. Note that since the splitting function is present on both sides of the equation, we can disregard any color and symmetry factors when calculating the splitting value, as they will not impact the final sample.
 
-When trying to solve \autoref{eqn: energyfraction_function_R} for the different splitting functions, we will find that not all of them can be solved for a general momentum-fraction \(y\), and we need to introduce the Metropolis-Hastings algorithm for sampling them correctly \cite{MCMC_andrieu2003}.
-
-The Metropolis-Hastings algorithm requires two different distributions,
-\begin{itemize}
+When trying to solve \autoref{eqn: energyfraction_function_R} for the different splitting functions, we will find that not all of them can be solved for a general momentum-fraction \(y\), and we need to introduce the Metropolis-Hastings algorithm for sampling them correctly~\cite{MCMC_andrieu2003}. The Metropolis-Hastings algorithm requires two different distributions,
+\begin{enumerate}[1)]
     \item A target distribution \(P(x)\), which is the one we are trying to sample.
     \item A proposal distribution \(f(x)\) proportional to \(\mathcal{P}(x)\).
-\end{itemize}
-Once these are chosen the Metropolis-Hastings algorithm is executed according to \autoref{alg: metropolis_hastings},
+\end{enumerate}
+The target distribution is naturally the full splitting function we are trying to sample. The proposal function will then be a \textit{dummy} splitting function, which is similar in shape to the full splitting function. Once these are chosen the Metropolis-Hastings algorithm is executed according to \autoref{alg: metropolis_hastings},
 \begin{center}
 \begin{minipage}{.8\linewidth}
 \begin{algorithm}[H]
@@ -116,116 +101,105 @@ Once these are chosen the Metropolis-Hastings algorithm is executed according to
 \end{minipage}
 \end{center}
 
-We will now use \autoref{eqn: energyfraction_function_R} to sample random energy fractions, proportionally to the full splitting functions as derived in \autoref{sec: derivation_splitting_functions_vacuum}.
-
 \subsubsection*{Sampling from the \(gg\) vertex}
-When trying to solve \autoref{eqn: energyfraction_function_R} for the \(gg\) splitting function in \autoref{eqn: vacuum_gg_splitting_function}, we will see that it is difficult to solve for \(y\). We will therefore introduce a simplified splitting function, which can be used in the Metropolis-Hastings algorithm.
+When trying to solve \autoref{eqn: energyfraction_function_R} for the \(P_{gg}(z)\) splitting function in \autoref{eqn: vacuum_gg_splitting_function}, it is difficult to obtain an exact value of \(y\). It is therefore convenient to use the simplified splitting function of \autoref{eqn: vacuum_gg_simple_splitting_function} such that Metropolis-Hastings algorithm can be utilized. Excluding the color factor as it immediately cancels in the following calculation it can be written as
 \begin{equation}\label{eqn: p_ggg_vacuum_dummy}
-    P_{gg}^{\text{(dummy)}}(z) = \frac{1}{z(1-z)}
+    P_{gg}^{\text{dummy}}(z) = \frac{1}{z(1-z)}
 \end{equation}
-And we then need to evaluate \autoref{eqn: energyfraction_function_R} to obtain a way of sampling values from this simplified splitting function. The integral is straightforward to execute,
+and evaluating \autoref{eqn: energyfraction_function_R} to obtain a way of sampling values from this simplified splitting function. The integral is straightforward to execute
 \begin{align}
     \mathcal{R} \int_\epsilon^{1-\epsilon} dz \, \frac{1}{z(1-z)} &= \int_\epsilon^{y} \frac{1}{z(1-z)}  \nonumber\\
-    \mathcal{R} \left(  \ln (\frac{1-\epsilon}{\epsilon}) + ln(\frac{1-\epsilon}{\epsilon}) \right) &= \ln (\frac{y}{1-y}) + ln(\frac{1-\epsilon}{\epsilon}) \nonumber\\
-    \mathcal{R} \cdot 2 \left( \ln (\frac{1-\epsilon}{\epsilon}) \right) &= \ln (\frac{y}{1-y} \cdot \frac{1-\epsilon}{\epsilon})
+    \mathcal{R} \left[ \ln (\frac{1-\epsilon}{\epsilon}) +   \ln(\frac{1-\epsilon}{\epsilon}) \right] &= \ln (\frac{y}{1-y}) +  \ln(\frac{1-\epsilon}{\epsilon}) \nonumber\\
+    2\, \mathcal{R} \left[ \ln (\frac{1-\epsilon}{\epsilon}) \right] &= \ln (\frac{y}{1-y}  \frac{1-\epsilon}{\epsilon})
 \end{align}
-exponentiating both sides, 
+exponentiating both sides of the equation
 \begin{align}\label{eqn: MC_energyfraction_origin_vacuum}
-    \frac{y}{1-y} \frac{1-\epsilon}{\epsilon} &= \left(\frac{1-\epsilon}{\epsilon}\right)^{2\cdot \mathcal{R}} \nonumber\\
-    \frac{y}{1-y} &= \left(\frac{1-\epsilon}{\epsilon}\right)^{(2\cdot \mathcal{R}-1)} \nonumber\\
-    y &= \frac{\left(\frac{1-\epsilon}{\epsilon}\right)^{(2\cdot \mathcal{R}-1)}}{1+\left(\frac{1-\epsilon}{\epsilon}\right)^{(2\cdot \mathcal{R}-1)}}
+    \frac{y}{1-y} \frac{1-\epsilon}{\epsilon} &= \left(\frac{1-\epsilon}{\epsilon}\right)^{2\, \mathcal{R}} \nonumber\\
+    \frac{y}{1-y} &= \left(\frac{1-\epsilon}{\epsilon}\right)^{2\, \mathcal{R}-1} \nonumber\\
+    y &= \frac{\left(\frac{1-\epsilon}{\epsilon}\right)^{2\, \mathcal{R}-1}}{1+\left(\frac{1-\epsilon}{\epsilon}\right)^{2\, \mathcal{R}-1}}
 \end{align}
-simplifying the expression we obtain \autoref{eqn: MC_energyfraction_gg_vacuum} which can be used to randomly generate parton energy fractions, 
+and simplifying, gives an expression which can be used to randomly generate parton energy fractions from the simplified splitting function
 \begin{equation}\label{eqn: MC_energyfraction_gg_vacuum}
-    y(\mathcal{R}) = \frac{\xi}{1+ \xi} \qquad \text{for, } \quad \xi = \left(\frac{1-\epsilon}{\epsilon}\right)^{(2\cdot \mathcal{R}-1)}
+    y(\mathcal{R}) = \frac{\xi}{1+ \xi} \qquad \text{for, } \quad \xi = \left(\frac{1-\epsilon}{\epsilon}\right)^{2\, \mathcal{R}-1}.
 \end{equation}
 
-%Histogram for the randomly sampled dummy splitting function values compared to the exact dummy splitting functions is plotted in \autoref{fig: function_vs_MC_simplified_pgg_splitting}. It is therefore apparent that \autoref{eqn: MC_energyfraction_gg_vacuum} is a valid method for sampling random energy fractions from the distribution given by the dummy splitting function.
-%\begin{figure}[htb]
-%    \centering
-%    \includegraphics[width=7cm]{pictures/plots/Metropolis-Hastings/p_ggg_simple_MCvsPZ.png}
-%    \caption{Probability density for momentum fractions vs density histogram of randomly generated momentum fractions for a simplified \(P_{gg}\) splitting function. Generated with \(100,000\) points.\krs{remove this}}
-%    \label{fig: function_vs_MC_simplified_pgg_splitting}
-%\end{figure}
-
-Applying the Metropolis-Hastings algorithm by using the dummy splitting function sampling determined by \autoref{eqn: MC_energyfraction_gg_vacuum}, we can generate a plot of the original histogram, compared to the Metropolis-Hastings correction. This gives us a good idea of how the correction works, and allows us to demonstrate how this simple algorithm allows us to sample more complex functions. The resulting plot is given in \autoref{fig: MH_corrected_p_gg_splitting}.
+Applying the Metropolis-Hastings algorithm by sampling the dummy splitting function according to \autoref{eqn: MC_energyfraction_gg_vacuum}, we can generate a plot of the original histogram, compared to the Metropolis-Hastings correction. This gives us a good idea of how the correction works and allows us to demonstrate how this simple algorithm allows us to sample more complex functions. The resulting plot is given in \autoref{fig: MH_corrected_p_gg_splitting}.
 \begin{figure}[htb]
     \centering
     \includegraphics[width=15cm]{pictures/plots/Metropolis-Hastings/MH_vacuum_gg.png}
-    \caption{Probability density of the full \(P_{gg}\) splitting function, compared to the density histogram of the dummy splitting function, and the Metropolis-Hastings corrected results. Simulated with \(1,000,000\) points, and an acceptance rate of \(0.87\).}
+    \caption{Probability density of the full \(P_{gg}(z)\) splitting function and the dummy splitting function \(P_{gg}^{\text{dummy}}(z)\). The left plot gives the values sampled from \autoref{eqn: MC_energyfraction_gg_vacuum},and the right plot is corrected using Metropolis-Hastings algorithm. Simulated with \(10^6\) samples, and a MH acceptance rate of \(0.87\).}
     \label{fig: MH_corrected_p_gg_splitting}
 \end{figure}
 
 \subsubsection*{Sampling from the \(qg\) vertex}
-Now we will find a way of sampling random values from the \(qg\) splitting function given by \autoref{eqn: vacuum_qg_splitting_function}. In contrast to the other splitting functions, this one is actually not divergent, so we can set \(\epsilon = 0\). 
-
-Solving the integrals, \autoref{eqn: energyfraction_function_R} becomes,
+Now we will find a way of sampling random values from the \(P_{qg}(z)\) splitting function given by \autoref{eqn: vacuum_qg_splitting_function}. In contrast to the other splitting functions, this one is actually not divergent such that \(\epsilon\) can be set equal zero. Solving \autoref{eqn: energyfraction_function_R} for \(P_{qg}(z)\),
 \begin{align}
-    \mathcal{R} \cdot \frac{2}{3} &= \left[ y - y^2 + \frac{2}{3} y^3 \right] \nonumber\\
-    \mathcal{R} \cdot \frac{2}{3} &= y - y^2 + \frac{2}{3} y^3 \nonumber \\
-    0 &= \frac{2}{3} y^3 - y^2 + y - \frac{2\mathcal{R}}{3} \label{eqn: gqq_vertex_qubic_formula}
+    \mathcal{R} \,\int_0^1 P_{qg}(z)dz &= \int_0^y P_{qg}(z)dz \nonumber \\
+    \frac{2}{3}\,\mathcal{R} &= \left[ y - y^2 + \frac{2}{3} y^3 \right] \nonumber\\
+    \frac{2}{3}\,\mathcal{R} &= y - y^2 + \frac{2}{3} y^3 \nonumber \\
+    0 &= \frac{2}{3} y^3 - y^2 + y - \frac{2\, \mathcal{R}}{3} \label{eqn: gqq_vertex_qubic_formula}
 \end{align}
-This is cubic formula. Setting \(d = (\frac{2\mathcal{R}}{3}) \), we can throw \autoref{eqn: gqq_vertex_qubic_formula} into WolframAlpha, and find the single real root to be,
+This is a cubic formula. Setting \(d = \frac{2\, \mathcal{R}}{3} \), we can throw \autoref{eqn: gqq_vertex_qubic_formula} into WolframAlpha, and find the single real root to be,
 \begin{equation}\label{eqn: gqq_vacuum_sample}
-    y \approx 0.5 + 0.5 \cdot((36 d^2 - 24 d + 5)^{1/2} + 6 d - 2)^{1/3} - \frac{0.5}{((36 d^2 - 24 d + 5)^{1/2} + 6 d - 2)^{1/3}}
+    y \approx 0.5 + 0.5 \left[(36 d^2 - 24 d + 5)^{1/2} + 6 d - 2\right]^{1/3} - \frac{0.5}{\left[(36 d^2 - 24 d + 5)^{1/2} + 6 d - 2\right]^{1/3}}
 \end{equation}
-It is therefore possible to sample randomly without using the Metropolis-Hastings algorithm. An argument could be made that it takes more time for python to calculate the value of this polynomial, than it would to generate a MH corrected value from a simpler function, but this allows for some interesting variation in how we determine our splitting values. The histogram of random samples generated, versus the exact splitting density is given by \autoref{fig: p_qg_splitting}.
+It is therefore possible to sample randomly without using the Metropolis-Hastings algorithm. An argument could be made that it takes more time for python to calculate the value of this polynomial, than it would to generate a MH corrected value from a simpler function, but this allows for some interesting variation in how we determine our splitting values. The histogram of random samples generated, versus the exact splitting density given by \autoref{fig: p_qg_splitting}.
 \begin{figure}[htb]
     \centering
     \includegraphics[width=9cm]{pictures/plots/Metropolis-Hastings/MH_vacuum_qg.png}
-    \caption{Probability density of the full \(\hat{P}_{qg}\) splitting function, compared to the histogram of 1,000,000 generated samples.}
+    \caption{Probability density of the full \(P_{qg}(z)\) splitting function, and the histogram of sampled values using \autoref{eqn: gqq_vacuum_sample}. Simulated with \(10^6\) samples.}
     \label{fig: p_qg_splitting}
 \end{figure}
 
 \subsubsection*{Sampling from the \(qq\) vertex}
-Next up we will solve \autoref{eqn: energyfraction_function_R} for the \(qq\) splitting function of \autoref{eqn: vacuum_qq_splitting_function}.
+Next up we will attempt to solve \autoref{eqn: energyfraction_function_R} for the \(P_{qq}(z)\) splitting function of \autoref{eqn: vacuum_qq_splitting_function}
 \begin{align}
     \int dz\hat{P}_{qq}(z) &= \int \left(\frac{1+z^2}{1-z} \right)\, dz \nonumber \\
-    &= \int \left(\frac{-(z^2+1)}{z-1} \right)\, dz \nonumber \\
-    &= \int \left(\frac{-((z-1)(z-1)+2z)}{z-1} \right)\, dz \nonumber \\
+    %&= \int \left(\frac{-(z^2+1)}{z-1} \right)\, dz \nonumber \\
+    %&= \int \left(\frac{-((z-1)(z-1)+2z)}{z-1} \right)\, dz \nonumber \\
     &= \int -(z-1)\, dz - \int \frac{2z}{z-1} \, dz \nonumber \\
     &= \int (1-z) \, dz - \int \frac{2(u+1)}{u} \, du \qquad \text{, where}\; u=z-1 \nonumber \\
-    &= \int (1-z) \, dz - \int 2\, dz - \int_a^b \frac{2}{u} \, du \nonumber  \\
+    %&= \int (1-z) \, dz - \int 2\, dz - \int_a^b \frac{2}{u} \, du \nonumber  \\
     &= -\int (z+1) \, dz - \int \frac{2}{u} \, du \nonumber  \\
-    &= -\frac{z^2}{2} - z - 2\left( ln(z-1)\right) 
+    &= -\frac{z^2}{2} - z - 2 \ln(z-1) 
 \end{align}
-since this integral has an exact solution, we can solve \autoref{eqn: energyfraction_function_R} for this splitting function,
-
+since this integral has an exact solution, we can solve \autoref{eqn: energyfraction_function_R} for this splitting function:
 \begin{align}
-    \mathcal{R} \cdot \left[-\frac{z^2}{2} - z - 2\left( ln(z-1)\right) \right]_\epsilon^{1-\epsilon} &= \left[-\frac{z^2}{2} - z - 2\left( ln(z-1)\right) \right]_\epsilon^{y} \nonumber \\
-    %\mathcal{R} \cdot \left(-\frac{(1-\epsilon)^2}{2} - (1-\epsilon) - 2 ( ln((1-\epsilon)-1)) \right) &- \mathcal{R} \cdot \left( -\frac{\epsilon^2}{2} - \epsilon - 2 ( ln(\epsilon-1)) \right) \nonumber \\
-    %&= \left(-\frac{y^2}{2} - y - 2 ( ln(y-1)) \right) - \left( -\frac{\epsilon^2}{2} - \epsilon - 2 ( ln(\epsilon-1)) \right) \nonumber
-    \mathcal{R}\cdot|  \frac{6 \epsilon-3}{2} - 2 ( ln(-\epsilon)) + 2 ( ln(\epsilon-1)) &= -\frac{y^2}{2} - y - 2 ( ln(y-1)) +\frac{\epsilon^2}{2} + \epsilon + 2 ( ln(\epsilon-1)) \nonumber\\
-    \frac{y^2}{2} + y + \ln \left( \frac{y-1}{\epsilon-1}\right)^2  &= -\left(\mathcal{R} \cdot \frac{6 \epsilon-3}{2} + \frac{-\epsilon^2-4 \epsilon}{2}\right) - ln\left(\frac{1-\epsilon}{\epsilon}\right)^{2\mathcal{R}}
+    %\mathcal{R}  \left[-\frac{z^2}{2} - z - 2\, \ln(z-1) \right]_\epsilon^{1-\epsilon} &= \left[-\frac{z^2}{2} - z - 2\, \ln(z-1) \right]_\epsilon^{y} \nonumber \\
+    %\mathcal{R}  \left(-\frac{(1-\epsilon)^2}{2} - (1-\epsilon) - 2 (\ln((1-\epsilon)-1)) \right) &- \mathcal{R}  \left( -\frac{\epsilon^2}{2} - \epsilon - 2 (\ln(\epsilon-1)) \right) \nonumber \\
+    %&= \left(-\frac{y^2}{2} - y - 2 (\ln(y-1)) \right) - \left( -\frac{\epsilon^2}{2} - \epsilon - 2 (\ln(\epsilon-1)) \right) \nonumber
+    %\mathcal{R}|  \frac{6 \epsilon-3}{2} - 2\, \ln(-\epsilon) + 2\, \ln(\epsilon-1) &= -\frac{y^2}{2} - y - 2 \,\ln(y-1) +\frac{\epsilon^2}{2} + \epsilon + 2 \,\ln(\epsilon-1) \nonumber\\
+    \frac{y^2}{2} + y + \ln \left( \frac{y-1}{\epsilon-1}\right)^2  &= -\left(\mathcal{R}  \frac{6 \epsilon-3}{2} + \frac{-\epsilon^2-4 \epsilon}{2}\right) -\ln\left(\frac{1-\epsilon}{\epsilon}\right)^{2\, \mathcal{R}}.
 \end{align}
-This equation is however difficult to solve, so we will need to use the Metropolis-Hastings algorithm once again. The \(qq\) splitting function is \(\hat{P}_{qq}(z) = \frac{1+z^2}{1-z}\), we will try a dummy function \(\hat{P}_{qq}^{\text{dummy}} = \frac{-2}{z-1}\). The integral of his dummy function is simply,
+This equation is however difficult to solve, so we will need to use the Metropolis-Hastings algorithm once again. Attempting with a dummy function
 \begin{align}
-    \int(\frac{-2}{z-1})dz = -2 ln(z-1)
+    %\int \left(\frac{-2}{z-1}\right)dz &= -2\,\ln(z-1) \\
+    P_{qq}^{\text{dummy}}(z) &= \frac{-2}{z-1}
 \end{align}
-Now we will try to solve \autoref{eqn: energyfraction_function_R}, with this dummy splitting function, 
+then \autoref{eqn: energyfraction_function_R} becomes
 \begin{align}
-    \mathcal{R}\cdot \left[-2 ln(z-1)\right]_{\epsilon}^{1-\epsilon} &= \left[-2 ln(z-1)\right]_{\epsilon}^{y} \nonumber \\
-    \mathcal{R}\cdot \left(-2 ln((1-\epsilon)-1) + 2 ln(\epsilon-1) \right) &= \left(-2 ln(y-1) + 2 ln(\epsilon-1) \right) \nonumber \\
-    \mathcal{R}\cdot ln\left(\frac{1-\epsilon}{\epsilon} \right) &= - ln(y-1) + ln(\epsilon-1)
+    \mathcal{R} \left[-2\ln(z-1)\right]_{\epsilon}^{1-\epsilon} &= \left[-2\ln(z-1)\right]_{\epsilon}^{y} \nonumber \\
+    \mathcal{R} \left(-2\ln((1-\epsilon)-1) + 2\ln(\epsilon-1) \right) &= \left(-2\ln(y-1) + 2\ln(\epsilon-1) \right) \nonumber \\
+    \mathcal{R}\ln\left(\frac{1-\epsilon}{\epsilon} \right) &= -\ln(y-1) +\ln(\epsilon-1)
 \end{align}
-moving terms and exponentiating, 
-\begin{align}
-    ln(y-1) &= ln(\epsilon-1) - ln\left(\frac{1-\epsilon}{\epsilon} \right)^{\mathcal{R}} \nonumber \\
-    y-1 &= \frac{e^{ln(\epsilon-1)}}{e^{ln(\frac{1-\epsilon}{\epsilon})^{\mathcal{R}}}} \nonumber \\
-    y &= \frac{(\epsilon-1)}{(\frac{1-\epsilon}{\epsilon})^{\mathcal{R}}} +1 
+rearranging terms and exponentiating both sides 
+\begin{align}\label{eqn: qq_sampling_y_function}
+   \ln(y-1) &=\ln(\epsilon-1) -\ln\left(\frac{1-\epsilon}{\epsilon} \right)^{\mathcal{R}} \nonumber \\
+    %y-1 &= \frac{e^{ln(\epsilon-1)}}{e^{ln(\frac{1-\epsilon}{\epsilon})^{\mathcal{R}}}} \nonumber \\
+    y &= \frac{\epsilon-1}{(\frac{1-\epsilon}{\epsilon})^{\mathcal{R}}} +1 .
 \end{align}
-This equation can be used for sampling random values from the simple \(qq\) splitting function, and following the same procedure as in Section \ref{sec: metropolis_hastings} we can implement Metropolis-Hastings algorithm for sampling random values from the full \(qq\) splitting function. The results of both the original samples, and the MH corrected histogram is given in \autoref{fig: MH_corrected_p_qq_splitting}.
+\autoref{eqn: qq_sampling_y_function} can be used for sampling random values from the simple \(qq\) splitting function, and following the same procedure as in Section \ref{sec: metropolis_hastings} we can implement Metropolis-Hastings algorithm for sampling random values from the full \(qq\) splitting function. The results of both the original samples, and the MH corrected histogram is given in \autoref{fig: MH_corrected_p_qq_splitting}.
 \begin{figure}[htb]
     \centering
     \includegraphics[width=15cm]{pictures/plots/Metropolis-Hastings/MH_vacuum_qq.png}
-    \caption{Probability density of the full \(\hat{P}_{qq}\) splitting function, compared to the density histogram of the dummy splitting function, and the Metropolis-Hastings corrected results. Simulated with \(1,000,000\) points, and an acceptance rate of \(0.89\).}
+    \caption{Probability density of the full \(P_{qq}(z)\) splitting function and the dummy splitting function \(P_{qq}^{\text{dummy}}(z)\). The left plot gives the values sampled from \autoref{eqn: qq_sampling_y_function},and the right plot is corrected using Metropolis-Hastings algorithm. Simulated with \(10^6\) samples, and a MH acceptance rate of \(0.89\).}
     \label{fig: MH_corrected_p_qq_splitting}
 \end{figure}
 
-\subsection{Monte-Carlo implementation}
-This section serves to give a brief overview of the logical structure of the main \textit{generate\_shower} subprogram, which is the core of the parton-shower programs. This is where all of the actual physics is applied, while the rest of the program is for plotting, defining variables, and creating the \textit{PartonObject} and \textit{ShowerObject}. 
+\subsection{Monte-Carlo implementation}\label{sec: MC_implementation_vacuum}
+This section serves to give a brief overview of the logical structure of the main \textit{generate\_shower} subprogram, which is the core of the parton-shower programs. This is where all of the actual physics is applied, while the rest of the program is for plotting, defining variables, and managing parent/daughter relations.
 
-The full code for running the different parton shower programs, and Metropolis-Hastings algorithms is available on the authors GitHub \cite{GitHub_thesis}. The main loop running in the shower program is given here in \autoref{alg: generate_shower_loop}. Not all parameters are listed here, as to keep the representation as simple as possible.
+The full code for running the different parton shower programs, and Metropolis-Hastings algorithms is available on the authors GitHub~\cite{GitHub_thesis}. The main loop running in the shower program is given here in \autoref{alg: generate_shower_loop}. Not all parameters are listed here, as to keep the representation as simple as possible.
 \begin{center}
 \begin{minipage}{.8\linewidth}
 \begin{algorithm}[H]
@@ -261,161 +235,178 @@ The full code for running the different parton shower programs, and Metropolis-H
 \end{minipage}
 \end{center}
 
-\subsection{Results for gluons in vacuum}
-Starting by looking at the results for the parton shower with only gluons in vacuum. The distribution for the inclusive energy distribution \(D(x,t)\) is given in \autoref{fig: vacuum_gluons_MCandAnalytical_comparison}. The MC results is plotted alongside the analytical solution to the DGLAP equation on the form \autoref{eqn: DGLAP_solution_energyflowmedium}, using the simplified splitting function, with \(C_A=1\). 
+\subsection{Results for vacuum showers}
+The mathematics and structure of the Monte-Carlo programs have now been presented, and we are therefore ready to examine the resulting distributions. For the vacuum programs, we are primarily interested in the inclusive parton, or inclusive energy distributions, given in terms of the momentum-fraction \(z_i\) of the different partons. 
+
+\subsubsection*{Results for gluon showers in vacuum}
+Starting by looking at the results for the parton shower with gluons in vacuum, where the inclusive energy distribution \(D(x,t)\) is generated using using the simplified splitting function \autoref{eqn: p_ggg_vacuum_dummy}. The results can be compared with the solution of the DGLAP equations which we obtained in \autoref{eqn: DGLAP_solution_energyflowmedium}, valid in the small \(x\) limit, the resulting plot is given in \autoref{fig: vacuum_gluons_MCandAnalytical_comparison_lin}.
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=12cm]{pictures/plots/distributions/vacuum/vacuum_shower_analytical_1m.png}
-    \caption{Inlcusive distribution for \(n=10^6\) showers for gluons-only in vacuum, with the simplified splitting function ( \(C_A=1\)). Plotted alongside the analytical solution obtained in \autoref{eqn: branching_probability_from_sudakov_gg}. Parameters used are \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\)}. 
-    \label{fig: vacuum_gluons_MCandAnalytical_comparison}
+    \includegraphics[width=13cm]{pictures/plots/distributions/vacuum/vacuum_shower_analytical_2m_lin.png}
+    \caption{The inclusive energy distribution \(D(x,t)\) for gluon showers in vacuum. The red line is the analytical solution obtained in \autoref{eqn: DGLAP_solution_energyflowmedium}. The blue dotted line is the generated values by running \(n=2\cdot10^6\) showers in a Monte-Carlo program, using the dummy splitting function \autoref{eqn: p_ggg_vacuum_dummy}. Parameters used are \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\)}.
+    \label{fig: vacuum_gluons_MCandAnalytical_comparison_lin}
 \end{figure}
 
-From \autoref{fig: vacuum_gluons_MCandAnalytical_comparison} it is apparent that the Monte-Carlo is in good agreement with the analytical solution for larger values of \(t\) - meaning when we are evolving with a parton with high initial \(p_t\). The discrepancies between the two graphs at lower values of \(t\) can be explained by \elab
+The Monte-Carlo generated distribution plotted in \autoref{fig: vacuum_gluons_MCandAnalytical_comparison_lin} is in fairy good agreement with the analytical results for large values of the evolution variable \(t\), and small values of the momentum \(x\). This as expected as the solution is only valid for small values of \(x\) where \(\ln \frac{1}{x} >>t\).
 
-\subsection{Results for quarks and gluons in vacuum}
-Turning to the program with both quarks and gluons in vacuum. The resulting plot for the inclusive parton distribution \(f(x,t)\) as generated from our Monte-Carlo program for quarks and gluons in vacuum, is given in \autoref{fig: vacuum_distribution_quark_and_gluon}.
+\subsubsection*{Results for quarks-, and gluons showers in vacuum}
+Turning to the Monte-Carlo for both quarks and gluons in vacuum, generated using the full splitting functions and sampled using the Metropolis-Hastings algorithm. This time there is no analytical results to compare with, but we can compare the inclusive parton distributions \(f(x,t)\), of quark-initiated and gluon-initiated showers. The resulting plot is given in \autoref{fig: vacuum_distribution_quark_and_gluon}. The final distributions contains both quarks and gluons, and the difference between them is simply the type of the initial parton. The hardest parton of each shower is also plotted using dotted lines, and it is simply determined by taking the parton with the highest momentum once the shower has terminated, and plotting its \(z\) value.
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=12cm]{pictures/plots/distributions/vacuum/dasgupta_quarksgluons_N500000.png}
-    \caption{Inclusive spectrum generated from the Monte-Carlo program with quarks and gluons in vacuum. The solid lines show the inclusive parton distribution for initial quarks (blue) and initial gluons (green). The dashed lines show the hardest parton of each shower. Simulated with \(n=5\cdot 10^5\) showers for both initial quark and initial gluon. Parameters used are \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\). The number of gluons \(N_z\) with \(z=1\) is, \(N_z(0.04)=110992 \pm 157\), \(N_z(0.1)=11549.0 \pm 16.3\), \(N_z(0.2k)=264.0 \pm 0.4\), and \(N_z(0.3)=4.000 \pm 0.006\)}
+    \includegraphics[width=13cm]{pictures/plots/distributions/vacuum/dasgupta_quarksgluons_N500000.png}
+    \caption{The inclusive parton distribution \(f_i(x,t)\) for quarks and gluons in vacuum, generated by the Monte-Carlo program with both quarks and gluons in vacuum, using the full splitting functions. The solid lines show the inclusive parton distribution for initial quarks (blue) and initial gluons (green). The dashed lines show the hardest parton of each shower. Simulated with \(n=5\cdot10^5\) showers for both initial quark and initial gluon. Parameters used are \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\). The number of gluons \(N_z\) with \(z=1\) is printed on each of the plots.}
     \label{fig: vacuum_distribution_quark_and_gluon}
 \end{figure}
 
-There are several observations to be made from this plot. Firstly the distribution of the hardest parton of each shower is the same as for the distribution of the full spectrum for values above \(z<\frac{1}{2}\). \krs{this is due to...}. 
-Secondly...
+There are several observations to be made from \autoref{fig: vacuum_distribution_quark_and_gluon}. Firstly the distribution of the hardest parton of each shower is the same as the inclusive distribution for values above \(z<\frac{1}{2}\). This will be explored in more detail when we discuss leading partons in \autoref{cpt:leading}. Secondly, the impact the initial parton has on the distribution is significant, this is related to the expected branching intervals, and we will discuss it shortly.
 
-An initial check of the validity of the program can be done by comparing with the results of \cite[Figure 2.]{Dasgupta_2015}, in which the inclusive distribution has been plotted for fixed values of the evolution variable, \(t=0.04, 0.1, 0.2, 0.3\). While \cite{Dasgupta_2015} discusses a slightly different approach, where the evolution goes from \(R<\theta<1\), meaning they obtain the total number of microjets within a given jet, as opposed to our treatment where we are looking for the parton distribution inside a jet with radius \(R\) such that, \(Q_0/p_t < \theta < R\). The result can however be compared as long as the evolution goes over the same effective angle, as is the case when we are plotting with the same values of \(t\). Our results is then in good agreement with \cite{Dasgupta_2015}.
+An initial check of the validity of the program can be done by comparing with the results of~\cite[Figure 2.]{Dasgupta_2015}, in which the inclusive distribution has been plotted for fixed values of the evolution variable, \(t=0.04, 0.1, 0.2, 0.3\). While~\cite{Dasgupta_2015} discusses a slightly different approach, where the evolution goes from \(R<\theta<1\), meaning they obtain the total number of microjets within a given jet, as opposed to our treatment where we are looking for the parton distribution inside a jet with radius \(R\) such that, \(Q_0/p_t < \theta < R\). The result can however be compared as long as the evolution goes over the same effective angle, as is the case when we are plotting with the same values of \(t\). Our results are therefore in good agreement with~\cite{Dasgupta_2015}.
 
-More explicit calculations can be done for checking the validity of our results. From the DGLAP equation on integral form \autoref{eqn: DGLAP_evolutioneq_unregularized_integral_ellis}, there is a term \(\Delta(t)\, f(x,t_0)\), which represents the probability of no branchings to occur at all for the initial parton during the interval \(t\in[t_0, t_{max}]\). This can be calculated from \autoref{eqn: branching_probability_from_sudakov_gg}, except now we know the value of \(\Delta t\), and need to take into account the possibility of the gluon to branch into a \(gg\) or a \(q\bar q\)-pair. The probability is then given as,
+More explicit calculations can be done for checking the validity of our results. From the DGLAP equation on integral form \autoref{eqn: DGLAP_evolutioneq_unregularized_integral_ellis}, there is a term \(\Delta(t)\, f(x,t_0)\), which represents the probability of no branching to occur at all for the initial parton during the interval \(t\in[t_0, t_{max}]\). This can be calculated from \autoref{eqn: branching_probability_from_sudakov_gg} for initial gluons, except now we know the value of \(\Delta t\), and need to take into account the possibility of the gluon to branch into a \(gg\)-pair or a \(q\bar q\)-pair. The probability is then given as
 \begin{equation}
-    \mathcal{P}(t) = \exp \left(-t\, \int_{\epsilon}^{1-\epsilon}dz\, (P_{gg}(z) + P_{qg}(z)) \right)
+    \mathcal{P}(t) = \exp \left(-t\, \int_{\epsilon}^{1-\epsilon}dz\, (P_{gg}(z) + P_{qg}(z)) \right).
 \end{equation}
-Using the same values for \(t\) and \(\epsilon=10^{-3}\) as in the plot, we find that 
+Using the same values for \(t\) and \(\epsilon\) as in the plot:
 \begin{align}\label{eqn: no_branching_sudakov_probability}
     \begin{split}
         \mathcal{P}(0.04) &\approx 2.22\cdot 10^{-1} \\
         \mathcal{P}(0.1) &\approx 2.32\cdot 10^{-2} \\
         \mathcal{P}(0.2)&\approx 5.40\cdot 10^{-4} \\
-        \mathcal{P}(0.3) &\approx 1.25\cdot 10^{-5}
+        \mathcal{P}(0.3) &\approx 1.25\cdot 10^{-5}.
     \end{split}
 \end{align}
-These probabilities should manifest themselves in our plot, and we can find them by simply counting the number of partons \(N_z\) with momentum \(z=1\) in the final distribution for each value of \(t\). Running \(N=5\cdot 10^{5}\) showers, the percentages are as follows,
+These probabilities should manifest themselves in our plot, and we can find them by simply counting the number of partons \(N_z\) with momentum \(z=1\) in the final distribution for each value of \(t\). The values for \(N_z\) is given in \autoref{fig: vacuum_distribution_quark_and_gluon}, and correspond to the following probabilites:
 \begin{align}\label{eqn: no_branching_MC_probability}
     \begin{split}
-        \mathcal{P}_{\text{MC}}(t=0.04) &= \frac{N_z(0.04)}{N} = \frac{110992}{5\cdot 10^{5}} \approx 2.22\cdot 10^{-1} \\
-        \mathcal{P}_{\text{MC}}(t=0.1) &= \frac{N_z(0.1)}{N} = \frac{11549}{5\cdot 10^{5}} \approx 2.31\cdot 10^{-2} \\
-        \mathcal{P}_{\text{MC}}(t=0.2) &= \frac{N_z(0.2)}{N} = \frac{264}{5\cdot 10^{5}} \approx 5.28\cdot 10^{-4} \\
-        \mathcal{P}_{\text{MC}}(t=0.3) &= \frac{N_z(0.3)}{N} = \frac{4}{5\cdot 10^{5}} \approx 8\cdot 10^{-6}
+        \mathcal{P}_{\text{MC}}(t=0.04) &= \frac{N_z(0.04)}{N} = \frac{110992}{5 10^{5}} \approx 2.22 \cdot10^{-1} \\
+        \mathcal{P}_{\text{MC}}(t=0.1) &= \frac{N_z(0.1)}{N} = \frac{11549}{5 10^{5}} \approx 2.31\cdot 10^{-2} \\
+        \mathcal{P}_{\text{MC}}(t=0.2) &= \frac{N_z(0.2)}{N} = \frac{264}{5 10^{5}} \approx 5.28\cdot 10^{-4} \\
+        \mathcal{P}_{\text{MC}}(t=0.3) &= \frac{N_z(0.3)}{N} = \frac{4}{5 10^{5}} \approx 8\cdot 10^{-6}.
     \end{split}
 \end{align}
-We can see that the probabilities given from the calculation of the Sudakov in \autoref{eqn: no_branching_sudakov_probability} is in reasonable good agreement for the probabilities we find when running \(5\cdot 10^5\) showers and counting \(N_z\) in \autoref{eqn: no_branching_MC_probability}. 
+We can see that the probabilities given from the calculation of the Sudakov in \autoref{eqn: no_branching_sudakov_probability} is in reasonable good agreement with the probabilities we find when running \(5 \cdot 10^5\) showers and counting \(N_z\) in \autoref{eqn: no_branching_MC_probability} - which should be expected as the Sudakov form factor is used both for the calculation, and in the Monte-Carlo.
 
-It could be argued that these results are more accurate than the gluon-only cascade, as there is no reason for a gluon not to branch into a \(q\bar q\)-pair, although it is significantly less likely than a \(gg\)-pair \footnote{For our program only about \(\sim 4\%\) of the gluon branchings are \(g\rightarrow q\bar q\)}. It would therefore be interesting to compare the distributions from a pure gluon shower in vacuum, with a gluon initiated shower with both quarks and gluons in vacuum. The resulting plot is given in \autoref{fig: vacuum_program_comparisons}.
+It could be argued that the results generated by the quarks and gluons cascade are more accurate than the gluon cascade, as there is no reason for a gluon not to branch into a \(q\bar q\)-pair\footnote{It is however significantly less likely for than \(g\rightarrow gg\) branchings, for our program about \(\sim 4\%\) of the gluon branchings are \(g\rightarrow q\bar q\)}. It would therefore be interesting to compare the distribution of the pure gluon shower in vacuum as given in \autoref{fig: vacuum_gluons_MCandAnalytical_comparison_lin}, with the showers initiated by a gluon as given in \autoref{fig: vacuum_distribution_quark_and_gluon}. The resulting plot is given in \autoref{fig: vacuum_program_comparisons}.
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=12cm]{pictures/plots/distributions/program_comparison/comparison_vacuum_programs_100k.png}
-    \caption{Inclusive spectrum generated from the Monte-Carlo program with gluons only in vacuum, compared to the inclusive spectrum of quarks and gluons in vacuum with the initial parton being a gluon. The red line gives the analytical solution for gluons only. Simulated with \(n = 10^5\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\).}
+    \includegraphics[width=13cm]{pictures/plots/distributions/program_comparison/comparison_vacuum_programs_100k_lin.png}
+    \caption{The inclusive energy distribution \(D(x,t)\) generated by both Monte-Carlo programs: gluons in vacuum (blue), and quarks-and-gluons in vacuum, initiated by a gluon(green). The red line is the analytical solution of the DGLAP equation obtained in \autoref{eqn: DGLAP_solution_energyflowmedium} for gluons, which is only valid in the small \(x\) and large \(t\) limits. Simulated with \(n = 10^5\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\).}
     \label{fig: vacuum_program_comparisons}
 \end{figure}
-The plot given here is a straight up comparison of the two programs. It is therefore important to note that the splitting functions are not identical as the gluons only program is using the simplified splitting function which does not carry any color factors. This is apparent when examining the integrals over the different splitting functions, using \(\epsilon = 10{-3}\), 
+
+The plot given here is a straight-up comparison of the two programs. It is therefore important to note that the splitting functions are not identical as the gluon showers is using the simplified splitting function which does not carry any color factors. This is apparent when examining the integrals over the different splitting functions, using \(\epsilon = 10{-3}\):
 \begin{align}
 \begin{split}
-    \int_\epsilon^{1-\epsilon} P_{gg}^{\text{simple}}dz &\approx 13.8\\ \int_\epsilon^{1-\epsilon} P_{gg}^{\text{full}}dz &\approx 36.0\\ \int_\epsilon^{1-\epsilon} P_{qg}^{\text{full}}dz &\approx 1.7 \\
-    \int_\epsilon^{1-\epsilon} P_{qq}^{\text{full}}dz &\approx 16.4
+    \int_\epsilon^{1-\epsilon} P_{gg}^{\text{simple}}(z)\,dz &\approx 13.8\\ \int_\epsilon^{1-\epsilon} P_{gg}(z)\,dz &\approx 36.0\\ 
+    \int_\epsilon^{1-\epsilon} P_{qg}(z)\,dz &\approx 1.7 \\
+    \int_\epsilon^{1-\epsilon} P_{qq}(z)\,dz &\approx 16.4.
 \end{split}
 \end{align}
-Since the expected splitting intervals is inversely proportional to these integrals, it is to be expected that the gluon-only shower using the simplified \(P_{gg}^{\text{simple}}\) splitting function, would be going much slower towards small \(x\) values. If we were to adjust the simplified splitting function such that the expected intervals of \(g\rightarrow gg\) branchings were identical, then the gluon-only distribution would go faster towards low \(x\) values than the gluon initiated showers with both quarks and gluons. There are two reasons for this. The first is that gluons can split using either the \(P_{gg}^{\text{full}}\) or \(P_{qg}^{\text{full}}\) splitting function, the second is that when we inevitably get a \(g\rightarrow q\bar q\) splitting, those new quarks will split much slower than gluons. Both of these properties are direct consequences of how the branching intervals are calculated. 
+Since the expected splitting intervals are inversely proportional to these integrals, it is to be expected that the gluon showers using the simplified \(P_{gg}^{\text{simple}}\) splitting function, would be going slower toward small momentum values. If we were to adjust the simplified splitting function such that the expected intervals of \(gg\) branchings were identical, then the gluon-only distribution would go faster towards low momentum values than the gluon initiated showers with both quarks and gluons. 
 
-The difference in color factors does not affect the splitting values in the same manner, as those are calculated by two integrals over the splitting function, meaning the constant factors simply cancel each other out.
+There are two reasons for this. The first is that gluons can split using either the \(P_{gg}(z)\) or \(P_{qg}(z)\) splitting function, the second is that when we inevitably observe a \(qg\) splitting, those new quarks will split much slower than gluons. Both of these properties are direct consequences of how the branching intervals are calculated. We can check for this behavior by simply adding a fictitious color factor \(C\sim 2.6\) to the simplified splitting function such that
+\begin{equation}
+    \int_\epsilon^{1-\epsilon} C P_{gg}^{\text{simple}}(z) dz \approx \int_\epsilon^{1-\epsilon} P_{gg}(z) dz.
+\end{equation}
+The two distributions with this new factor is given in \autoref{fig: vacuum_program_comparisons_Cfictitious}. It is now apparent that the gluon showers is going faster towards small momentum values, as there are no quarks to slow down the splitting process. The difference in color factors does not affect the splitting values in the same manner, as those are calculated by two integrals over the splitting function, meaning the constant factors simply cancel each other out.
+\begin{figure}[hbt]
+    \centering
+    \includegraphics[width=13cm]{pictures/plots/distributions/program_comparison/comparison_vacuum_programs_100k_lin_cfact.png}
+    \caption{The inclusive energy distribution \(D(x,t)\) generated by both Monte-Carlo programs. Blue: gluons in vacuum, but with a fictitious color factor \(C\sim2.6\) added to the simplified splitting function such that the expected branching interval of gluons are the same. Green: quarks-and-gluons in vacuum, initiated by a gluon. The red line is the analytical solution of the DGLAP equation obtained in \autoref{eqn: DGLAP_solution_energyflowmedium} for gluons, which is only valid for gluons and in the small \(x\) and large \(t\) limits. Simulated with \(n = 10^5\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}}=10^{-3}\).}
+    \label{fig: vacuum_program_comparisons_Cfictitious}
+\end{figure}
 
-\newpage
-\section{Monte-Carlo for parton branching in medium}
-Moving on to parton branchings in medium. We will be developing a single program in this section which is a Monte-Carlo for the pure gluon cascade. Analogous to the pure gluon cascade in vacuum, we have an analytical solution which we can compare the results with. 
+\subsubsection*{Validity of our Monte-Carlo in vacuum}
+The Monte-Carlo programs developed for vacuum cascades has now been under scrutiny, so lets quickly summarize the findings. 
+\begin{enumerate}
+    \item The results of the Monte-Carlo gluon cascade was compared with the analytical solution calculated in \autoref{sec: solution_DGLAP} and was in good agreement in the small \(x\) large \(t\) limit, as expected. 
+    \item The inclusive distribution generated by gluon-initiated and quark-initiated showers, was visually compared with the results presented in~\cite{Dasgupta_2015}, and we can see that the results were visually identical.
+    \item The number of initial partons which do not branch in the interval \([t_{\text{min}}, t_{\text{max}}]\) was calculated from the Sudakov form factor for initial gluons, and compared with the Monte-Carlo for quarks and gluons. The numbers were of similar order.
+    \item The behaviour of the gluon cascade was compared with the quarks and gluons cascade. This was done by highlighting how adjusting for the expected branching intervals, still yielded different distributions. This was attributed to the addition of quarks in the shower, which generally makes it go slower towards small values.
+\end{enumerate}
+While no formal comparison has been done with the results of well established event generators such as PYTHIA~\cite{PYTHIA_Bierlich:2022pfr}, the discussion presented here should spark confidence in our simple parton shower generator.
+ 
+
+\clearpage
+\section{Monte-Carlo for Parton Branching in Medium}
+When developing a Monte-Carlo program for medium cascades, we will be restricting ourselves to gluons in medium, and use the simplified medium splitting function, or reduced kernel. This is done such that we can compare our results with the analytical solution for the in-medium kinetic rate equation, and examine the properties of leading-parton cascades. The process of creating a parton shower program for both quarks and gluons in medium, would follow the same structure as in the previous section, but we will limit ourselves to gluons in this thesis.
 
 \subsection{Evolution interval}
-As discussed in \autoref{sec: BDMPS_theory}, the medium cascade evolves according to the actual time, up to the characteristic time which is the time it takes for the initial parton to radiate most of its energy into soft gluons. This is not necessarily a hard cutoff or boundary for the actual medium cascade, but it is an important property which will affect our expectations for the distributions for different values of \(\tau\). However when developing the Monte-Carlo program it will serve as a guide to which values of \(\tau\) we are interested in.
+As discussed in \autoref{sec: BDMPS_theory}, the medium cascade evolves according to the actual time, and the characteristic time is simply the time it takes for the initial parton to radiate most of its energy into soft gluons. We will be evolving the cascades using the variable \(\tau = t/t_*\), which was defined in \autoref{eqn: medium_tau_definiton}. It is therefore not a hard cutoff for the medium cascade but serves more as an indication of how long the cascades can evolve, and it is an important property that will affect our expectations for different values of \(\tau\). There is therefore no upper limit on the value of \(\tau\) in our medium evolutions, but since most of the energy has disappeared into soft gluons \((z<0,001)\) at \(\tau \sim 1\), we might as well set this as an approximate boundary,
 \begin{align}\label{eqn: medium_evolution_boundaries}
-    0 < t &\lessapprox t_* = \frac{\pi}{\alpha_S N_C} \sqrt{\frac{E}{\hat q}} \nonumber \\
-    0 < \tau &\lessapprox 1
+    0 < \tau &\lessapprox 1.
 \end{align}
-Determining the probable splitting time can again be done from the Sudakov form factor which was introduced for the medium evolution in \autoref{eqn: BDMPS_sudakov}, and we can therefore follow the procedure of \autoref{sec: determining_evolution_time_from_sudakov} to determine a probable branching interval \(\Delta t = t-t_0\). Doing this in terms of \(\tau\), such that \(\Delta \tau = \Delta t/t_*\), and \(\Delta t/t_*(x) = \Delta t/t_* \sqrt{x} = \Delta \tau/\sqrt{x}\). The evolution probability takes therefore the form,
+Determining the probable branching interval \(\Delta t\) can again be done from the Sudakov form factor, introduced for the medium evolution in \autoref{eqn: BDMPS_sudakov}, following the procedure presented in \autoref{sec: determining_evolution_time_from_sudakov}. Doing this in terms of \(\tau\), such that \(\Delta \tau = \Delta t/t_*\), and \(\Delta t/t_*(x) = \Delta t/t_* \sqrt{x} = \Delta \tau/\sqrt{x}\), the evolution probability takes the form
 \begin{align}
-    \mathcal{P}(\Delta t) &= \frac{\Delta(t_0)}{\Delta(t)} = \exp \left(- \frac{\Delta t}{t_*(x)} \int_\epsilon^{1-\epsilon} \, dz\, z \mathcal{K}(z) \right) \nonumber \\
-    \mathcal{P}(\Delta \tau) &= \frac{\Delta(\tau_0)}{\Delta(\tau)} = \exp \left(- \frac{\Delta \tau}{\sqrt{x}} \int_\epsilon^{1-\epsilon} \, dz\, z \mathcal{K}(z) \right)
+    \mathcal{P}(\Delta \tau) &= \frac{\Delta(\tau_0)}{\Delta(\tau)} = \exp \left(- \frac{\Delta \tau}{\sqrt{x}} \int_\epsilon^{1-\epsilon} \, dz\, z \mathcal{K}(z) \right).
 \end{align}
-Exchanging the probability with a randomly generated number \(\mathcal{R}\in (0,1)\), we obtain
+Exchanging the probability with a randomly generated number \(\mathcal{R}\in (0,1)\)
 \begin{align}
-    \Delta \tau &= -\frac{\sqrt{x}\,\ln(\mathcal{R}) }{\int_\epsilon^{1-\epsilon} \, dz\, z \mathcal{K}(z)} \nonumber \\
-    &= -\frac{\sqrt{x}\,\ln(\mathcal{R}) }{\int_\epsilon^{1-\epsilon} \, dz\, z \mathcal{K}(z)} 
+    \Delta \tau &= -\frac{\sqrt{x}\,\ln(\mathcal{R}) }{\int_\epsilon^{1-\epsilon} \, dz\, z \mathcal{K}(z)}
 \end{align}
-from the symmetry of the splitting kernel, we have \(\int_0^1 \, dz\, z \mathcal{K}(z) = \frac{1}{2} \int_0^1 \, dz \mathcal{K}(z)\), and the probable evolution interval can be therefore be determined from \autoref{eqn: BDMPS_probable_branching_interval_tau}.
+and from the symmetry of the reduced kernel, we have \(\int_0^1 \, dz\, z \mathcal{K}(z) = \frac{1}{2} \int_0^1 \, dz \mathcal{K}(z)\), and the probable evolution interval an therefore be written as
 \begin{equation}\label{eqn: BDMPS_probable_branching_interval_tau}
-    \Delta \tau = -\frac{2\, \sqrt{x}\cdot \ln(\mathcal{R}) }{\int_\epsilon^{1-\epsilon} \, dz \mathcal{K}(z)} 
+    \Delta \tau = -\frac{2\, \sqrt{x} \ln(\mathcal{R}) }{\int_\epsilon^{1-\epsilon} \, dz \mathcal{K}(z)}.
 \end{equation}
 
-\subsection{Sampling from the medium splitting functions}
-The medium splitting functions was introduced in the previous chapter, and now we will determine appropriate ways of doing random samples. 
+\subsection{Sampling from the medium splitting function}
+The full medium splitting functions was introduced in \autoref{sec: medium_splitting_functions} but it will be sufficient for our treatment of medium showers to use the reduced \(\mathcal{K}_{gg}(z)\) splitting kernel, as given in \autoref{eqn: ggg_medium_reduced_kernel}. A way of sampling the full splitting functions is available for the interested reader in \autoref{app: medium_MetropolisHastings}. 
 
-\subsubsection*{Sampling from the \(gg\) vertex}
-For gluons in medium, it will be sufficient to work with the simplified splitting kernel as presented in \autoref{eqn: ggg_medium_reduced_kernel}. The reasoning is simply that \autoref{eqn: BDMPS_solution_startingpoint} which was the starting point for our analytical solution, is only dependent on the simplified splitting kernel.
-It is also worth noting that all factors \(C_A\) are already absorbed into \(\tau\).
-
-The problem of sampling values directly from the splitting function is still present, so returning to \autoref{eqn: probability_density_for_splitting}, we again need to solve \autoref{eqn: energyfraction_function_R}. 
-\begin{equation}\tag{\ref{eqn: energyfraction_function_R}}
-    \mathcal{R} \cdot \int_\epsilon^{1-\epsilon} dz \, \mathcal{K}(z) = \int_\epsilon^{y}dz \, \mathcal{K}(z)
-\end{equation}
-The integral can be generally shown to be, 
+\subsubsection*{Sampling from the reduced kernel}
+Sampling from the reduced kernel presented in \autoref{eqn: ggg_medium_reduced_kernel} follows the same procedure as when sampling the vacuum splitting functions where we solved \autoref{eqn: energyfraction_function_R}. The integral of the reduced kernel is
 \begin{align}
     \int_a^b \frac{1}{(z(1-z))^{3/2}}dz &= \left[ \frac{4z-2}{\sqrt{-z(z-1)}} \right]_a^b
 \end{align}
-which means that we can evaluate \autoref{eqn: energyfraction_function_R} as,
+and \autoref{eqn: energyfraction_function_R} is then
 \begin{align}
     \mathcal{R} \int_\epsilon^{1-\epsilon} dz \, \frac{1}{(z(1-z))^{3/2}} &= \int_\epsilon^{y} \frac{1}{(z(1-z))^{3/2}} \nonumber \\
-    \mathcal{R} \left(  \frac{4(1-\epsilon)-2}{\sqrt{-(1-\epsilon)((1-\epsilon)-1)}} - \frac{4\epsilon-2}{\sqrt{-\epsilon(\epsilon-1)}} \right) &= \frac{4y-2}{\sqrt{-y(y-1)}} - \frac{4\epsilon-2}{\sqrt{-\epsilon(\epsilon-1)}} \nonumber\\
+    %\mathcal{R} \left(  \frac{4(1-\epsilon)-2}{\sqrt{-(1-\epsilon)((1-\epsilon)-1)}} - \frac{4\epsilon-2}{\sqrt{-\epsilon(\epsilon-1)}} \right) &= \frac{4y-2}{\sqrt{-y(y-1)}} - \frac{4\epsilon-2}{\sqrt{-\epsilon(\epsilon-1)}} \nonumber\\
     \mathcal{R} \left(  \frac{2-4\epsilon}{\sqrt{\epsilon(1-\epsilon)}} - \frac{4\epsilon-2}{\sqrt{\epsilon(1-\epsilon)}} \right) &= \frac{4y-2}{\sqrt{-y(y-1)}} - \frac{4\epsilon-2}{\sqrt{-\epsilon(\epsilon-1)}} \nonumber\\
-    \mathcal{R} \left(  \frac{4-8\epsilon}{\sqrt{\epsilon(1-\epsilon)}} \right) - \frac{2-4\epsilon}{\sqrt{\epsilon(1-\epsilon)}} &= \frac{4y-2}{\sqrt{-y(y-1)}} 
+    \mathcal{R} \left(  \frac{4-8\epsilon}{\sqrt{\epsilon(1-\epsilon)}} \right) - \frac{2-4\epsilon}{\sqrt{\epsilon(1-\epsilon)}} &= \frac{4y-2}{\sqrt{-y(y-1)}}.
 \end{align}
-The term on the l.h.s can be written in terms of the integral again and assigned to a variable \(a\), 
+The term on the l.h.s can be written in terms of the integral again and assigned to a variable \(a\)
 \begin{equation}
-    a = \int_\epsilon^{1-\epsilon} dz \cdot \left(\mathcal{R} - \frac{1}{2} \right) = \mathcal{R} \left(  \frac{4-8\epsilon}{\sqrt{\epsilon(1-\epsilon)}} \right) + \frac{2-4\epsilon}{\sqrt{\epsilon(1-\epsilon)}}
+    a = \int_\epsilon^{1-\epsilon} dz  \left(\mathcal{R} - \frac{1}{2} \right) = \mathcal{R} \left(  \frac{4-8\epsilon}{\sqrt{\epsilon(1-\epsilon)}} \right) + \frac{2-4\epsilon}{\sqrt{\epsilon(1-\epsilon)}}
 \end{equation}
-Inserting this \(a\), the remainder of the equation can be solved using Mathematica,
+using this \(a\), the remainder of the equation can be solved using Mathematica
 \begin{align}\label{eqn: medium_gg_sampling}
     y &= \frac{16 + a^2 \mp a \sqrt{16 + a^2}}{2 (16 + a^2)} \nonumber\\
     y &= \frac{1}{2} \mp \frac{a \sqrt{16 + a^2}}{2 (16 + a^2)} \nonumber\\
-    y &= \frac{1}{2} \mp \frac{a }{2 \sqrt{16 + a^2}}
+    y &= \frac{1}{2} \mp \frac{a }{2 \sqrt{16 + a^2}}.
 \end{align}
-And we now have a method for randomly sampling from the simplified splitting kernel. The histogram of the randomly sampled values compared to the exact splitting function is given in \autoref{fig: medium_gg_sampling}. 
+And we now have a method for randomly sampling from the reduced kernel. The histogram of the randomly sampled values compared to the exact splitting function is given in \autoref{fig: medium_gg_sampling}. 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=9cm]{pictures/plots/splitting_functions/medium_gg_samples.png}
-    \caption{Plot of the simplified kernel \(\mathcal{K}(z)\) for \(gg\) splittings in medium, compared to the sampled values as calculate by \autoref{eqn: medium_gg_sampling}. Total of  \(1,000,000\) samples.}
+    \caption{Probability density of the simplified \(\mathcal{K}_{gg}(z)\) splitting kernel, and the histogram of sampled values using \autoref{eqn: medium_gg_sampling}. Simulated with \(10^6\) samples.}
     \label{fig: medium_gg_sampling}
 \end{figure}
 
 \subsection{Monte-Carlo implementation}
-Creating the Monte-Carlo program for the medium showers follows generally the same procedure as in vacuum. For now we will restrict ourselves to gluons only, and the simplified splitting kernel. There are some obvious differences, as we now need to generate evolution intervals from the BDMPS sudakov form factor from \autoref{eqn: BDMPS_probable_branching_interval_tau}, and need to sample from the simplified medium splitting kernel \autoref{eqn: medium_gg_sampling}. The other parameters are very similar, and we will need a lower limit on how soft gluon can split. This is particularly important for the medium cascade, as very soft gluons will barely evolve \(\tau\) at all, due to the \(x\) dependence of the generated evolution interval, meaning the program will be incredibly slow. This limit is simply introduced by not appending gluons below a certain limit to the list of splitting gluons. When the plots are made it is then important to keep in mind where this limit is as momentum values below this is not valid. 
+Creating the Monte-Carlo program for the medium showers follows generally the same procedure as in \autoref{sec: MC_implementation_vacuum}. As already discussed, we will restrict ourselves to gluons and the reduced kernel. There are some obvious differences, as we now need to generate evolution intervals from the in-medium rate Sudakov form factor from \autoref{eqn: BDMPS_probable_branching_interval_tau}, and need to sample from the reduced kernel \autoref{eqn: medium_gg_sampling}. 
 
-The final program is available in the authors GitHub repository \cite{GitHub_thesis}.
+The other parameters are very similar, but we will need a lower limit for how soft gluon can split. This is particularly important for the medium cascade, as very soft gluons will barely evolve \(\tau\) at all, due to the \(x\) dependence in the generated evolution interval, meaning the program would be incredibly slow without a \(x\)-limit.. This limit is simply introduced by not appending gluons with a momentum fraction less than \(z=10^{-3}\) to the list of splitting gluons. When the plots are made it is then important to keep in mind that we don't have precise data below this limit. 
 
+The final program is again available in the author's GitHub repository~\cite{GitHub_thesis}.
 
-\subsection{Results for gluons-only in medium}
-This section will be dedicated to verifying the results from out medium showers. Very similar to the vacuum programs we will compare the generated distributions with the analytical solution of the evolution equations, and other properties present will be highlighted using different plots.
+\subsection{Results for gluon showers in medium}
+This section will be dedicated to verifying the results from our medium showers. Very similar to the vacuum programs we will compare the generated distributions with the analytical solution of the evolution equations, and other properties present will be highlighted using different plots.
 
-We will now plot the inclusive distribution from the Monte-Carlo parton shower, along with the analytical solution for the BDMPS equation as obtained in \autoref{eqn: BDMPS_solution}. It is important to keep in mind that this solution is only valid for the simplified splitting kernel. The resulting plot is given with a linear scale in \autoref{fig: medium_gluoncomparison_analytical}. It is apparent that the Monte-Carlo results are in generally good agreement with the analytical solution. However it does go a bit too slow for higher values of \(z\) for all values of \(\tau\). \krs{how and why}
+We will now plot the inclusive energy distribution \(D(x,\tau)\) from the Monte-Carlo parton shower, along with the analytical solution for the in-medium kinetic rate equation as obtained in \autoref{eqn: BDMPS_solution}. It is important to keep in mind that this solution is only valid for the reduced kernel. The resulting plot is given with a linear scale in \autoref{fig: medium_gluoncomparison_analytical_lin}. The Monte-Carlo results are in generally good agreement with the analytical solution. 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=12cm]{pictures/plots/distributions/medium/medium_shower__15k_lin_epsilon3_zmin3_MCandAnalytical.png}
-    \caption{Plot of the distribution \(D(x,\tau)\) as generated from the gluons in medium parton shower program using the simplified splitting kernel. Monte-carlo is run for \(15.000\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}} = 10^{-3}\). The distribution is compared with the analytical solution given in \autoref{eqn: BDMPS_solution} and plotted with a lin scale.}
-    \label{fig: medium_gluoncomparison_analytical}
+    \includegraphics[width=13cm]{pictures/plots/distributions/medium/medium_shower__25k_lin.png}
+    \caption{The inclusive energy distribution \(D(x,\tau)\) as generated from the Monte-Carlo program for gluons in medium, using the reduced kernel. Simulated with \(n=2.5 \cdot 10^4\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}} = 10^{-3}\). The distribution is compared with the analytical solution given in \autoref{eqn: BDMPS_solution}.}
+    \label{fig: medium_gluoncomparison_analytical_lin}
 \end{figure}
 
-For observing the scaling property of the medium evolution, we will plot the distribution for many different values of \(\tau\). This is presented in \autoref{fig: medium_comparison_scaling}. The scaling properties of the medium evolution is apparent, as once the peak corresponding to the initial parton around \(z=1\) has disappeared, the flow of energy towards small \(x\) values seems to be constant. As we discussed in \autoref{sec: BDMPS_properties}, the distribution changes in a uniform and shape-conserving way, once \(\tau\) goes larger than \(\tau \sim 1\) \krs{???}. 
+For observing the scaling property of the medium evolution, we will plot the distribution for different values of \(\tau\), on a logarithmic scale. This is presented in \autoref{fig: medium_comparison_scaling}. The scaling properties of the medium evolution is apparent for large values of \(\tau\), as once the peak corresponding to the initial parton around \(z=1\) has disappeared, the flow of energy towards small \(x\) values seems to be constant. As we discussed in \autoref{sec: BDMPS_properties}, the distribution changes in a uniform and shape-conserving way, once \(\tau\) goes larger than \(\tau \sim 1\). 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=9cm]{pictures/plots/distributions/medium/medium_scaling_25k.png}
-    \caption{Plot of the distribution \(D(x,\tau)\) as generated from the gluons in medium parton shower program using the simplified splitting kernel. Monte-carlo is run for \(25.000\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}} = 10^{-3}\), for a wide range of values \(\tau\). The scaling property of the shower is apparent for values of \(\tau > 1\).}
+    \includegraphics[width=10cm]{pictures/plots/distributions/medium/medium_scaling_100k.png}
+    \caption{The inclusive energy distribution \(D(x,\tau)\) as generated from the Monte-Carlo program for gluons in medium, using the reduced kernel. Simulated with \(n=10^5\) showers, using \(\epsilon=10^{-3}\) and \(z_{\text{min}} = 10^{-3}\), for a wide range of values \(\tau\). The scaling property of the shower is apparent for values of \(\tau > 1\).}
     \label{fig: medium_comparison_scaling}
 \end{figure}
+
 
 \end{document}

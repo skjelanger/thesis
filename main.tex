@@ -1,37 +1,41 @@
-\documentclass{article}
+\documentclass[11pt]{article}
 \usepackage{preamble}
 \usepackage{subfiles}
 \setcounter{tocdepth}{2}
 
-\title{\Huge{QCD parton fragmentation in vacuum and medium with leading jet energy loss} 
-        \endgraf 
-        \Large{hello there}}
-\author{Kristoffer Skjelanger}
-\date{\today}
-
 \begin{document}
     %%% Start titlepage %%%
     \begin{titlepage}
-    \maketitle
+    \begin{center}
+        \vspace*{\fill}
+        \Huge{QCD Parton Fragmentation in Vacuum and Medium with Leading Jet Energy-Loss} 
+        \endgraf 
+        \vspace*{\fill}
+        \Large{Master Thesis in Theoretical Atomic, Nuclear and Particle Physics}
+        \vfill
+        \large{by } \endgraf \Large{Kristoffer Skjelanger} \endgraf \large{June 2022}
+    \end{center}
     \thispagestyle{empty}
     \vspace*{\fill}
+
     \begin{center}
-        \includegraphics[width=8cm]{pictures/UiB-emblem_gray.pdf}
+        \includegraphics[width=8.5cm]{pictures/UiB-emblem_gray.pdf}
         \vspace*{\fill}
         
-        \Large{Department of Physics and Technology
-
-        University of Bergen}
+        \Large{Department of Physics and Technology \endgraf University of Bergen}
     \end{center}
     \vfill
+    \end{titlepage}
+
+    %%% Start Abstract %%%
+    \newpage
+    \subfile{sections/abstract.tex}
     
     %%% Start TOC %%%
     \newpage
     \tableofcontents    
-    \thispagestyle{empty}
-    \end{titlepage}
 
-    % Start main sections %%%
+    %%% Start main sections %%%
     \clearpage
         \subfile{sections/section1_introduction.tex}
     \clearpage   
@@ -41,7 +45,11 @@
     \clearpage
         \subfile{sections/section4_numerical.tex}
     \clearpage
-        \subfile{sections/section5_discussion.tex}
+        \subfile{sections/section5_leading.tex}
+    \clearpage
+        \subfile{sections/section6_summary.tex}
+    \clearpage
+        \subfile{sections/acknowledgements.tex}
 
     %%% Start appendices %%%
     \appendix
@@ -56,7 +64,5 @@
     \clearpage
     \phantomsection %for hyperlinking from toc.
     \addcontentsline{toc}{section}{References} %adds bib to toc
-    \bibliographystyle{unsrt}
-    \bibliography{refs}
-
+    \printbibliography
 \end{document}

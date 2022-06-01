@@ -23,7 +23,6 @@
 \algrenewcommand\algorithmicthen{\textbf{:}}
 \algnewcommand{\Statey}[0]{\Statex \hskip \ALG@tlm }
 
-
 % Physics packages
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -37,9 +36,9 @@
 %Abstract
 \renewenvironment{abstract}
 {\begin{quote}
-\noindent \rule{\linewidth}{.5pt}\par{\bfseries \abstractname.}}
-{\medskip\noindent \par\rule{\linewidth}{.5pt}
-\end{quote}
+    \noindent \rule{\linewidth}{.5pt}\par{\bfseries \abstractname.}}
+    {\medskip\noindent \par\rule{\linewidth}{.5pt}
+    \end{quote}
 }
 
 % Appendix
@@ -49,10 +48,13 @@
 \let\origappendix\appendix % save the existing appendix command
 %\renewcommand\appendix{\clearpage\pagenumbering{Roman}\origappendix} #Roman numerals for appendix
 
-
 % Chapters - rename "part" to "chapter"
 \renewcommand{\partname}{Chapter}
 \newcommand{\chapter}{\part}
+
+% Chapters - remove some from TOC,
+\let\oldcontentsline\contentsline
+\newcommand{\nopagecontentsline}[3]{\oldcontentsline{#1}{#2}{}}
 
 % Graphics packages
 \usepackage{graphicx}
@@ -66,11 +68,29 @@
 
 % Referencing
 \def\equationautorefname~#1\null{Eqn.~(#1)\null}
-\def\figureautorefname~#1\null{Figure.~#1\null}
+\def\figureautorefname~#1\null{Figure~#1\null}
+\def\partautorefname~#1\null{Chapter~#1\null}
 \def\sectionautorefname~#1\null{Section~#1\null}
 \def\subsectionautorefname~#1\null{Section~#1\null}
 \def\algorithmautorefname~#1\null{Algorithm~#1\null}
 
+% Bibtex
+\usepackage[backend=biber, giveninits=true, sorting=none, isbn=false, style=numeric-comp]{biblatex}
+\addbibresource{refs.bib}
+\AtEveryBibitem{%
+  \ifboolexpr
+    {test {\ifentrytype{article}}
+    or
+    test {\ifentrytype{book}}
+    or
+    test {\ifentrytype{inbook}}
+    or
+    test {\ifentrytype{inproceedings}}
+    }
+    {\clearfield{url}}
+    {}%
+}
+\setlength\bibitemsep{0.3\baselineskip}
 
 % Numbering and enumerate format
 \numberwithin{equation}{section}
@@ -91,16 +111,16 @@
     leftmargin=1cm,rightmargin=1cm,]
 }{\end{mdframed}}
 
-
-% Vector notation
+% Notation
 \let\oldhat\hat
 \renewcommand{\vec}[1]{\mathbf{#1}}
+\DeclareMathOperator\erfc{erfc}
 
 % Custom commands.
 \newcommand{\lit}[1]{\footnote{Literature warning: #1}}
-\newcommand{\kty}[1]{\textcolor{orange}{\textit{#1}}}
-\newcommand{\krs}[1]{\textcolor{red}{#1}}
+\newcommand{\kty}[1]{\textcolor{red}{\textit{kommentar: }Konrad: \textit{#1}}}
+\newcommand{\krs}[1]{\textcolor{red}{\textit{kommentar: }#1}}
 \newcommand{\elab}[0]{\textcolor{blue}{\newline Elaborate...}}
 
-
-
+\newcommand{\nocontentsline}[3]{}
+\newcommand{\tocless}[2]{\bgroup\let\addcontentsline=\nocontentsline#1{#2}\egroup}

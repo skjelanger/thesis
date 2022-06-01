@@ -1,114 +1,121 @@
 \documentclass[main.tex]{subfiles}
 \begin{document}
 
-\chapter{Analytical}
-This chapter will investigate parton cascades in both vacuum and medium, from an analytical standpoint. Properties of the two cascades will be discussed and compared against one another, and the evolution equations will be presented alongside the respective splitting functions, and solved.
-The most interesting observable is the inclusive parton distribution, initiated by a single quark or gluon in the aftermath of some collision. 
-
-\section{Formalism of parton branching in vacuum}
-This section will cover all of the analytical details related to parton showers in vacuum. Starting by defining an evolution variable which will ensure angular ordering for our showers. This evolution variable will also simplify the DGLAP evolution equations which will be covered by first introducing them using a probabilistic interpretation of the branchings, before rewriting them in terms of a Sudakov form factor, which will be a key part of later creating parton shower programs. Finally we will solve the DGLAP equation. 
+\addtocontents{toc}{\let\protect\contentsline\protect\nopagecontentsline}
+\chapter{Analytical}\label{cpt:ana}
+\addtocontents{toc}{\let\protect\contentsline\protect\oldcontentsline}
+This chapter will investigate parton cascades in both vacuum and medium, from an analytical standpoint. Properties of the two cascades will be discussed and compared against one another, the evolution equations will be presented alongside the respective splitting functions, and finally we will find a solution to the evolution equations. The most interesting observable in this chapter is the inclusive parton distribution, initiated by a single quark or gluon in the aftermath of some collision. 
+\section{Formalism of Parton Branching in Vacuum}
+This section will cover the analytical details related to parton showers in vacuum. Beginning by defining an evolution variable that will ensure angular ordering for our showers and simplify the DGLAP evolution equations. After an overview of the DGLAP equations, they will be rewritten in terms of a Sudakov form factor, which will be a key part of creating our parton shower programs. At the end of the chapter, a solution to the DGLAP equation will be presented.
 
 \subsection{Properties of vacuum cascades}
 \subsubsection*{Evolution variable}
-Before introducing the evolution equations, it is convenient to define an evolution variable \cite{Dasgupta_2015}. This will be done to simplify the equations, such that the derivatives of the probability-density with respect to the variable, and momentum fraction, is equal the splitting function, 
-\begin{equation}\label{eqn: evolutionvariable_condition}
-    \frac{d \mathcal{P}(t,z)}{dt dz} = P(z)
-\end{equation}
-The cross-section for branching from one to two partons was calculated in \autoref{eqn: branching_cross_section}, and it can be interpreted as the probability branching. Using a fixed coupling \(\alpha_S \approx 0.1184\), the probability of branching can therefore be written as,
+Before introducing the evolution equations, we will define an evolution variable in order to simplify the evolution equations, and impose angular ordering in our showers~\cite{Dasgupta_2015}. The cross section for branching from one to two partons was calculated in \autoref{eqn: branching_cross_section}, and it can be interpreted as a probability. With a fixed coupling \(\alpha_s << 1\), the probability of branching can be written as
 \begin{align}
-    d\mathcal{P}_{1\rightarrow 2} &= \frac{\alpha_S}{\pi} \frac{d\theta}{\theta} \, P(z)\, dz
+    d\mathcal{P}_{1\rightarrow 2} &= \frac{\alpha_s}{\pi} \frac{d\theta}{\theta} \, P(z)\, dz.
 \end{align}
-here we have used, \(\frac{dz}{z} \rightarrow P(z)\, dz\), and \(P(z)\) is the Altarelli-Parisi splitting function. The probability of branching for given changes to the volume elements is therefore,
+The probability of branching changes in a given volume element by
 \begin{equation}\label{eqn: evolutionvariable_intermediate_condition1}
-    \frac{d\mathcal{P}}{d\theta dz} = \frac{\alpha_S}{\pi} \frac{1}{\theta} P(z)
+    \frac{d\mathcal{P}}{d\theta dz} = \frac{\alpha_s}{\pi} \frac{1}{\theta} P(z).
 \end{equation}
-Now we want to introduce an evolution variable which makes it possible to replace \(\theta\) in \autoref{eqn: evolutionvariable_intermediate_condition1}, such that the condition of \autoref{eqn: evolutionvariable_condition} is satisfied.
-We therefore introduce the evolution variable,
+Now we want to replace \(\theta\) with an evolution variable in order to simplify \autoref{eqn: evolutionvariable_intermediate_condition1}. This evolution variable will be used for all vacuum cascades from this point forward, and can be written as
 \begin{equation}\label{eqn: evolution_variable_vacuum}
-    t = \frac{\alpha_S}{\pi} \int_{\theta}^{R} \frac{d\theta'}{\theta'}
+    t = \frac{\alpha_s}{\pi} \int_{\theta_{\text{min}}}^{\theta} \frac{d\theta'}{\theta'}.
 \end{equation}
-This evolution variable changes with \(\theta\) like,
+The evolution variable changes with \(\theta\) like
 \begin{align} 
-    t&= \frac{\alpha_S}{\pi} \ln \frac{R}{\theta} \nonumber \\
-    \frac{dt}{d\theta} &= - \frac{\alpha_S}{\pi} \frac{1}{\theta}
+    \frac{dt}{d\theta} &= \frac{\alpha_s}{\pi} \frac{1}{\theta}.
 \end{align}
-therefore, making the replacements in \autoref{eqn: evolutionvariable_intermediate_condition1} gives us,
+and inserting this into \autoref{eqn: evolutionvariable_intermediate_condition1} gives
 \begin{align}
      \frac{d\mathcal{P}}{dt dz} &= \frac{d\mathcal{P}}{d\theta dz} \frac{d\theta}{dt} \nonumber\\
-    &= \left( \frac{\alpha_S}{\pi} \frac{1}{\theta} P(z) \right) \left( -\frac{\pi}{\alpha_S} \theta \right) \nonumber \\
-    &= -P(z)
+    &= \left( \frac{\alpha_s}{\pi} \frac{1}{\theta} P(z) \right) \left( \frac{\pi}{\alpha_s} \theta \right) \nonumber \\
+    &= P(z).
 \end{align}
-The minus sign is of no issue as it could have been easily been eliminated by introducing a minus in our arbitrarily chosen evolution variable. However it will be kept this way, as to keep \(t\) positive. The condition \autoref{eqn: evolutionvariable_condition} has then been recovered which is what we wanted, and we have therefore chosen a suitable evolution variable for the vacuum showers. When we are evolving our parton showers it will be from the given jet radius \(R \sim 0.4\), all the way down to the hadronization scale \(Q_0 \sim 1GeV\) \footnote{Splittings may still occur beyond this point as \(Q_0>>m_\pi\), and most of the partons haronize into pions, but it is a convenient cutoff for our evolution.}. This means that we have a condition that the transverse momentum of a given parton in the shower, must be greater than the hadronization scale. 
+The evolution variable will therefore simplify the evolution equations by absorbing both the logarithms and constants which would have otherwise been explicitly written. 
+
+Since the shower evolves down to the hadronization scale, we must have that the transverse momenta must be greater than \(Q_0 \sim 1 GeV >>\Lambda_{\text{QCD}}\). In the soft limit it can be written as,  
 \begin{align}
-    k_\perp = z(1-z)p_t \theta \sim z p_t \theta > Q_0
+    k_\perp = z(1-z)p_t \theta \sim z p_t \theta > Q_0.
 \end{align}
-The minimum angle our shower can radiate at is therefore \(\theta_{\text{min}} = \frac{Q_0}{p_t}\), and the maximum value of our evolution variable is therefore,
-\begin{equation}\label{eqn: evolution_variable__maximum_vacuum}
-    t_{\text{max}} = \frac{\alpha_S}{\pi} \ln \frac{R}{\theta} = \frac{\alpha_S}{\pi} \ln \frac{p_tR}{Q_0}
+With this evolution variable, the parton showers will evolve in angle from the jet radius \(R \sim 0.4\), down to the minimum angle, \(\theta_{\text{min}} = Q_0/p_t\), given by the hadronization scale\footnote{Splittings may still occur beyond this point as \(Q_0>>m_\pi\sim \Lambda_{\text{QCD}}\), and most of the partons hadronize into pions, but it is a convenient cutoff for our evolution.}. The limits on the evolution variable \(t\) is then,
+\begin{equation}\label{eqn: evolution_variable__limits_vacuum}
+    t_{\text{max}} = \frac{\alpha_s}{\pi} \ln \frac{p_tR}{Q_0} \quad, \qquad t_{\text{min}} = 0.
 \end{equation}
-The literature often writes the evolution variable as \(t \sim \ln \frac{Q}{Q_0}\), which is equivalent to ours when we recognize that \(Q=p_tR\), is the transverse momentum of the initial parton of our jet \lit{The factor \(\alpha_S/\pi\) may or may not be included in the evolution variables presented by the literature.}. Our evolution variable is therefore dependent on the opening angle \(\theta\), so angular ordering is native to our parton shower programs.
+Therefore, as we increase in values for the evolution variable \(t\) we will be reducing our emission angles, which leads to angular ordering being directly implemented into our showers.
 
-\subsubsection*{Splitting functions}
-The Altarelli-Parisi splitting functions for vacuum branchings was calculated in \autoref{sec: derivation_splitting_functions_vacuum}, and we will be using \autoref{eqn: vacuum_gg_splitting_function}, \autoref{eqn: vacuum_qg_splitting_function}, and \autoref{eqn: vacuum_qq_splitting_function} as our splitting functions in vacuum.
+The literature often writes the evolution variable as \(t \sim \ln \frac{Q}{Q_0}\), which is equivalent to ours when we recognize that \(Q=p_tR\) is the transverse jet scale. Since our choice of evolution variable \(t\) is dependent on the opening angle \(\theta\), angular ordering is native to our parton shower programs.
 
-\subsection{The DGLAP equation}\label{sec: DGLAP_standard}
-As mentioned in the discussion on observables, the inclusive parton distribution is governed by the Dokshitzer-Gribov-Lipatov-Altarelli-Parisi (DGLAP) evolution equations. This section will be dedicated to exploring these equations in more detail. \elab 
+\subsubsection*{Vacuum splitting functions}
+The Altarelli-Parisi splitting functions for vacuum branchings was calculated to leading order \(P_{ba}^{(0)}\) in \autoref{sec: derivation_splitting_functions_vacuum}. Higher-order corrections are available on the form 
+\begin{equation}
+    P_{ba} = P_{ba}^{(0)}+ \left(\frac{\alpha_s}{\pi}\right) P_{ba}^{(1)} + \left(\frac{\alpha_s}{\pi}\right)^2 P_{ba}^{(2)} + \cdots
+\end{equation}
+and next-to-leading order calculations are performed in~\cite{Gehrmann_2014}. Leading order is however sufficient for our treatment, and we will be using \autoref{eqn: vacuum_gg_splitting_function}, \autoref{eqn: vacuum_qg_splitting_function}, and \autoref{eqn: vacuum_qq_splitting_function} as our splitting functions in vacuum.
+
+These splitting functions are however too complicated for some of the calculations we want to perform. It will therefore be useful to introduce a simplified splitting function for \(gg\) branchings in vacuum
+\begin{align}\label{eqn: vacuum_gg_simple_splitting_function}
+    P_{gg}^{\text{simple}}(z) &= \frac{C_A}{z(1-z)}
+\end{align}
+which will be used for some of the analytical calculations.
+
+\subsection{The DGLAP equations}\label{sec: DGLAP_standard}
+As mentioned in the discussion on observables, the inclusive parton distribution is governed by the Dokshitzer-Gribov-Lipatov-Altarelli-Parisi (DGLAP) evolution equations. They are written as a set of integro-differential equations that describe how the distribution of gluons and quarks evolve, respectively. While the general form of the equations presented is valid beyond leading logarithmic approximation, we will be focusing on the leading behavior, and setting \(\alpha_s\) to be constant, such that we are only interested in terms of the order \(t\) in our evolution variable (equivalent to order \(\alpha_s \ln(p_tR/Q_0)\)).
 
 \subsubsection*{The full DGLAP equations}
-The DGLAP equation can be written very differently so it is important to be consistent in the way it is presented. For this thesis we will be using the following notation,
+The DGLAP equations have several conventions, so it is important to be consistent in the way it is presented. The DGLAP equations can be written in terms of the inclusive parton distribution \(f_i(x,t)\), as
 \begin{align}
     \begin{split}
-    \frac{\partial}{\partial t} f_g(x,t) &= \int_x^1 \frac{dz}{z} 2\,P_{gg}(z) f_g(\frac{x}{z},t) - \int_0^1 dz\, P_{gg}(z) f_g(x,t) \\
-    &\quad + \int_x^1 \frac{dz}{z} P_{gq}(z) \, f_q(\frac{x}{z},t) - \int_0^1 dz P_{gq}(z) f_g(x,t)
+    \frac{\partial}{\partial t} f_g(x,t) &= \int_x^1 \frac{dz}{z} 2\,P_{gg}(z) f_g\left(\frac{x}{z},t\right) - \int_0^1 dz\, P_{gg}(z) f_g(x,t) \\
+    &\quad + \int_x^1 \frac{dz}{z} P_{gq}(z) \, f_q\left(\frac{x}{z},t\right) - \int_0^1 dz P_{gq}(z) f_g(x,t)
     \end{split}\label{eqn: DGLAP_fg(x,t)}
 \end{align}
 \begin{align}
     \begin{split}
-    \frac{\partial}{\partial t} f_q(x,t) &=  \int_x^1 \frac{dz}{z} P_{qq}(z) f_q(\frac{x}{z},t) - \int_0^1 dz\, P_{qq}(z) f_q(x,t) \\
-    &\; + \int_0^1 dz P_{qg}(z) \frac{1}{z}\, f_g(\frac{x}{z},t)
+    \frac{\partial}{\partial t} f_q(x,t) &=  \int_x^1 \frac{dz}{z} P_{qq}(z) f_q\left(\frac{x}{z},t\right) - \int_0^1 dz\, P_{qq}(z) f_q(x,t) \\
+    &\; + \int_0^1 dz P_{qg}(z) \frac{1}{z}\, f_g\left(\frac{x}{z},t\right)
     \end{split}\label{eqn: DGLAP_fq(x,t)}
 \end{align}
-where \(P(z)\) is the Altarelli-Parisi splitting functions, and \(f_{g/q}(x,t) = dN_{g/q}/dx\) is the inclusive parton distribution for gluons and quarks respectively. This form is valid for the evolution variable we defined in \autoref{eqn: evolution_variable_vacuum}.
-The factor \(2\) comes from the symmetry in the \(P_{gg}\) splitting function, as the emitted gluons can carry either the momentum \(z\) or \((1-z)\) \lit{Sometimes the factor \(2\) is absorbed into the splitting functions.}. These functions essentially represent how gluons and quarks, can enter and leave a given volume element, as is apparent in the derivation given in \autoref{app: DGLAP_derivation}.
+where \(P(z)\) is the Altarelli-Parisi splitting functions, and \(f_{g/q}(x,t) = dN_{g/q}/dx\) is the inclusive parton distribution for gluons and quarks respectively. The factor \(2\) comes from the symmetry in the \(P_{gg}\) splitting function, as the emitted gluons can carry either the momentum \(z\) or \((1-z)\). These functions essentially represent how gluons and quarks can enter and leave a given volume element as illustrated in~\cite[p.166-168]{ellis_stirling_webber_1996}. In \autoref{app: DGLAP_derivation} we have constructed the DGLAP equation using generating functionals, in a manner similar to \cite{Probabilistic_picture}.
 
-The evolution equations may also be written in terms of the energy distribution \(D_i(x,t) = x\, f_i(x,t)\). Adding a function \(\Theta(z>x)\) we can also gather the integrals to make it more compact, in which case \autoref{eqn: DGLAP_fg(x,t)} and \autoref{eqn: DGLAP_fq(x,t)} becomes, 
+The evolution equations may also be written in terms of the energy distribution \(D_i(x,t) = x\, f_i(x,t)\). Adding a step-function \(\Theta(z>x)\) we can also gather the integrals to make it more compact, in which case \autoref{eqn: DGLAP_fg(x,t)} and \autoref{eqn: DGLAP_fq(x,t)} becomes, 
 \begin{align}
 \begin{split}
-    \frac{\partial}{\partial t} D_g(x,t) &= \int_0^1 dz\,P_{gg}(z) \left[2\,D_g(\frac{x}{z},t)\, \Theta(z>x)-D_g(x,t)\right] \\
-    &\quad + \int_0^1 dz P_{gq}(z) \left[ D_q(\frac{x}{z},t)\, \Theta(z>x) - D_g(x,t)\right]  
+    \frac{\partial}{\partial t} D_g(x,t) &= \int_0^1 dz\,P_{gg}(z) \left[2\,D_g\left(\frac{x}{z},t\right)\, \Theta(z>x)-D_g(x,t)\right] \\
+    &\quad + \int_0^1 dz P_{gq}(z) \left[ D_q\left(\frac{x}{z},t\right)\, \Theta(z>x) - D_g(x,t)\right]  
 \end{split} \label{eqn: DGLAP_Dg(x,t)}
 \end{align}
 \begin{align}
     \begin{split}
-    \frac{\partial}{\partial t} D_q(x,t) &= \int_0^1 dz\,P_{qq}(z) \left[D_q(\frac{x}{z},t)\, \Theta(z>x)-D_q(x,t)\right] \\
-    &\quad + \int_x^1 dz P_{qg}(z) D_g(\frac{x}{z},t)
+    \frac{\partial}{\partial t} D_q(x,t) &= \int_0^1 dz\,P_{qq}(z) \left[D_q\left(\frac{x}{z},t\right)\, \Theta(z>x)-D_q(x,t)\right] \\
+    &\quad + \int_x^1 dz P_{qg}(z) D_g\left(\frac{x}{z},t\right).
     \end{split} \label{eqn: DGLAP_Dq(x,t)}
 \end{align}
-Both these sets of equations will be used, depending on which observables we are interested in. 
-\subsubsection*{The DGLAP for gluons only}
-We will frequently be focusing on cascades involving exclusively gluons, such that \(P_{gg}(z)\) is the only splitting we are considering. In these cases we simply have to disregard the terms with quarks, such that \autoref{eqn: DGLAP_fg(x,t)} takes the form, 
+Both these sets of equations will be used, depending on which observables we are interested in. The DGLAP presented here is to leading order, but higher-order expansions can also be written as is done in~\cite{Dasgupta_2015}.
+\subsubsection*{The DGLAP equation for gluons}
+We will frequently be focusing on cascades involving exclusively gluons, such that \(P_{gg}(z)\) is the only splitting we are considering. The evolution equations is then adjusted by simply disregarding the terms with quarks, such that \autoref{eqn: DGLAP_fg(x,t)} takes the form
 \begin{equation}\label{eqn: DGLAP_gluons_f(x,t)}
-    \frac{\partial}{\partial t} f_g(x,t) = \int_x^1 \frac{dz}{z} 2\,P_{gg}(z) f_g(\frac{x}{z},t) - \int_0^1 dz\, P_{gg}(z) f_g(x,t)
+    \frac{\partial}{\partial t} f_g(x,t) = \int_x^1 \frac{dz}{z} 2\,P_{gg}(z) f_g\left(\frac{x}{z},t\right) - \int_0^1 dz\, P_{gg}(z) f_g(x,t).
 \end{equation}
 It can be shown from the symmetry of the \(P_{gg}(z)\) splitting function that 
 \begin{equation}\label{eqn: gg_Splitting_identitything}
     \int_0^1 dz \, z \, P_{gg}(z) = \frac{1}{2} \int_0^1 dz\, P_{gg}(z)
 \end{equation}
-It is therefore possible to rewrite \autoref{eqn: DGLAP_gluons_f(x,t)}, to the following form, 
+and it is therefore possible to rewrite \autoref{eqn: DGLAP_gluons_f(x,t)}, to the form
 \begin{equation}\label{eqn: DGLAP_energyflow}
     \frac{\partial}{\partial t} D(x,t) = \int_x^1 dz \,\tilde P_{gg}(z)\, D(x/z,t) - \int_0^1 dz\, z\, \tilde P_{gg}(z)\, D(x,t)
 \end{equation}
-where \(\tilde P_{gg}(z) \equiv 2\, P_{gg}(z) \). These two DGLAP equations without quarks will be used when we are discussing gluon-only showers.
+where \(\tilde P_{gg}(z) \equiv 2\, P_{gg}(z) \). Both \autoref{eqn: DGLAP_gluons_f(x,t)} and \autoref{eqn: DGLAP_energyflow} will be used when discussing gluon showers.
 
-\subsection{The Sudakov form factor for the DGLAP equation}
-Now we will rewrite the DGLAP equation by introducing the Sudakov form factor, which will be important in our Monte-Carlo shower program in later chapters. The Sudakov form factor is denoted as \(\Delta(t)\) and is defined using the evolution variable introduced in \autoref{eqn: evolution_variable_vacuum}. For gluon-only showers the Sudakov form factor will be, 
+\subsection{The Sudakov form factor in vacuum}
+Now we will rewrite the DGLAP equation by introducing the Sudakov form factor, which will be important in developing the Monte-Carlo shower program in \autoref{cpt:num}. The Sudakov form factor is denoted as \(\Delta(t)\) and is defined using the evolution variable introduced in \autoref{eqn: evolution_variable_vacuum}. For gluon showers the Sudakov form factor is
 \begin{align}\label{eqn: sudakov_form_factor_dasguptalike}
-    \Delta (t) &= \exp\left(-t\, \int_{\epsilon}^{1-\epsilon}dz \, P_{gg}(z)\right) 
+    \Delta (t) &= \exp\left(-t\, \int_{\epsilon}^{1-\epsilon}dz \, P_{gg}(z)\right)
 \end{align}
-with the derivatives,
+with the derivatives
 \begin{align}
-    \frac{\partial}{\partial t} \Delta (t) &= (- \int_{\epsilon}^{1-\epsilon} dz\, P_{gg}(z) )\cdot  \Delta(t) \nonumber\\
-    \frac{\partial}{\partial t} \frac{1}{\Delta(t)}&= \int_{\epsilon}^{1-\epsilon} dz\, P_{gg}(z) \cdot  \frac{1}{\Delta(t)}
+    \frac{\partial}{\partial t} \Delta (t) &= \left(- \int_{\epsilon}^{1-\epsilon} dz\, P_{gg}(z) \right) \Delta(t) \nonumber\\
+    \frac{\partial}{\partial t} \frac{1}{\Delta(t)}&= \int_{\epsilon}^{1-\epsilon} dz\, P_{gg}(z) \frac{1}{\Delta(t)}.
 \end{align}
 It is easy to rewrite the DGLAP equation an integral equation using the Sudakov form factor.
 Starting by implementing the Sudakov into \autoref{eqn: DGLAP_gluons_f(x,t)},
@@ -116,400 +123,330 @@ Starting by implementing the Sudakov into \autoref{eqn: DGLAP_gluons_f(x,t)},
     \frac{\partial}{\partial t} f(x,t) + \int_{0}^{1} dz \, P_{gg}(z) f(x,t) &= \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) f(x/z ,t) \nonumber \\
     \frac{\partial}{\partial t} f(x,t) + \Delta(t) f(x,t) \frac{\partial}{\partial t} \frac{1}{\Delta(t)} &= \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) f(x/z ,t) \nonumber \\
     \frac{1}{\Delta(t)} \frac{\partial}{\partial t} f(x,t) - f(x,t) \frac{\partial}{\partial t} \frac{1}{\Delta(t)} &= \frac{1}{\Delta(t)} \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) f(x/z ,t) \nonumber \\
-    \frac{\partial }{\partial t} \frac{f(x,t)}{\Delta (t)} &= \frac{1}{\Delta(t)} \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) \, f(x/z, t)
+    \frac{\partial }{\partial t} \frac{f(x,t)}{\Delta (t)} &= \frac{1}{\Delta(t)} \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) \, f(x/z, t).
 \end{align}
-The Sudakov form factor has now been introduced properly into the equation. Continuing we wish to rewrite from a differential to an integral form,
+The Sudakov form factor has now been implemented properly into the evolution equation. Continuing we wish to rewrite from a differential to an integral form,
 \begin{align}
     \int_{t_0}^t dt' \frac{\partial}{\partial t} \frac{f(x,t')}{\Delta(t')} = &\int_{t_0}^{t} \frac{dt'}{t'} \frac{1}{\Delta(t')} \int_{x}^{1} dz \,2\, P_{gg}(z) \frac{1}{z} f(x/z, t) \nonumber\\
     \frac{f(x,t)}{\Delta(t)} - \frac{f(x,t_0)}{\Delta(t_0)} = &\int_{t_0}^{t} \frac{dt'}{t'} \frac{1}{\Delta(t')} \int_{x}^{1} dz \,2\, P_{gg}(z) \frac{1}{z} f(x/z, t) \nonumber\\
     \frac{f(x,t)}{\Delta(t)} - f(x,t_0) &= \int_{t_0}^{t} \frac{dt'}{t'} \frac{1}{\Delta(t')} \int_{x}^{1} dz  \,2\, P_{gg}(z) \frac{1}{z} f(x/z, t)
 \end{align}
-And we end up with our desired evolution equation on integral form, 
+and we end up with our desired evolution equation on integral form
 \begin{equation}\label{eqn: DGLAP_evolutioneq_unregularized_integral_ellis} %Ellis 5.49
-    f(x,t) = \Delta(t) f(x,t_0) + \int_{t_0}^{t} \frac{dt'}{t'} \frac{\Delta(t)}{\Delta(t')} \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) \, f(x/z, t')
+    f(x,t) = \Delta(t) f(x,t_0) + \int_{t_0}^{t} \frac{dt'}{t'} \frac{\Delta(t)}{\Delta(t')} \int_{x}^{1} \frac{dz}{z} \,2\, P_{gg}(z) \, f(x/z, t').
 \end{equation}
-The physical interpretation of this eqaution comes from considering the Sudakov form factor as a no-branching probability. This means that the first term on the right-hand side of \autoref{eqn: DGLAP_evolutioneq_unregularized_integral_ellis} is the probability of no branching between \(t_0\) and \(t\) (since \(\Delta(t_0)=1\)). The second term represents then that some branching has occured at time \(t'\), followed by no branchings between \(t'\) and \(t\).
+The physical interpretation of this equation comes from considering the Sudakov form factor as a no-branching probability. This means that the first term on the right-hand side of \autoref{eqn: DGLAP_evolutioneq_unregularized_integral_ellis} is the probability of no branching between \(t_0\) and \(t\) (since \(\Delta(t_0)=1\)). The second term then represents that some branching has occurred at time \(t'\), followed by no branchings between \(t'\) and \(t\). The Sudakov form factor is effectively a way of resumming all orders of the DGLAP equation, by absorbing the divergences into the Sudakov form factor~\cite{schwartz2014quantum}. %By iterating over the full evolution, an arbitrary amount of emissions may occur, which is equivalent to performing a resummation of all orders.
 
-If we are working with both quarks and gluons then the Sudakov form factors will be slightly different, as several different branchings may occur in a given interval. The Sudakovs for showers with both quarks and gluons will then be, 
+If we are working with both quarks and gluons then the Sudakov form factor will be slightly different, as several different branchings may occur in a given interval. The Sudakovs for showers with both gluons and quarks will be respectively
 \begin{align}
-    \Delta_{g}(t) &= \exp\left(-t \int_\epsilon^{1-\epsilon} P_{gg}(z)+P_{qg}(z) \, dz \right)  \label{eqn: sudakov_vacuum_gluons}  \\
-    \Delta_{q}(t) &= \exp\left(-t \int_\epsilon^{1-\epsilon} P_{qq}(z) \, dz \right) \label{eqn: sudakov_vacuum_quarks}
+    \Delta_{g}(t) &= \exp\left(-t \int_\epsilon^{1-\epsilon} \left[P_{gg}(z)+P_{qg}(z) \right] \, dz \right)  \label{eqn: sudakov_vacuum_gluons}  \\
+    \Delta_{q}(t) &= \exp\left(-t \int_\epsilon^{1-\epsilon} P_{qq}(z) \, dz \right). \label{eqn: sudakov_vacuum_quarks}
 \end{align}
 
-\subsection{Solution of the DGLAP equation}
-We will now solve the DGLAP equation following the method outlined in \cite{Energy_flow_medium_cascade_2016}, for gluons in vacuum. The starting point is \autoref{eqn: DGLAP_energyflow}, which is written with \(\tilde P_{gg}(z) \equiv 2\, P_{gg}(z)\). The Mellin transform and its inverse are defined as,
-\begin{equation*}\label{eqn: mellin_transforms}
-    \Tilde{D}(\nu, t) = \int_0^1 dx\, x^{\nu-1} \, D(x,t) \qquad \text{, and }\quad D(x,t) = \int_{c-i\infty}^{c+i\infty} \frac{d\nu}{2\pi i}\, x^{-\nu} \, \Tilde{D}(\nu, t)
-\end{equation*}
-and taking the Mellin transform of \autoref{eqn: DGLAP_energyflow}, and using a change of integration limits \(\int_0^1 dx \int_x^1 dz \rightarrow \int_0^z dx\int_0^1 dz\) and a change of variable \(\xi = x/z \quad \Rightarrow \quad x=z\, d\xi\), in the second line, we obtain,
+\subsection{Analytical solution of the DGLAP equation}\label{sec: solution_DGLAP}
+We will now solve the DGLAP equation following the method outlined in~\cite{Energy_flow_medium_cascade_2016}, for gluons in vacuum. The starting point is \autoref{eqn: DGLAP_energyflow}, which is written with \(\tilde P_{gg}(z) \equiv 2\, P_{gg}(z)\). The Mellin transform and its inverse are defined as
+\begin{equation}\label{eqn: mellin_transforms}
+    \tilde{D}(\nu, t) = \int_0^1 dx\, x^{\nu-1} \, D(x,t) \quad, \quad D(x,t) = \int_{c-i\infty}^{c+i\infty} \frac{d\nu}{2\pi i}\, x^{-\nu} \, \tilde{D}(\nu, t).
+\end{equation}
+Taking the Mellin transform of \autoref{eqn: DGLAP_energyflow} and then changing the integration limits \(\int_0^1 dx \int_x^1 dz \rightarrow \int_0^1 dz \int_0^x dx\), and performing a change of variable \(\xi = x/z \; \Rightarrow \; dx=z\, d\xi\) we obtain
 \begin{align}
-    \frac{\partial}{\partial t} \int_0^1 dx\,x^{\nu-1} D(x,t) &= \int_x^1 dz\, 2\, P_{gg}(z)\, \int_0^1 dx\, x^{\nu-1} D(x/z,t) - \int_0^1 dz\, z\,2\, P_{gg}(z)\, \int_0^1 dx\,x^{\nu-1} D(x,t) \nonumber \\
-    \frac{\partial}{\partial t} \tilde D(\nu,t) &= \int_0^1 dz\, 2\, P_{gg}(z)\, \int_0^1 (z\, d\xi)\, (z\, \xi)^{\nu-1} D(\xi,t) - \int_0^1 dz\, z\, 2\, P_{gg}(z)\, \tilde D(\nu,t) \nonumber \\
-    \frac{\partial}{\partial t} \tilde D(\nu,t) &= -\int_0^1 dz\,2\, P_{gg}(z) \left(z-z^\nu \right) \tilde D(\nu,t) \nonumber \\
-    \frac{\partial}{\partial t} \tilde D(\nu,t) &= -2C_A \int_0^1 dz \frac{1-z^{\nu-1}}{(1-z)} \tilde D(\nu,t) \label{eqn: my_mellin_transform}
+    \frac{\partial}{\partial t} \int_0^1 dx\,x^{\nu-1} D(x,t) &= \int_0^1 dx\,x^{\nu-1} \int_x^1 dz\, \tilde{P}_{gg}(z)\, D(x/z,t) - \int_0^1 dx\,x^{\nu-1}\, \int_0^1 dz\, z\,\tilde{P}_{gg}(z)\, D(x,t) 
+    \nonumber \\
+    \frac{\partial}{\partial t} \tilde D(\nu,t) &= \int_0^1 dz\, \tilde{P}_{gg}(z)\, \int_0^1 (z\, d\xi)\, (z\, \xi)^{\nu-1} D(\xi,t) - \int_0^1 dz\, z\, \tilde{P}_{gg}(z)\, \tilde D(\nu,t) \nonumber \\
+    \frac{\partial}{\partial t} \tilde D(\nu,t) &= -\int_0^1 dz\,\tilde{P}_{gg}(z) \left(z-z^\nu \right) \tilde D(\nu,t).
 \end{align}
-\autoref{eqn: my_mellin_transform} is my Mellin transform. Introducing the Digamman function, 
+Inserting the simplified splitting function of \autoref{eqn: vacuum_gg_simple_splitting_function}, we can write the evolution equation in Mellin space as
+\begin{align}
+    \frac{\partial}{\partial t} \tilde D(\nu,t) &= -2C_A \int_0^1 dz \frac{1-z^{\nu-1}}{(1-z)} \tilde D(\nu,t). \label{eqn: my_mellin_transform}
+\end{align}
+Introducing the Digamma function
 \begin{equation}\label{eqn: digamma_function}
-    \psi(\nu) = \int_0^1 \frac{1-z^{\nu-1}}{1-z}dz - \gamma
+    \psi(\nu) = \int_0^1 \frac{1-z^{\nu-1}}{1-z}dz - \gamma_E,
 \end{equation}
-where \(\gamma\) is the \emph{Euler-Mascheroni constant}. Then we have a simple differential equation in Mellin-space,
+where \(\gamma_E\) is the \emph{Euler-Mascheroni constant}, we can write \autoref{eqn: my_mellin_transform} as a simple differential equation
 \begin{equation}
-    \frac{\partial}{\partial t} \tilde D(\nu,t) = -2C_A (\psi(\nu)+\gamma) \tilde D(\nu,t) 
+    \frac{\partial}{\partial t} \tilde D(\nu,t) = -2C_A (\psi(\nu)+\gamma_E) \tilde D(\nu,t)
 \end{equation}
-The solution of this differential in Mellin-space is easily obtained with the initial condition \(\tilde D(\nu,0) = 1\),
-\begin{equation}
-    \tilde D(\nu,t) = \exp \left(-2C_A (\psi(\nu)+\gamma)t\right)
+the solution is easily obtained with the initial condition \(\tilde D(\nu,0) = 1\)
+\begin{equation}\label{eqn: DGLAP_solution_mellinspace}
+    \tilde D(\nu,t) = \exp \left[-2C_A (\psi(\nu)+\gamma_E)t\right].
 \end{equation}
-Now that the solution is obtained, we just have to transform back with the inverse Mellin transform,
-\begin{align}
-    D(x,t) &= \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} x^{-\nu} \exp \left(-2C_A (\psi(\nu)+\gamma)t\right) \nonumber \\
-    &= \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} \exp\left(\ln 1/x^\nu\right) \exp \left(-2C_A (\psi(\nu)+\gamma)t\right) \nonumber \\
-    &= \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} \exp \left(-2C_A (\psi(\nu)+\gamma)t + \nu \ln \frac{1}{x} \right)
+Now that the solution is obtained, we just have to transform back with the inverse Mellin transform
+\begin{align}\label{eqn: DGLAP_solution_mellin_intermediate}
+    D(x,t) &= \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} x^{-\nu} \exp \left[-2C_A (\psi(\nu)+\gamma_E)t\right] \nonumber \\
+    &= \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} \exp\left[ \ln 1/x^\nu\right] \exp \left[-2C_A (\psi(\nu)+\gamma_E)t\right] \nonumber \\
+    &= \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} \exp \left[-2C_A (\psi(\nu)+\gamma_E]t + \nu \ln \frac{1}{x} \right]. 
 \end{align}
-From this equation we can find a saddle point when the the exponential has the minimum value. This is obtained when the derivative of \(\psi(\nu\) with respect to \(\nu\), is given as,
+A solution to the equation an be obtained by utilizing the saddle-point approximation. Setting the argument of the exponential as \(f(\nu) \equiv -2C_A (\psi(\nu)+\gamma_E)t + \nu \ln \frac{1}{x} \), then in a saddle point \(\nu_s\) we should have
+\begin{equation}
+    f(\nu) \approx f(\nu_S) + \frac{1}{2} f''(\nu_S)(\nu-\nu_S)^2.
+\end{equation}
+\(f(\nu)\) has a minimum value when 
 \begin{align}\label{eqn: DGLAP_mellin_solution_minimum}
     \psi'(\nu_s) &= \frac{1}{2C_A}\,\frac{\ln (1/x)}{t}
 \end{align}
-In the small \(x\) limit we have \(\ln (1/x) >> t\) and we can approximate \(\psi(\nu) \approx -\nu^{-1}\), which implies that \(\psi'(\nu) \approx \nu^{-2}\). Combining this \(\psi(\nu)\) with the criteria for our saddle-point, we can find that \(\nu_s = (\frac{2C_A\,t}{\ln(1/x)})^{1/2}\). Setting \(f(\nu) \equiv \left(-2C_A (\psi(\nu)+\gamma)t + \nu \ln \frac{1}{x}\right) \), the saddle-point approximation gives us, 
-\begin{equation}
-    f(\nu) \approx f(\nu_S) + \frac{1}{2} f''(\nu_S)(\nu-\nu_S)^2
-\end{equation}
-and the inverse Mellin can be written as,
+which gives us, in the small \(x\) limit where \(\ln (1/x) >> t\), 
 \begin{align}
-    D(x,t) &\approx \exp \left(f(\nu_S) \right) \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} \exp \left(\frac{1}{2} f''(\nu_s)(\nu-\nu_s)^2 \right) 
+    \psi(\nu) \approx -\nu^{-1} \quad &\Rightarrow \quad \psi'(\nu) \approx \nu^{-2}.
 \end{align}
-Performing a change of variable \(\nu = i b\) to remove the complex numbers in the integral, 
+and the value \(\nu_s\) of the saddle point can therefore be found to be
+\begin{align}
+    \nu_s &= \left(\frac{2C_A\,t}{\ln(1/x)}\right)^{1/2}.
+\end{align}
+We can then write \autoref{eqn: DGLAP_solution_mellin_intermediate} by using the saddle point-approximation
+\begin{align}
+    D(x,t) &\approx \exp \left(f(\nu_S) \right) \int_{c-i\infty}^{c+i\infty}\frac{d\nu}{2\pi i} \exp \left(\frac{1}{2} f''(\nu_s)(\nu-\nu_s)^2 \right).
+\end{align}
+Performing a change of variable \(\nu = i b\) to remove the complex numbers in the integral
 \begin{align}
     D(x,t) &\approx \exp \left(f(\nu_S) \right) \int_{-\infty}^{\infty}\frac{db}{2\pi} \exp \left(-\frac{1}{2} f''(\nu_s)(b+i\nu_s)^2 \right) 
 \end{align}
-This integral can be solved using Mathematica, yielding,
+and solving using Mathematica,
 \begin{equation}
-    \int_{-\infty}^{\infty}\frac{db}{2\pi} \exp \left(-\frac{1}{2} f''(\nu_s)(b+i\nu_s)^2 \right) = \frac{1}{2\sqrt{\pi/2}\sqrt{f''(\nu_s)}}
+    \int_{-\infty}^{\infty}\frac{db}{2\pi} \exp \left(-\frac{1}{2} f''(\nu_s)(b+i\nu_s)^2 \right) = \frac{1}{2\sqrt{\pi/2}\sqrt{f''(\nu_s)}}.
 \end{equation}
-Seeing that \(f''(\nu_S) = 4C_A\,t\, \nu_S^{-3}\), we write our solution as follows,
+Seeing that \(f''(\nu_S) = 4C_A\,t\, \nu_S^{-3}\), we write our solution as
 \begin{align}\label{eqn: DGLAP_solution_energyflowmedium}
-    D(x,t) &= exp \left(f(\nu_S) \right) \cdot \frac{1}{2\sqrt{(\pi/2) \, f''(\nu_S)}}  \nonumber\\
-    D(x,t) &= exp \left(2C_A \nu_S^{-1}-2C_A\gamma t + \nu_S \ln \frac{1}{x} \right) \cdot \frac{1}{2} \frac{1}{\sqrt{2\pi C_A\,t\, \nu_S^{-3}}}  \nonumber\\
-    D(x,t) &= exp \left(2\sqrt{2C_A} \sqrt{t\cdot \ln \frac{1}{x}}t - 2C_A\gamma \,t \right) \cdot \frac{1}{2} \frac{1}{\sqrt{2 \pi C_A\,t} } \left(\frac{2C_A\,t}{\ln(1/x)}\right)^{3/4} \nonumber\\
-    D(x,t) &= exp \left(2\sqrt{2C_A} \sqrt{t\cdot \ln \frac{1}{x}} - 2C_A\gamma \,t \right) \cdot \frac{1}{2} \left(\frac{2C_A\,t}{\pi^2 \ln^3(1/x)}\right)^{1/4}
+    D(x,t) &= exp \left(f(\nu_S) \right)  \frac{1}{2\sqrt{(\pi/2) \, f''(\nu_S)}}  \nonumber\\
+    D(x,t) &= exp \left(2C_A \nu_S^{-1}-2C_A\gamma_E t + \nu_S \ln \frac{1}{x} \right)  \frac{1}{2} \frac{1}{\sqrt{2\pi C_A\,t\, \nu_S^{-3}}}  \nonumber\\
+    %D(x,t) &= exp \left(2\sqrt{2C_A} \sqrt{t \ln \frac{1}{x}}t - 2C_A\gamma_E \,t \right)  \frac{1}{2} \frac{1}{\sqrt{2 \pi C_A\,t} } \left(\frac{2C_A\,t}{\ln(1/x)}\right)^{3/4} \nonumber\\
+    D(x,t) &= exp \left(2\sqrt{2C_A} \sqrt{t \ln \frac{1}{x}} - 2C_A\gamma_E \,t \right)  \frac{1}{2} \left(\frac{2C_A\,t}{\pi^2 \ln^3(1/x)}\right)^{1/4}.
 \end{align}
-\autoref{eqn: DGLAP_solution_energyflowmedium} is therefore a solution of the DGLAP equation. It is valid for \elab 
+\autoref{eqn: DGLAP_solution_energyflowmedium} is therefore a solution of the DGLAP equation. Note that the factor \(\sqrt{2C_A}\) comes from the symmetry factor and color factor of the \(P_{gg}(z)\) splitting function. It is valid in the small \(x\)-limit such that \(\ln \frac{1}{x} >> t\). In the double logarithmic limit, where we focus on the leading \(\ln \frac{1}{x}\) behavior, the solution can be written as
+\begin{align}\label{eqn: DGLAP_DLL_solution}
+    D_{\textit{DLL}}(x,t) &\approx exp \left(2\sqrt{2C_A} \sqrt{t \ln \frac{1}{x}} \right) \nonumber \\
+    %&\approx exp \left(2\sqrt{2C_A} \ln \frac{1}{x} \sqrt{\frac{t}{\ln \frac{1}{x}}} \right) \nonumber \\
+    &\approx \left(\frac{1}{x}\right)^{ 2\sqrt{2C_A} \sqrt{\frac{t}{\ln 1/x}}}.
+\end{align}
 
+\section{Formalism of Parton Branching in Medium}
+This section will explore parton showers developing in a dense QCD medium. Most of the notation will be given in the same manner as~\cite{Energy_flow_medium_cascade_2016}. The new medium showers will be described by a in-medium kinetic rate equation which has a similar structure to the DGLAP equation. After introducing the differences between vacuum and medium cascades, we will solve the evolution equation for gluons. Our treatment will begin by disregarding the broadening that can occur between splittings, and rather focus on how the cascade changes due to the large amount of soft gluon emission. At the end of the section, we will discuss how to account for the broadening of partons due to exchange of momenta with the medium.
 
-\newpage
-\section{Formalism of parton branching in medium}
-Continuing we will explore parton showers, or cascades, that develop in a dense QCD matter. Most of the notation will be given in the same manner as \cite{Energy_flow_medium_cascade_2016}. The new medium showers will be described using the BDMPS equation which has a similar structure to the DGLAP equation. After introducing the differences between vacuum and medium cascades, we will solve the BDMPS equation. Our treatment will begin by disregarding the broadening that can occur inbetween splittings, and rather focus on how the cascade changes due to large amount of soft gluon emissions in the parton branchings. At the end of the section we will discuss how to account for the broadening of partons due to exchange of momenta with the medium.
+We will be working exclusively with gluons throughout this section. Subsequent discussions on medium showers will also be purely gluonic.
 
 \subsection{Properties of medium cascades}\label{sec: BDMPS_properties}
 \subsubsection*{Differences between vacuum and medium cascades}
-Before introducing the BDMPS equation, a discussion is required for covering the main differences between medium and vacuum showers. In the vacuum discussion the first point of interest was the evolution variable which was a dimensionless quantity used to conveniently write the evolution equations. For the medium showers this will be replaced by something called the characteristic time \(t_*\), which has dimension equal to the actual time \([GeV^{-1}]\), and defined in \autoref{eqn: characteristic_time}. The characteristic time is the time it takes for a gluon of energy \(\omega\) to radiate most of its energy into soft gluons. It is also called the stopping time.
+Before introducing the in-medium kinetic rate equation, a discussion is required for covering the main differences between medium and vacuum showers. In the vacuum discussion, the first point of interest was the evolution variable which was a dimensionless quantity used to conveniently write the evolution equations. For the medium showers this will be replaced by the characteristic time \(t_*\), which has dimensions equal to the actual time \([GeV^{-1}]\) and is defined in \autoref{eqn: characteristic_time}. The characteristic time, or stopping time, is the time it takes for a gluon of energy \(\omega\) to radiate most of its energy into soft gluons
 \begin{equation}\label{eqn: characteristic_time}
-    t_* \equiv \frac{1}{\bar \alpha} t_{\text{br}}(E) = \frac{\pi}{\alpha_S N_C} \sqrt{\frac{E}{\hat q}}
+    t_* \equiv \frac{1}{\bar \alpha} t_{\text{br}}(E) = \frac{\pi}{\alpha_s N_C} \sqrt{\frac{E}{\hat q}}
 \end{equation}
-Here \(t_{\text{br}}(E)\) is the typical time, or branching time, introduced in \autoref{eqn: branching_time}, which is the time it takes a gluon of energy E to branch into two gluons, and \(\bar \alpha \equiv \alpha_S N_C / \pi\). The energy is denoted \(E\), and the jet-quenching parameter \(\hat q\), as usual\lit{We have absorbed \(\hat q\) into the characteristic time \(t_*\), some of the literature writes it explicitly into the splitting functions, or absorb it into an evolution variable similar to our vacuum treatment.} \lit{The literature sometimes used \(\hat{\bar q} = \hat q /C_R\)}. 
+here \(t_{\text{br}}(E)\) is the typical time, or branching time, introduced in \autoref{eqn: branching_time}, which is the time it takes a gluon of energy E to branch into two gluons, and \(\hat q\) is the \emph{jet-quenching parameter}. Since we are exclusively working with gluons, we can set \(C_A=N_C\), and define \(\bar \alpha \equiv \alpha_s N_C / \pi\) and \(\hat{q} = \hat{\bar q} \,C_A\), such that all color factors are absorbed into the branching time. 
 
-An important feature of the medium cascades is that the branching rate increases along the cascade, in contrast to the DGLAP evolution of the vacuum showers, where the branching rate is constant along the cascade. This is apparent when looking at the characteristic time, as the energy \(\omega\) of a given gluon decreases, the expected time for a branching to occur also decreases. This means that the branchings are accelerating, and it takes a finite time to transport a finite amount of energy from the leading particle to soft gluons. Energy is therefore effectively transported towards large angles, which contrasts the strong angular ordering of QCD cascades in vacuum. Both the increased branching rate, and transport of energy towards large angles is a natural consequence of medium induced soft gluon emissions. The spectrum of these radiated gluons is on the form, 
-\begin{equation}
-    \omega \frac{dN}{d\omega} \approx \bar a \sqrt{\frac{\omega_c}{\omega}}
+An important feature of the medium cascades is that the branching rate increases along the cascade, in contrast to the vacuum cascades, where the branching rate is constant along the cascade. This is apparent when looking at the characteristic time; as the energy \(\omega\) of a given gluon decrease, the expected time for branching also decreases. This means that the branchings are accelerating, and it takes a finite time to transport a finite amount of energy from the leading particle to soft gluons. Energy is therefore effectively transported towards large angles, which contrasts the strong angular ordering of QCD cascades in vacuum. Both the increased branching rate and transport of energy towards large angles are natural consequences of medium induced soft gluon emissions. The spectrum of these radiated gluons is on the form
+\begin{equation}\label{eqn: BDMPS_spectrum}
+    \omega \frac{dI}{d\omega} \approx \bar \alpha \sqrt{\frac{\omega_c}{\omega}}
 \end{equation}
-Here \(\omega_c\) is the energy which gives the one branching in the length of the traversed medium \(t_{\text{br}}(\omega_c) \sim L\), it is therefore given from \(\omega_c = \frac{1}{2} \hat q L^2\). The first factor \(\bar a\) is the standard bremsstrahlung spectrum for radiation by the parent gluon, while the second factor \(\sqrt{\omega_c/\omega}\) is a correction factor. This factor needs to be cut-off for a minimal frequency at which radiation is primarily produced by incoherent collisions. This cut-off \(\omega_{\text{BH}}\) is where the branching time is of the order of the mean free path, \(t_{\text{br}} \sim \ell\). The mechanisms and approximations required for large amounts of soft gluon emissions requires the formation time to be much larger than the mean free path \(\ell\), but smaller than the size of the medium \(L\), this gives us boundaries for the energy of the emitted gluons \(\omega_{\text{BH}} << \omega < \omega_c\) \cite{medium_induced_gluon_branching}.
+where \(\omega_c\) is the energy which gives one branching in the length of the traversed medium \(t_{\text{br}}(\omega_c) \sim L\), and can therefore be written as \(\omega_c = \hat q L^2\). The spectrum in \autoref{eqn: BDMPS_spectrum} is called the BDMPS-Z spectrum, named after Baier-Dokshitzer-Mueller-Peigne-Schiff and Zakharov. The first factor \(\bar \alpha\) represents the standard bremsstrahlung spectrum for radiation by the parent gluon, while the second factor \(\sqrt{\omega_c/\omega}\) is a correction factor. This factor needs to be cut off for a minimum frequency at which radiation is primarily produced by incoherent collisions. This cut-off \(\omega_{\text{BH}}\) is where the branching time is of the order of the mean free path, \(t_{\text{br}} \sim \ell\). The mechanisms and approximations required for large amounts of soft gluon emissions require the formation time to be much larger than the mean free path \(\ell\), but smaller than the size of the medium \(L\), this gives us boundaries for the energy of the emitted gluons \(\omega_{\text{BH}} << \omega < \omega_c\)~\cite{medium_induced_gluon_branching}.
 
-\krs{Light-cone time and notation?}
+Since this section is concerned with partons traversing a medium, it could also be insightful to rewrite the BDMPS-Z spectrum of \autoref{eqn: BDMPS_spectrum} in terms of \(dL\), in order to indicate the branching rate when traversing a given length of medium. Simply inserting \(\omega_c = \hat{q}L^2\), we can write
+\begin{align}\label{eqn: BDMPS_branching_rate}
+    \frac{dI}{d\omega dL} &= \frac{\bar \alpha}{\omega} \sqrt{\frac{\hat{q}}{\omega}}.
+\end{align}
 
 \subsubsection*{Scaling behavior}
-Another feature of the BDMPS equation is that it exhibits a scaling behavior in the number of partons occupying small values of \(x\). This scaling stems from the solution of the BDMPS equation which we will solve shortly, and is on the form, 
-\begin{equation}\label{eqn: BDMPS_scaling_behaviour}
-    D(x,\tau) \approx \frac{\tau}{\sqrt{x}} \exp \left(-\pi \tau^2\right)
+Another feature of the medium cascades is that they exhibit a scaling behavior in the number of partons occupying small values of \(x\). This scaling stems from the solution of the BDMPS-Z spectrum which we will solve shortly, and is on the form
+\begin{equation}\label{eqn: BDMPS_scaling_behavior}
+    D(x,t) \approx \frac{t}{t_*\sqrt{x}} \exp \left[-\pi \left(\frac{t}{t_*}\right)^2\right].
 \end{equation}
-This scaling manifests itself best when \(\tau > \tau_*\), which means that most of the energy has been radiated into soft gluons \(x<0.1\). After this the number of partons occupying a given element \(\delta x\) decreases in a uniform and shape-conserving way. A natural interpretation of this phenomena would be a constant flow of energy towards small values of \(x\), which can be related to the existence of a stationary solution of the energy distribution \cite{Energy_flow_medium_cascade_2016}. \elab \textcolor{red}{add stuff}
-\begin{equation}
-    D_{st} (\omega) = \frac{t_*(\omega)}{\omega} \qquad , \quad \mathcal{F}(\omega) = \frac{\partial \epsilon(\omega)}{\partial t} \sim \frac{\omega D_{st}(\omega)}{t_*(\omega)} =\text{const.}
-\end{equation}
-This scaling will be apparent later when we will create a Monte-Carlo program for simulating parton showers in medium, for different values of \(\tau\). 
+The scaling manifest itself when \(t > t_*\), which means that most of the energy has been radiated into soft gluons \(x<0.1\). After this, the number of partons occupying a given element \(\delta x\) decreases in a uniform and shape-conserving way. A natural interpretation of this phenomenon would be a constant flow of energy towards small values of \(x\), which can be related to the existence of a stationary solution of the energy distribution~\cite{Energy_flow_medium_cascade_2016}. This scaling will be apparent later when we will create a Monte-Carlo program for simulating parton showers in medium, for different values of \(t\). 
 
-\subsubsection*{Splitting functions}\label{sec: medium_splitting_functions}
-The splitting functions responsible for the parton branchings in medium are somewhat different from their vacuum counterparts. The splitting functions for the three vertices are given to leading logarithmic accuracy, by \cite{Universal_quark_gluon_ratio_in_medium-induced_parton_cascade}, and quoted here in \autoref{eqn: medium_splittingfunctions_gg}, \autoref{eqn: medium_splittingfunctions_qg}, and \autoref{eqn: medium_splittingfunctions_qq},
-
+\subsubsection*{Medium splitting functions}\label{sec: medium_splitting_functions}
+The splitting functions responsible for parton branchings in medium are somewhat different from their vacuum counterparts. From our discussion on the BDMPS-Z spectrum we would expect the splitting functions to be similar to the branching rate given by \autoref{eqn: BDMPS_branching_rate}. Since we have absorbed all color factors into the branching time, the \(gg\) splitting function given by ~\cite{Universal_quark_gluon_ratio_in_medium-induced_parton_cascade} can be written as,
 \begin{align}
-    \mathcal{K}_{gg}(z) &= \frac{1}{2} 2 C_A \, \frac{[1-z(1-z)]^2}{z(1-z)} \, \sqrt{\frac{(1-z)C_A + z^2 C_A}{z(1-z)}} \label{eqn: medium_splittingfunctions_gg} \\
-    \mathcal{K}_{qg}(z) &= \frac{1}{2} 2 N_f \, T_F \, \left(z^2 +(1-z)^2)\right) \, \sqrt{\frac{C_F - z(1-z)C_A}{z(1-z)}} \label{eqn: medium_splittingfunctions_qg} \\
-    \mathcal{K}_{qq}(z) &= \frac{1}{2} C_F \, \frac{1+z^2}{(1-z)} \, \sqrt{\frac{zC_A + (1-z)^2 C_F}{z(1-z)}} \label{eqn: medium_splittingfunctions_qq}
+    \mathcal{K}_{gg}(z) &= \frac{1}{2}\,2\, \frac{\left[1-z(1-z) \right]^{5/2}}{\left[z(1-z)\right]^{3/2}}. \label{eqn: medium_splittingfunctions_gg}
 \end{align}
-Note that these splitting functions are given with the color factors. As already mentioned we will absorb these factors into the jet-quenching parameter and \(\bar a\). The factors \(1/2\) come from the additional square root now introduced to account for medium induced radiation, while the factor \(2\) gives the symmetry of the \(gg\) and \(qg\) branchings. As for vacuum branchings there should technically be a \(\mathcal{K}_{gq}(z)\) function, as a  counterpart to \(\mathcal{K}_{gq}(z)\). We will however just use the \(qq\) vertex, and assign the gluon momenta \((1-z)\) in these processes.
+The factor \(1/2\) come from the terms accounting for medium induced radiation, while the factor \(2\) comes from the symmetry of the \(gg\) splitting. Comparing with the vacuum counterpart we now have an additional term inside a square root. This appears due to partons interacting with the medium, leading to soft gluon emissions and making the medium splitting function more divergent. The parton distributions are therefore softened, or quenched, and is the only measurable consequence of the quark energy-loss in the medium~\cite{Wang_2001_Multiple_Parton_Scattering}.
 
-While these splitting functions might seem quite different at first glance, the simple vacuum splittings functions can be easily identified. The additional term in the square-root, arise for a couple of different reasons, but the primary change is the effect of the partons interacting with the medium. These interactions lead to soft gluon emissions, which makes the medium splitting functions more divergent, and soften the distribution functions. This softening is the only experimental measurable consequence of the quark energy loss in the medium \cite{Wang_2001_Multiple_Parton_Scattering}.
-
-To make the splitting functions more manageable we can take the \(gg\) splitting function \(\mathcal{K}_{gg}(z)\), and write it in terms of its vacuum counterpart \(P_{gg}(z)\). Taking into account that \(C_A=N_C\), and introducing \(\bar \alpha\) which is defined as before,
+While this splitting function might seem quite different from its vacuum counterpart at first glance, the simple vacuum splittings functions can be easily identified such that \autoref{eqn: medium_splittingfunctions_gg} can be written in terms the vacuum splitting function \(P_{gg}(z)\). This form also accentuate the similarities of \autoref{eqn: BDMPS_branching_rate} and the splitting function
 \begin{align}\label{eqn: vacuumtomedium_ggg_splitting_relation}
-    \frac{\alpha_S}{\pi} \mathcal{K}_{gg}(z) &= \frac{\alpha_S}{2 \pi} 2 P_{gg}(z) \sqrt{N_C} \,\sqrt{\frac{1-z(1-z)}{z(1-z)}} \nonumber \\
-    &= \bar a \sqrt{N_C}\, \frac{\left[1-z(1-z)\right]^2}{z(1-z)}  \sqrt{\frac{1-z(1-z)}{z(1-z)}} \nonumber \\
-    &= \bar a \sqrt{N_C} \, \mathcal{K}(z)
+    C_A\,\mathcal{K}_{gg}(z) &= C_A \, \frac{[1-z(1-z)]^2}{z(1-z)} \, \sqrt{\frac{(1-z)+ z^2 }{z(1-z)}} \nonumber \\
+    &= P_{gg}(z) \,\sqrt{\frac{1-z(1-z)}{z(1-z)}}
 \end{align}
-The new quantity \(\mathcal{K}(z)\) is called the splitting kernel and should not be confused with the splitting function \(\mathcal{K}_{gg}(z)\). It is a convenient  notation for explicitly working with the exact terms of the splitting function that affect the momentum fraction of the daughter partons. Soon we will also see that it simplifies some of our equations. 
-
-While this is the full splitting kernel, it will however be sufficient - and more convenient - to work with a reduced kernel given her in \autoref{eqn: ggg_medium_reduced_kernel}, 
+The full splitting function has now been introduced. However, it will be sufficient - and more convenient - to work with a simplified splitting function which we will write as
 \begin{equation}\label{eqn: ggg_medium_reduced_kernel}
-    \mathcal{K}(z) = \frac{1}{\left( z(1-z)\right)^{3/2}}
+    \mathcal{K}(z) = \frac{1}{\left( z(1-z)\right)^{3/2}}.
 \end{equation}
+For the remainder of the chapter, \autoref{eqn: ggg_medium_reduced_kernel} will be used as our \(gg\) splitting function, and we will call it the reduced kernel.
 
-\subsection{The BDMPS equation}\label{sec: BDMPS_theory}
-\subsubsection*{The full BDMPS equations}
-The necessary ingredients for constructing the BDMPS equation has now been introduced. It is expected that the form of the evolution equation in medium, will be very similar to the vacuum version. For a derivation of see \cite{Probabilistic_picture}, here we simply quote the results \cite{Energy_flow_medium_cascade_2016}. An important difference to note is that the BDMPS equation is written in terms of the actual time \(t\), and the characteristic time \(t_*\). This means that angular ordering is not strictly imposed in these showers, which is to be expected as soft gluon emission at large angles occurs frequently due to medium interactions. For now we will write the characteristic time as a function of the energy \(t_*(x) = t_* \sqrt{x}\). This gives an effective time scale for the branching of a gluon carrying a fraction \(x\) of the initial energy, which is one of the properties of the BDMPS cascade. The evolution equations can then be written,
+\subsection{The in-medium kinetic rate equation}\label{sec: BDMPS_theory}
+\subsubsection*{The full in-medium kinetic rate equations}
+The necessary ingredients for constructing the in-medium kinetic rate equations have now been introduced. It is expected that the form of the evolution equations in medium, will be very similar to the vacuum version. For a derivation using generating functionals see~\cite{Probabilistic_picture}, here we simply quote the results following the conventions of~\cite{Energy_flow_medium_cascade_2016}. An important feature to note is that the in-medium kinetic rate equation is written in terms of the actual time \(t\) and characteristic time \(t_*\) (defined in \autoref{eqn: characteristic_time}). This means that angular ordering is not strictly imposed in these showers, which is to be expected as soft gluon emission at large angles occurs frequently due to medium interactions. For now we will write the characteristic time as a function of the energy \(t_*(x) = t_* \sqrt{x}\). This gives an effective time scale for the branching of a gluon carrying a fraction \(x\) of the initial energy, which is one of the properties of the medium cascade. The evolution equations can be written
 \begin{align}\label{eqn: BDMPS_gluons}
 \begin{split}
-    \frac{\partial}{\partial t} D_g(x,t) &= \int_x^1 dz\, \frac{1}{t_*(x/z)} 2\mathcal{K}_{gg}(z)\, D_g\left(\frac{x}{z}, t\right) - \frac{1}{t_*(x)} \int_0^1 dz\, \mathcal{K}_{gg}(z)\, D_g \left(x,t\right) \\
+    \frac{\partial}{\partial t} D_g(x,t) &= \int_x^1 dz\, \frac{1}{t_*(x/z)} \mathcal{K}_{gg}(z)\, D_g\left(\frac{x}{z}, t\right) - \frac{1}{2t_*(x)} \int_0^1 dz\, \mathcal{K}_{gg}(z)\, D_g \left(x,t\right) \\
     &\quad + \int_x^1 dz\, \frac{1}{t_*(x/z)} \mathcal{K}_{gq}(z)\, D_g\left(\frac{x}{z}, t\right) - \frac{1}{t_*(x)} \int_0^1 dz\, \mathcal{K}_{gq}(z)\, D_g \left(x,t\right)
 \end{split}
 \end{align}
 \begin{align}\label{eqn: BDMPS_quarks}
 \begin{split}
     \frac{\partial}{\partial t} D_q(x,t) &= \int_x^1 dz\, \frac{1}{t_*(x/z)} \mathcal{K}_{qq}(z)\, D_q\left(\frac{x}{z}, t\right) -\frac{1}{t_*(x)} \int_0^1 dz\, \mathcal{K}_{qq}(z)\, D_q \left(x,t\right) \\
-    &\quad + \int_x^1 dz\, \frac{1}{t_*(x/z)} \mathcal{K}_{qg}(z)\, D_g\left(\frac{x}{z}, t\right) 
+    &\quad + \int_x^1 dz\, \frac{1}{t_*(x/z)} \mathcal{K}_{qg}(z)\, D_g\left(\frac{x}{z}, t\right).
 \end{split}
 \end{align}
+The main difference between the in-medium kinetic rate equations, and the DGLAP equations should then be apparent. If we replace \(\mathcal{K}_{ba}(z) \rightarrow \tilde{P}_{ba}(z)\) and \(t_*(x)\rightarrow 1\), the in-medium kinetic rate equations reduces to the DGLAP equations.
 
-\subsubsection*{The BDMPS for gluons only}
-We will be primarily focusing on cascades consisting exclusively of gluons. Since the splitting kernel \(\mathcal{K}_{gg}(z)\) is perfectly symmetrical, we can again use that, 
+\subsubsection*{The in-medium kinetic rate equation for gluons}
+We will be primarily focusing on cascades consisting exclusively of gluons. Since the splitting function \(\mathcal{K}_{gg}(z)\) is perfectly symmetrical, we can again use that
 \begin{equation}
     \frac{1}{2} \int_\epsilon^{1-\epsilon} dz \mathcal{K}_{gg}(z) = \int_\epsilon^{1-\epsilon} dz\, z\, \mathcal{K}_{gg}(z)
 \end{equation}
-and \autoref{eqn: BDMPS_gluons} can then be written, 
+and \autoref{eqn: BDMPS_gluons} can be written, 
 \begin{equation}\label{eqn: BDMPS_2.8_Blaizot}
-    \frac{\partial}{\partial t} Dg(x,t) = \int_x^1 dz\,\frac{1}{t_*(x/z)} \tilde{ \mathcal{K}}_{gg}(z)\, D(\frac{x}{z}, t) - \frac{1}{t_*(x)} \int_0^1 dz\,\tilde{ \mathcal{K}}_{gg}(z) \,z\, D_g(x,t)
+    \frac{\partial}{\partial t} D(x,t) = \int_x^1 dz\,\frac{1}{t_*(x/z)} \mathcal{K}_{gg}(z)\, D\left(\frac{x}{z},t\right) - \frac{1}{t_*(x)} \int_0^1 dz\,\mathcal{K}_{gg}(z) \,z\, D(x,t)
 \end{equation}
-where \(\tilde{\mathcal{K}}_{gg}(z) = 2 \mathcal{K}_{gg}(z)\). 
-
-The evolution equations for gluons can also be written by noting that the splitting kernel is independent of time. The evolution equation can therefore be simplified by introducing a new dimensionless variable \(\tau\) which accounts for the energy dependence and time scale of the branchings, 
+The evolution equation for gluons can also be written by noting that the splitting kernel is independent of time. The evolution equation can therefore be simplified by introducing a new variable \(\tau\) which accounts for the energy dependence and time scale of the branchings
 \begin{equation}\label{eqn: medium_tau_definiton}
-    \tau = \frac{t}{t_*}= \bar a \sqrt{\frac{\hat{q}}{E}} t
+    \tau = \frac{t}{t_*}= \bar \alpha \sqrt{\frac{\hat{q}}{E}} t
 \end{equation}
-using this new variable the equation can be written as, 
+using this new variable the evolution equation for gluons can be written as
 \begin{equation}\label{eqn: BDMPS_solution_startingpoint}
-    \frac{\partial}{\partial \tau} D(x, \tau) = \int_x^1 dz \,\mathcal{K}(z) \sqrt{\frac{z}{x}} D(\frac{x}{z}, \tau) - \int_0^1 dz \,\mathcal{K}(z) \frac{z}{\sqrt{x}} D(x,t)
+    \frac{\partial}{\partial \tau} D(x, \tau) = \int_x^1 dz \,\mathcal{K}(z) \sqrt{\frac{z}{x}} D\left(\frac{x}{z}, \tau\right) - \int_0^1 dz \,\mathcal{K}(z) \frac{z}{\sqrt{x}} D(x,t).
 \end{equation}
 
-\subsection{The Sudakov form factor for the BDMPS equation}\label{sec: medium_sudakov}
-We will now start with \autoref{eqn: BDMPS_2.8_Blaizot}, and rewrite it in terms of a sudakov form factor, like we did for the DGLAP equation. 
+\subsection{The Sudakov form factor in medium}\label{sec: medium_sudakov}
+We will now start with \autoref{eqn: BDMPS_2.8_Blaizot}, and rewrite it in terms of a Sudakov form factor
 \begin{align}\label{eqn: BDMPS_sudakov}
     \Delta (t) &= \exp \left( -\frac{t}{t_*(x)} \int_0^1 \, dz\, z \mathcal{K}(z) \right)
 \end{align}
 with the derivatives, 
 \begin{align}
-    \frac{\partial}{\partial t} \Delta (t) &= - \frac{1}{t_*(x)} \int_0^1 \, dz\, z \mathcal{K}(z) \cdot \Delta(t) \nonumber\\
-    \frac{\partial}{\partial t} \frac{1}{\Delta (t)} &= \frac{1}{t_*(x)} \int_0^1 \, dz\, z \mathcal{K}(z) \cdot \frac{1}{\Delta(t) }
+    \frac{\partial}{\partial t} \Delta (t) &= - \frac{1}{t_*(x)} \int_0^1 \, dz\, z \mathcal{K}(z)  \Delta(t) \nonumber\\
+    \frac{\partial}{\partial t} \frac{1}{\Delta (t)} &= \frac{1}{t_*(x)} \int_0^1 \, dz\, z \mathcal{K}(z)  \frac{1}{\Delta(t) }
 \end{align}
-Starting by rewriting \autoref{eqn: BDMPS_2.8_Blaizot},
+Starting by rewriting \autoref{eqn: BDMPS_2.8_Blaizot}
 \begin{align}
     \frac{\partial}{\partial t} D(x,t) + \frac{D\left(x,t\right)}{t_*(x)} \int_0^1 dz\, z\, \mathcal{K}(z) &= \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t\right)}{t_*(x/z)} \nonumber\\
     \frac{\partial}{\partial t} D(x,t) + D(x,t) \frac{\partial}{\partial t} \frac{1}{\Delta(t)} &= \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t\right)}{t_*(x/z)} \nonumber\\
     \Delta(t) \frac{\partial}{\partial t} \left( \frac{D(x,t)}{\Delta(t)} \right) &= \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t\right)}{t_*(x/z)} \nonumber\\
     \frac{\partial}{\partial t} \left( \frac{D(x,t)}{\Delta(t)} \right) &= \frac{1}{\Delta(t)} \, \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t\right)}{t_*(x/z)} 
 \end{align}
-integrating out the t integral, 
+and integrating out the t integral, 
 \begin{align}
     \frac{D(x,t)}{\Delta(t)} - \frac{D(x,t_0)}{\Delta(t_0)} &= \int_{t_0}^t \frac{dt'}{\Delta(t')} \, \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t'\right)}{t_*(x/z)} \nonumber\\
-    D(x,t) &= D(x,t_0)\, \frac{\Delta(t)}{\Delta(t_0)} + \int_{t_0}^t dt' \, \frac{\Delta(t)}{\Delta(t')} \, \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t'\right)}{t_*(x/z)} 
+    D(x,t) &= D(x,t_0)\, \frac{\Delta(t)}{\Delta(t_0)} + \int_{t_0}^t dt' \, \frac{\Delta(t)}{\Delta(t')} \, \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t'\right)}{t_*(x/z)}.
 \end{align}
-if we consider the initial time \(t_0 = 0\), then \(\Delta(t_0) = 1\), and we get an equation which is the medium equivalent of \autoref{eqn: DGLAP_evolutioneq_unregularized_integral_ellis}, 
+If we now consider the initial time \(t_0 = 0\), then \(\Delta(t_0) = 1\) and we obtain an equation which is the medium equivalent of \autoref{eqn: DGLAP_evolutioneq_unregularized_integral_ellis}
 \begin{equation}
-    D(x,t) = D(x,t_0)\, \Delta(t) + \int_{t_0}^t dt' \, \frac{\Delta(t)}{\Delta(t')} \, \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t'\right)}{t_*(x/z)} 
+    D(x,t) = D(x,t_0)\, \Delta(t) + \int_{t_0}^t dt' \, \frac{\Delta(t)}{\Delta(t')} \, \int_x^1 dz\, \mathcal{K}(z)\, \frac{D\left(\frac{x}{z}, t'\right)}{t_*(x/z)}.
 \end{equation}
 
-\subsection{Solution of BDMPS cascade }
-We will now solve the medium evolution equation by closely following the method outlined in \cite{Energy_flow_medium_cascade_2016}.
-The starting point for solving the medium evolution equation is \autoref{eqn: BDMPS_solution_startingpoint}, where \(\mathcal{K}(z)\) is the reduced kernel given in \autoref{eqn: ggg_medium_reduced_kernel}, and \(\tau \) is defined as in \autoref{eqn: medium_tau_definiton}.
+\subsection{Analytical solution of the in-medium kinetic rate equation}\label{sec: BDMPS_solution}
+We will now solve the medium evolution equation for gluons, by closely following the method outlined in~\cite{Energy_flow_medium_cascade_2016}.
+The starting point for solving the medium evolution equation is \autoref{eqn: BDMPS_solution_startingpoint}, where \(\mathcal{K}_{gg}(z)\) is the reduced kernel given in \autoref{eqn: ggg_medium_reduced_kernel}, and \(\tau \) is defined as in \autoref{eqn: medium_tau_definiton}.
 
-The solution presented here is valid for values \(x_c > 1\), which corresponds to a large medium \(L>t_*\). This is a valid comparison with the Monte-Carlo program which is developed in the next chapter, as it assumes the shower is constantly evolving in a medium. 
+The solution presented here is valid for values \(x_c > 1\), which corresponds to a large medium \(L>t_*\). This is a valid comparison with the Monte-Carlo program which is developed in \autoref{cpt:num}, as it assumes the shower is constantly evolving in a medium. 
 
-\textbf{The first step} is to perform a change of variable such that \(\xi = \frac{x}{z}\) in the gain term and \(\xi = xz\) in the loss term. 
+\textbf{The first step} is to perform a change of variable such that \(\xi = \frac{x}{z}\) in the gain term and \(\xi = xz\) in the loss term
 \begin{align}\label{eqn: BDMPS_solution_gainterm_changeofvariable}
-    \mathbb{G} &= \int_x^1 dz \mathcal{K}(z) \sqrt{\frac{z}{x}} D(\frac{x}{z}, \tau) \qquad,\quad \xi = \frac{x}{z} \nonumber \\
-    &= \int_1^x d\xi (-\frac{x}{\xi^2}) \mathcal{K}(\frac{x}{\xi}) \sqrt{\frac{1}{\xi}} D(\xi, \tau) \nonumber \\
-    &= \int_x^1 d\xi \,\frac{x}{\xi^(5/2)} \mathcal{K}(\frac{x}{\xi}) D(\xi, \tau)
+    \mathbb{G} &= \int_x^1 dz \mathcal{K}(z) \sqrt{\frac{z}{x}} D\left(\frac{x}{z}, \tau\right) \qquad,\quad \xi = \frac{x}{z} \nonumber \\
+    &= \int_1^x d\xi \left(-\frac{x}{\xi^2}\right) \mathcal{K}\left(\frac{x}{\xi}\right) \sqrt{\frac{1}{\xi}} D(\xi, \tau) \nonumber \\
+    &= \int_x^1 d\xi \,\frac{x}{\xi^{5/2}} \mathcal{K}\left(\frac{x}{\xi}\right) D(\xi, \tau)
 \end{align}
 \begin{align}\label{eqn: BDMPS_solution_lossterm_changeofvariable}
     \mathbb{L} &= - \int_0^1 dz \mathcal{K}(z) \frac{z}{\sqrt{x}} D(x,\tau)\qquad , \quad \xi = xz \nonumber \\
-    &= - \int_0^x d\xi (\frac{1}{x}) \mathcal{K}(\frac{\xi}{x}) \frac{\xi}{x^(3/2)} D(x,\tau) \nonumber \\
-    &= - \int_0^x d\xi \,\frac{\xi}{x^(5/2)} \mathcal{K}(\frac{\xi}{x}) D(x,\tau)
+    &= - \int_0^x d\xi \left(\frac{1}{x}\right) \mathcal{K}\left(\frac{\xi}{x}\right) \frac{\xi}{x^(3/2)} D(x,\tau) \nonumber \\
+    &= - \int_0^x d\xi \,\frac{\xi}{x^{5/2}} \mathcal{K}\left(\frac{\xi}{x}\right) D(x,\tau)
 \end{align}
 in these equations a common splitting function can be identified as, 
 \begin{align}\label{eqn: BDMPS_solution_splittingfunction_xivariable}
-    P(x,\xi) &= \frac{x}{\xi^(5/2)} \mathcal{K}(\frac{x}{\xi}) \nonumber \\
-    %&= \frac{x}{\xi^(5/2)} \frac{1}{\left[\frac{x}{\xi}(1-\frac{x}{\xi})\right]^{(3/2)}} \nonumber \\
-    %&= \frac{x}{\xi^(5/2)} \frac{1}{ \frac{1}{\xi^3} \left[x(\xi-x)\right]^{(3/2)}} \nonumber \\
-    &= \sqrt{\frac{\xi}{x}} \frac{1}{(\xi-x)^{(3/2)}}
+    P(x,\xi) &= \frac{x}{\xi^{5/2}} \mathcal{K}\left(\frac{x}{\xi}\right) \nonumber \\
+    %&= \frac{x}{\xi^{5/2}} \frac{1}{\left[\frac{x}{\xi}(1-\frac{x}{\xi})\right]^{3/2}} \nonumber \\
+    %&= \frac{x}{\xi^{5/2}} \frac{1}{ \frac{1}{\xi^3} \left[x(\xi-x)\right]^{3/2}} \nonumber \\
+    &= \sqrt{\frac{\xi}{x}} \frac{1}{(\xi-x)^{3/2}}
 \end{align}
-and \autoref{eqn: BDMPS_solution_startingpoint} can therefore be written as, 
+and \autoref{eqn: BDMPS_solution_startingpoint} can therefore be written as 
 \begin{equation}\label{eqn: BDMPS_solution_evoleqn_with_xisplitfunc}
-    \partial_\tau D(x,\tau) = \int_x^1 d\xi \,P(x,\xi) D(\xi, \tau) - \int_0^x d\xi \,P(\xi,x) D(x,\tau)
+    \partial_\tau D(x,\tau) = \int_x^1 d\xi \,P(x,\xi) D(\xi, \tau) - \int_0^x d\xi \,P(\xi,x) D(x,\tau).
 \end{equation}
-note that \(P(x,\xi) \neq P(\xi, x)\). 
-Now that the gain and loss terms are written in a convenient and symmetrical way, \textbf{the second step} is deal with the integral of the loss term.
+Note that \(P(x,\xi) \neq P(\xi, x)\). 
+Now that the gain and loss terms are written in a convenient and symmetrical way, \textbf{the second step} is to deal with the integral of the loss term
 \begin{equation}
-    \int_0^x d\xi \, \sqrt{\frac{1}{\xi}} \frac{1}{(x-\xi+\epsilon)^{(3/2)}} = \frac{1}{\sqrt{\epsilon}} \frac{2x}{x+\epsilon} \approx \frac{2}{\sqrt \epsilon} - \frac{2\sqrt{\epsilon}}{x} + \mathcal{O}(\epsilon^{3/2}) 
+    \int_0^x d\xi \, \sqrt{\frac{1}{\xi}} \frac{1}{(x-\xi+\epsilon)^{3/2}} = \frac{1}{\sqrt{\epsilon}} \frac{2x}{x+\epsilon} \approx \frac{2}{\sqrt \epsilon} - \frac{2\sqrt{\epsilon}}{x} + \mathcal{O}(\epsilon^{3/2}).
 \end{equation}
-In the limit \(\epsilon \rightarrow 0\), the first term is divergent, and all subleading terms vanish for any finite value of \(x\). Therefore, the sole purpose of the loss term (in these variables) is to remove the singularity of the gain term.  We can therefore replace the integral in the loss term with the following, 
+In the limit \(\epsilon \rightarrow 0\), the first term is divergent, and all subleading terms vanish for any finite value of \(x\). Therefore, the sole purpose of the loss term (in these variables) is to remove the singularity of the gain term.  We can therefore replace the integral in the loss term with the following 
 \begin{equation}
-    \mathbb{L} = - D(x,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}
+    \mathbb{L} = - D(x,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}.
 \end{equation}
-\textbf{Step three} is to introduce another change of variables \(y = 1-x\), and a re-scaling of the distribution \(F(y, \tau ) = \sqrt{x} D(x,\tau)\). Starting by multiplying everything by \(\sqrt{x}\) and inserting the new loss term, \autoref{eqn: BDMPS_solution_evoleqn_with_xisplitfunc} becomes,
-\begin{align}\label{eqn: BDMPS_solution_evoleqn_with_F(y,tau)}
-    \partial_\tau \sqrt{x} D(x,\tau) &= \int_x^1 d\xi \,\sqrt{x}\, \sqrt{\frac{\xi}{x}} \frac{1}{(\xi-x)^{(3/2)}} \,D(\xi, \tau) - \sqrt{(1-y)}\, D((1-y),\tau) \, \int_0^\infty \frac{dz}{z^{3/2}} \nonumber \\
-    \partial_\tau F(y,\tau) &= \int_x^1 d\xi \, \frac{1}{(\xi-(1-y))^{(3/2)}} \sqrt{\xi} \,D(\xi, \tau) - \sqrt{(1-y)}\, D((1-y),\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}
+\textbf{Step three} we introduce a re-scaling of the distribution \(F(y, \tau ) = \sqrt{x} D(x,\tau)\) , where \(y = 1-x\), by multiplying everything by \(\sqrt{x}\) and inserting the new loss term, \autoref{eqn: BDMPS_solution_evoleqn_with_xisplitfunc} becomes
+\begin{align}
+    \partial_\tau \sqrt{x} D(x,\tau) &= \int_x^1 d\xi \, \frac{1}{(\xi-x)^{3/2}} \sqrt{\xi} \,D(\xi, \tau) - \sqrt{x}\, D(x,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}, \nonumber \\
+    \begin{split}
+        \partial_\tau F(y,\tau) &= \int_{1-y}^1 d\xi \, \frac{1}{[\xi-(1-y)]^{3/2}} \sqrt{\xi} \,D(\xi, \tau) \\
+        &\quad - \sqrt{(1-y)}\, D((1-y),\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}
+    \end{split}.
 \end{align}
-making the replacement \(\tilde{\xi}  = 1- \xi\), and utilizing the property \(F(y, \tau ) = \sqrt{1-y} \,D(1-y,\tau)\),
+Then performing a change of variable \(\tilde{\xi} = 1- \xi\), and using \(F(y, \tau ) = \sqrt{1-y} \,D(1-y,\tau)\)
 \begin{align}\label{eqn: BDMPS_solution_evoleqn_Laplace_ready}
-    \partial_\tau F(y,\tau) &= \int_0^{y} d\tilde{\xi} \, \frac{1}{(y-\tilde{\xi})^{(3/2)}} \sqrt{1-\tilde{\xi}} \,D(1-\tilde{\xi}, \tau) - F(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}} \nonumber \\
-    &= \int_0^{y} d\tilde{\xi} \, \frac{1}{(y-\tilde{\xi})^{(3/2)}} F(\tilde{\xi}, \tau) - F(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}
+    \partial_\tau F(y,\tau) &= \int_0^{y} d\tilde{\xi} \, \frac{1}{(y-\tilde{\xi})^{3/2}} \sqrt{1-\tilde{\xi}} \,D(1-\tilde{\xi}, \tau) - F(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}, \nonumber \\
+    &= \int_0^{y} d\tilde{\xi} \, \frac{1}{(y-\tilde{\xi})^{3/2}} F(\tilde{\xi}, \tau) - F(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}.
 \end{align}
-\textbf{Step four} is to extend the limits of the domain for \(F(y,\tau)\) from \(y\in[0,1] \rightarrow y \in [0, \infty]\), and Laplace transform our evolution equation. Defining the Laplace transform as, 
+\textbf{Step four} is to extend the limits of the domain for \(F(y,\tau)\) from \(y\in[0,1] \rightarrow y \in [0, \infty]\), and Laplace transform our evolution equation. Defining the Laplace transform as
 \begin{equation}\label{eqn: BDMPS_solution_Laplace_definition}
-    \tilde{F}(\nu, \tau) = \int_0^\infty dy \, e^{-\nu y}\, F(y,\tau)
+    \tilde{F}(\nu, \tau) = \int_0^\infty dy \, e^{-\nu y}\, F(y,\tau) 
 \end{equation}
-performing the Laplace transform on \autoref{eqn: BDMPS_solution_evoleqn_Laplace_ready},
+and performing the Laplace transform on \autoref{eqn: BDMPS_solution_evoleqn_Laplace_ready} gives
 \begin{align}\label{eqn: BDMPS_solution_laplace_step1}
-    \partial_t \tilde{F}(y,\tau) &= \int_0^\infty dy\, e^{-\nu y}\,  \int_0^{y} d\tilde{\xi} \, \frac{1}{(y-\tilde{\xi})^{(3/2)}} F(\tilde{\xi}, \tau) - \int_0^\infty dy \, e^{-\nu y}\, F(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}} \nonumber \\
-    &= \int_0^\infty dy\, \int_0^{y} d\tilde{\xi} \, e^{-\nu y} \frac{1}{(y-\tilde{\xi})^{(3/2)}} F(\tilde{\xi}, \tau) - \tilde{F}(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}
+    \partial_t \tilde{F}(\nu,\tau) &= \int_0^\infty dy\, e^{-\nu y}\,  \int_0^{y} d\tilde{\xi} \, \frac{1}{(y-\tilde{\xi})^{3/2}} F(\tilde{\xi}, \tau) - \int_0^\infty dy \, e^{-\nu y}\, F(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}} \nonumber \\
+    &= \int_0^\infty dy\, \int_0^{y} d\tilde{\xi} \, e^{-\nu y} \frac{1}{(y-\tilde{\xi})^{3/2}} F(\tilde{\xi}, \tau) - \tilde{F}(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}}.
 \end{align}
-Since the loss term only had one \(y\) dependence, the Laplace transform went very smoothly. When dealing with the gain term it is nessecary to make some changes to the integration boundaries \(\int_0^\infty dy\, \int_0^y d\xi \,\rightarrow\, \int_\xi^\infty dy\, \int_0^\infty d\xi\), and then introduce another change of variable \(z = y-\tilde{\xi}\),
+Since the loss term had one \(y\) dependence, the Laplace transform went very smoothly. When dealing with the gain term it is necessary to make some changes to the integration boundaries \(\int_0^\infty dy\, \int_0^y d\tilde{\xi} \,\rightarrow\, \int_{\tilde{\xi}}^\infty dy\, \int_0^\infty d\tilde{\xi}\), and then introduce another change of variable \(z = y-\tilde{\xi}\)
 \begin{align}\label{eqn: BDMPS_solution_gainterm_laplace}
-    \mathbb{G} &= \int_0^{\infty} d\tilde{\xi} \,F(\tilde{\xi}, \tau) \int_\xi^\infty dy\,  e^{-\nu y} \frac{1}{(y-\tilde{\xi})^{(3/2)}} \nonumber \\
-    &= \int_0^{\infty} d\tilde{\xi} \,F(\tilde{\xi}, \tau) \int_0^\infty dz\, \frac{e^{-\nu (z+\tilde{\xi})}}{z^{(3/2)}} \nonumber \\
-    &= \int_0^{\infty} d\tilde{\xi} e^{-\nu \tilde{\xi}} \,F(\tilde{\xi}, \tau) \int_0^\infty dz\, \frac{e^{-\nu z}}{z^{(3/2)}} \nonumber \\
-    &= \tilde{F}(\nu, \tau) \, \int_0^\infty dz\, \frac{e^{-\nu z}}{z^{(3/2)}} 
+    \mathbb{G} &= \int_0^{\infty} d\tilde{\xi} \,F(\tilde{\xi}, \tau) \int_{\tilde{\xi}} ^\infty dy\,  e^{-\nu y} \frac{1}{(y-\tilde{\xi})^{3/2}} \nonumber \\
+    &= \int_0^{\infty} d\tilde{\xi} \,F(\tilde{\xi}, \tau) \int_0^\infty dz\, \frac{e^{-\nu (z+\tilde{\xi})}}{z^{3/2}} \nonumber \\
+    &= \int_0^{\infty} d\tilde{\xi} e^{-\nu \tilde{\xi}} \,F(\tilde{\xi}, \tau) \int_0^\infty dz\, \frac{e^{-\nu z}}{z^{3/2}} \nonumber \\
+    &= \tilde{F}(\nu, \tau) \, \int_0^\infty dz\, \frac{e^{-\nu z}}{z^{3/2}}. 
 \end{align}
-The results of our Laplace transform is apparent when the gain term transformed in \autoref{eqn: BDMPS_solution_gainterm_laplace}, is inserted back into the evolution equation of \autoref{eqn: BDMPS_solution_laplace_step1}, 
+The results of our Laplace transform is apparent when the gain term transformed in \autoref{eqn: BDMPS_solution_gainterm_laplace}, is inserted back into the evolution equation of \autoref{eqn: BDMPS_solution_laplace_step1}
 \begin{align}\label{eqn: BDMPS_solution_laplace_step2}
-    \partial_t \tilde{F}(y,\tau) &= \tilde{F}(\nu, \tau) \, \int_0^\infty dz\, \frac{e^{-\nu z}}{z^{(3/2)}} - \tilde{F}(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}} \nonumber \\
-    &= \tilde{F}(\nu, \tau) \, \int_0^\infty dz\, \frac{(e^{-\nu z}-1)}{z^{(3/2)}} \nonumber \\
-    &= \tilde{F}(\nu, \tau) \, (-2 \sqrt{\pi \nu})
+    \partial_t \tilde{F}(\nu,\tau) &= \tilde{F}(\nu, \tau) \, \int_0^\infty dz\, \frac{e^{-\nu z}}{z^{3/2}} - \tilde{F}(y,\tau) \, \int_0^\infty \frac{dz}{z^{3/2}} \nonumber \\
+    &= \tilde{F}(\nu, \tau) \, \int_0^\infty dz\, \frac{(e^{-\nu z}-1)}{z^{3/2}} \nonumber \\
+    &= \tilde{F}(\nu, \tau) \, (-2 \sqrt{\pi \nu}).
 \end{align}
-This is a simple differential equation. From energy conservation the initial condition is \(\tilde{F}_0 = 1\) - more precisely is the initial condition a delta function which takes into account partons ending with precisely zero momentum - but the solution is for all of our purposes, 
+This is a simple differential equation. From energy conservation the initial condition is \(\tilde{F}_0 = 1\) - more precisely is the initial condition a delta function which takes into account partons ending with precisely zero momentum - but the solution becomes
 \begin{equation}\label{eqn: BDMPS_solution_laplace_result}
-    \tilde{F}(y,\tau) = e^{-2\sqrt{\pi \nu}\tau}
+    \tilde{F}(\nu,\tau) = e^{-2\sqrt{\pi \nu}\tau}.
 \end{equation}
-\textbf{Step five} - the final step of this calculation - is to do the inverse Laplace transformation on \autoref{eqn: BDMPS_solution_laplace_result},
+\textbf{Step five} - the final step of this calculation - is to do the inverse Laplace transformation on \autoref{eqn: BDMPS_solution_laplace_result}
 \begin{align}
     F(y,\tau) &= \int_{c-i\infty}^{c+i\infty} \frac{d\nu}{2\pi i} e^{\nu y} \,\tilde{F}(\nu,\tau) \nonumber \\
     &= \frac{\tau}{y^{3/2}} \, \exp\left(-\pi \frac{\tau^2}{y}\right)
 \end{align}
-Reverting back \(F(y,\tau) = \sqrt{x}\, D(x,\tau)\) and \(y = 1-x\), our result is, 
+and reverting back \(F(y,\tau) = \sqrt{x}\, D(x,\tau)\) and \(y = 1-x\), our final solution is 
 \begin{equation}\label{eqn: BDMPS_solution}
-    D(x,\tau ) = \frac{\tau}{\sqrt{x}(1-x)^{3/2}}\, \exp\left(-\pi \frac{\tau^2}{1-x}\right)
+    D(x,\tau ) = \frac{\tau}{\sqrt{x}(1-x)^{3/2}}\, \exp\left(-\pi \frac{\tau^2}{1-x}\right).
 \end{equation}
-At this point it is worth taking a deep breath, and think about what just happened. We started out with the medium evolution equation, and wrote it in terms of a new variable \(\xi\), this made it possible to solve the integral in the loss term. Another change of variables allowed us to perform a Laplace transform so that the gain and loss term got the same form, and the equation could therefore be solved as an differential equation. Finally the inverse Laplace transform gave us the final expression in \autoref{eqn: BDMPS_solution}.
+At this point, it is worth taking a deep breath and reflect on what just happened. We started out with the medium evolution equation and wrote it in terms of a new variable \(\xi\), this made it possible to solve the integral in the loss term. Another change of variables allowed us to perform a Laplace transform so that the gain and loss term obtained the same form, and the equation could therefore be solved as a differential equation in Laplace space. Finally, the inverse Laplace transform gave us the final expression in \autoref{eqn: BDMPS_solution}.
 
-This general strategy was relatively similar to the solution of the DGLAP equation, as both aimed at writing the gain and loss terms on the same form by using some transformation. The resulting differential equations could then be solved, and finally transformed back to \(x\)-space.
+The solution given in \autoref{eqn: BDMPS_solution} is the full solution for the in-medium kinetic rate equation, using the reduced kernel. Contrasting the solution to the DGLAP equation of \autoref{eqn: DGLAP_solution_energyflowmedium}, which is valid only in the small \(x\) limit.
+
+This general strategy was relatively similar to the solution of the DGLAP equation, as both aimed at writing the gain and loss terms in the same form by using some change of variable, and then performing a transformation in order to solve the equation, before transforming back to momentum space.
 
 \subsection{Medium broadening of parton showers}
 As mentioned at the start of the section we will now discuss how broadening can occur without inducing gluon radiation, and how to account for this in our evolution equations.
 
-The evolution equations which we have presented for medium cascades so far, does not include any diffusion terms representing medium broadening happening between the individual splittings. This is represented by the partons in the distribution experiencing kicks form the medium, by the addition of \krs{...}. If we were to include this broadening, the evolution equation for gluons-only can be written as \cite{Probabilistic_picture, system_of_evolutionequations},
+The evolution equations which we have presented for medium cascades so far, does not include any diffusion terms representing medium broadening happening between the individual splittings. This is represented by the partons in the distribution experiencing kicks form the medium, by the addition of a collision kernel \(\mathcal{C}(\vec l, \tau)\). If we were to include this broadening, the evolution equation for gluons could be written as~\cite{Probabilistic_picture, system_of_evolutionequations}
 \begin{align}\label{eqn: BDMPSZ_3.19_ProbPic}
     \begin{split}
     \frac{\partial}{\partial \tau} D(x,\vec k, \tau) &= \int_{\vec l}\mathcal{C}(\vec l,\tau) \, D(x, \vec k - \vec l, \tau) \\
     &\quad + \int_x^1 dz\, \frac{1
-    }{z^2} \sqrt{\frac{z}{x}} \mathcal{K}(z) D(\frac{x}{z}, \frac{\vec k}{z}, \tau) - \int_0^1 dz\, \frac{z}{\sqrt{x}} \mathcal{K}(z) D(x,\vec k, \tau)
+    }{z^2} \sqrt{\frac{z}{x}} \mathcal{K}(z) D\left(\frac{x}{z}, \frac{\vec k}{z}, \tau\right) - \int_0^1 dz\, \frac{z}{\sqrt{x}} \mathcal{K}(z) D(x,\vec k, \tau)
     \end{split}
 \end{align}
-where \(\mathcal{C}(\vec l,t)\) is the elastic collision kernel, and \(\tau\) is defined as in \autoref{eqn: medium_tau_definiton}. By integrating this equation over transverse momentum \(\int_{\vec k} = \int \frac{d^2 \vec k}{(2\pi)^2}\), and setting \(D(x,t) = \int_{\vec k} D(x, \vec k, t)\), we are left with,
+where \(\mathcal{C}(\vec l,t)\) is the elastic collision kernel, and \(\tau\) is defined as in \autoref{eqn: medium_tau_definiton}. By integrating this equation over transverse momentum \(\int_{\vec k} = \int \frac{d^2 \vec k}{(2\pi)^2}\), and setting \(D(x,t) = \int_{\vec k} D(x, \vec k, t)\), we are left with
 \begin{align}
     \begin{split}
     \int_{\vec k} \frac{\partial}{\partial \tau} D(x,\vec k, \tau) &= \int_{\vec k} \int_{\vec l}\mathcal{C}(\vec l,\tau) \, D(x, \vec k - \vec l, \tau) \\
-    &\quad +  \int_{\vec k} \int_x^1 dz\, \frac{1}{z^2} \sqrt{\frac{z}{x}} \mathcal{K}(z) D(\frac{x}{z}, \frac{\vec k}{z}, \tau) - \int_{\vec k} \int_0^1 dz\,\frac{z}{\sqrt{x}} \mathcal{K}(z) D(x,\vec k, \tau)
+    &\quad +  \int_{\vec k} \int_x^1 dz\, \frac{1}{z^2} \sqrt{\frac{z}{x}} \mathcal{K}(z) D\left(\frac{x}{z}, \frac{\vec k}{z}, \tau\right) - \int_{\vec k} \int_0^1 dz\,\frac{z}{\sqrt{x}} \mathcal{K}(z) D(x,\vec k, \tau)
     \end{split}\\
     \begin{split}
     \frac{\partial}{\partial \tau} D(x, \tau) &= \int_{\vec l}\mathcal{C}(\vec l,\tau) \, D(x, \tau) \\
-    &\quad + \int_x^1 dz\, \sqrt{\frac{z}{x}} \mathcal{K}(z) D(\frac{x}{z}, \tau) - \int_0^1 dz\, \frac{z}{\sqrt{x}} \mathcal{K}(z) D(x, \tau)
+    &\quad + \int_x^1 dz\, \sqrt{\frac{z}{x}} \mathcal{K}(z) D\left(\frac{x}{z}, \tau\right) - \int_0^1 dz\, \frac{z}{\sqrt{x}} \mathcal{K}(z) D(x, \tau).
     \end{split}
 \end{align}
-since \(\int_{\vec l} \mathcal{C}(\vec l, \tau) = 0\), this becomes simply, 
+Since \(\int_{\vec l} \mathcal{C}(\vec l, \tau) = 0\), this becomes simply, 
 \begin{align}
-     \frac{\partial}{\partial \tau} D(x, \tau) &= \int_x^1 dz\, \sqrt{\frac{z}{x}} \mathcal{K}(z) D(\frac{x}{z}, \tau) - \int_0^1 dz\, \frac{z}{\sqrt{x}} \mathcal{K}(z) D(x, \tau)
+     \frac{\partial}{\partial \tau} D(x, \tau) &= \int_x^1 dz\, \sqrt{\frac{z}{x}} \mathcal{K}(z) D\left(\frac{x}{z}, \tau\right) - \int_0^1 dz\, \frac{z}{\sqrt{x}} \mathcal{K}(z) D(x, \tau).
 \end{align}
-Which is equivalent to \autoref{eqn: BDMPS_solution_startingpoint}. We have therefore seen that when averaging over the final transverse momentum after the splitting process, the collision kernel can be disregarded. In the next chapter we will be working with the inclusive distribution integrated over transverse momentum, \(D(x,t) = \int_{\vec k} D(x, \vec k, t)\), so the broadening happening between splittings is of no interest to us.
-
-
-\section{Leading Parton}
-We will now turn to the leading parton in a process. Rather than the shower depicted in \krs{make figure}, we will now be following exclusively the leading parton of a given cascade, and consider all other partons simply as energy loss \(\epsilon_i\). An illustration of this is given in \autoref{fig: leading_parton}.
-
-
-\begin{figure}[htb]
-    \centering
-    \begin{tikzpicture}
-    \begin{feynman}
-            \vertex (a)  {};
-            \vertex [right=2.5cm of a ] (a1);
-            \vertex [above right=1.0cm and 1.2cm of a1] (b1);
-            \vertex [below right=1.0cm and 1.2cm of a1] (b2);
-            \vertex [above right=0.9cm and 1.2cm of b1] (c1);
-            \vertex [below right=0.4cm and 1.0cm of b1] (c2);
-            \vertex [above right=0.7cm and 1.2cm of b2] (c3);
-            \vertex [below right=0.9cm and 1.2cm of b2] (c4);
-            \vertex [above right=0.7cm and 1.2cm of c1] (d1){\(z_1\)};
-            \vertex [below right=0.15cm and 1.2cm of c1] (d2){\(z_2\)};
-            \vertex [above right=0.3cm and 1.4cm of c2] (d3){\(z_3\)};
-            \vertex [below right=0.4cm and 1.4cm of c2] (d4){\(z_4\)};
-            \vertex [above right=0.4cm and 1.2cm of c3] (d5);
-            \vertex [below right=0.4cm and 1.2cm of c3] (d6){\(z_5\)};
-            \vertex [above right=0.15cm and 1.2cm of c4] (d7){\(z_6\)};
-            \vertex [below right=0.7cm and 1.2cm of c4] (d8){\(z_7\)};
-            \diagram* {
-            (a) -- [gluon, edge label = {\(E=x\)}] (a1),
-            (a1) -- [gluon] (b1),
-            (a1) -- [gluon] (b2),
-            (b1) -- [gluon] (c1),
-            (b1) -- [gluon] (c2),
-            (b2) -- [gluon] (d6),
-            (b2) -- [gluon] (c4),
-            (c1) -- [gluon] (d1),
-            (c1) -- [gluon] (d2),
-            (c2) -- [gluon] (d3),
-            (c2) -- [gluon] (d4),
-            (c4) -- [gluon] (d7),
-            (c4) -- [gluon] (d8),
-            };
-        \end{feynman}
-\end{tikzpicture}
-\caption{Illustration of the inclusive distribution.}
-\label{fig: inclusive_parton}
-\end{figure}
-
-
-\begin{figure}[htb]
-    \centering
-    \begin{tikzpicture}
-    \begin{feynman}
-            \vertex (a)  {\(E\)};
-            \vertex [right=of a ] (a1);
-            \vertex [right=of a1] (a2);
-            \vertex [right=of a2] (a3);
-            \vertex [right=of a3] (a4);
-            \vertex [right=of a4] (a5);
-            \vertex [right=of a5] (a6);
-            \vertex [right=of a6] (a7){\(\omega = E - \sum_i \epsilon_i\)};
-            \vertex [above right=of a1] (e1);
-            \vertex [above right=of a2] (e2);
-            \vertex [above right=of a3] (e3);
-            \vertex [above right=of a4] (e4);
-            \vertex [above right=of a5] (e5);
-            \diagram* {
-            (a) -- [gluon] (a7),
-            (a1) -- [gluon, edge label = \(\epsilon_1\)] (e1),
-            (a2) -- [gluon, edge label = \(\epsilon_2\)] (e2),
-            (a3) -- [gluon, edge label = \(\epsilon_3\)] (e3),
-            (a4) -- [gluon, edge label = \(\epsilon_4\)] (e4),
-            (a5) -- [gluon, edge label = \(\epsilon_5\)] (e5),
-            };
-        \end{feynman}
-\end{tikzpicture}
-\caption{Illustration of the leading parton.}
-\label{fig: leading_parton}
-\end{figure}
-
-The energy fraction of the leading parton can therefore be stated as \(x_{\text{leading}} = \frac{E-\epsilon}{E} = 1- \frac{\epsilon}{E}\). 
-
-
-
+Which is equivalent to \autoref{eqn: BDMPS_solution_startingpoint}. We have therefore seen that when averaging over the final transverse momentum after the splitting process, the collision kernel can be disregarded. We are primarily concerned with the inclusive distribution integrated over transverse momentum, \(D(x,t) = \int_{\vec k} D(x, \vec k, t)\), and the broadening is therefore not relevant (in general) for our discussions.
 
 \end{document}
