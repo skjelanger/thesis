@@ -1,0 +1,37 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+\section{Constructing the DGLAP Equation}\label{app: DGLAP_derivation}
+The DGLAP equation can be constructed using generating functionals. This is done in \cite{Probabilistic_picture} for gluons in medium, a simpler approach with gluons in vacuum is presented here. For vacuum cascades where an initial gluon at time \(t_0\) with momentum \(p\), a generating functional can be defined as 
+\begin{align}
+    \mathcal{Z}(p,t=0) = u(p).
+\end{align}
+where \(u\equiv u(p)\) indicates a \(100\%\) probability of finding a single gluon with momentum \(p\) at the given time. Similarly \(u(k)\) gives a gluon with momentum \(k=xp\). From normalization we have \(\mathcal{Z}(p)|_{u=1} =1\). Defining the relation of the functions \(u(p)\) and \(u(k)\) as
+\begin{align}
+    \frac{\delta u(p)}{\delta u(k)} = \delta \left(1-\frac{k}{p}\right).
+\end{align}
+Since we are considering vacuum cascades, the only effect that can happen in an interval \(dt\) is a splitting. The generating functional then changes as,
+\begin{align}\label{eqn: DGLAP_GF1}
+    \frac{\partial}{\partial t} \mathcal{Z}(p,t) = \int_0^1 dz \, P(z) \mathcal{Z}(zp)\mathcal{Z}((1-z)p) - \int_0^1 dz\, P(z) \mathcal{Z}(p)
+\end{align}
+where the first term on the right represents a splitting, and the second term is a correction corresponding to a virtual loop, where no splittings occur.
+The inclusive energy distribution is then found from the generating functional as \(D(x,t) = x \frac{dN}{dx} =\frac{\delta \mathcal{Z}[p]}{\delta u(p)}|_{u=1}\), which implies
+\begin{align}
+    \frac{\delta \mathcal{Z}\left(p\right)}{\delta u\left(k\right)}|_{u=1} &= D\left(\frac{k}{p},t\right) = D(x,t) \\
+    \frac{\delta \mathcal{Z}\left(zp\right)}{\delta u(k)}|_{u=1} &= D\left(\frac{k}{zp},t\right) = D\left(\frac{x}{z},t\right)
+\end{align}
+therefore \autoref{eqn: DGLAP_GF1} becomes, 
+\begin{align}
+    \frac{\partial}{\partial t} \frac{\delta \mathcal{Z}(p)}{\delta u(k)}|_{u=1} &= \int_0^1 dz \, P(z) \left[ \frac{\delta \mathcal{Z}(zp)}{\delta u(k)}|_{u=1} \mathcal{Z}\left((1-z)p\right)|_{u=1} + \mathcal{Z}(zp)|_{u=1} \frac{\delta \mathcal{Z}\left((1-z)p\right)}{\delta u(k)}|_{u=1}  \right] \nonumber \\
+    &\quad - \int_0^1 dz\, P(z) \frac{\delta \mathcal{Z}(p)}{\delta u(k)}|_{u=1} \nonumber \\
+    \begin{split}
+    \frac{\partial}{\partial t} D(x,t) &= \int_0^1 dz \, P(z) \left[ D\left(\frac{x}{z},t\right) H(z>x) + D\left(\frac{x}{1-z},t\right) H(1-z>x) \right] \nonumber \\
+    &\quad - \int_0^1 dz\, P(z) D(x,t) 
+    \end{split}
+\end{align}
+working with gluons only we can use \(P_{gg}(z) = P_{gg}(1-z)\), \(\int_0^1 dz\, P_{gg}(z) = \frac{1}{2}\int_0^1 dz\, z P_{gg}(z)\), and \(\Tilde{P}(z) = 2P(z)\), to write this as
+\begin{align}
+    \frac{\partial}{\partial t} D(x,t) &= \int_x^1 dz \,\Tilde{P}(z)\left(\frac{x}{z},t\right) - \int_0^1 dz\, z \Tilde{P}(z) D(x,t) 
+\end{align}
+which is the DGLAP equation for gluon-only cascades.
+\end{document}
