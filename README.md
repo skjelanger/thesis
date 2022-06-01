@@ -1,4 +1,4 @@
-# QCD Parton Fragmentation in Vacuum and Medium With Leading Jet Energy Loss
+# QCD Parton Fragmentation in Vacuum and Medium With Leading Jet Energy-Loss
 [![DOI](https://zenodo.org/badge/476321776.svg)](https://zenodo.org/badge/latestdoi/476321776)
 
 ## Master Thesis in Theoretical Atomic, Nuclear and Particle Physics. Kristoffer Skjelanger, University of Bergen.
